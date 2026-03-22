@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MmBookshelf - Home</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2196F3">
+</head>
+<body>
+    <div class="menu-overlay" id="menu-overlay"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            <div class="logo">
+                <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
+            </div>
+
+            <div class="search-wrapper">
+    <div class="search-box" id="search-box">
+        <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." oninput="handleInput()" onkeydown="handleKeyDown(event)" autocomplete="off">
+        <div id="search-suggestions" class="suggestions-list"></div>
+    </div>
+    <button id="search-trigger" class="search-btn">
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+</div>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
+                <li><a href="latest.html"><i class="fa-solid fa-book"></i> LATEST</a></li>
+                <li><a href="authors.html"><i class="fa-solid fa-pen-nib"?></i>AUTHORS</a></li>
+                 <li><a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="Editor-choice" id="book-display-section">
+        <div class="header">
+            <h2 id="section-title">EDITOR CHOICE</h2>
+            <button class="view-all" id="view-all-btn" onclick="filterBooks('all')">View All</button>
+        </div>
+        <div class="scroll-wrapper" id="book-list-container">
+            <p>Loading books...</p>
+        </div>
+    </div>
+
+   
+    <script src="mainscript.js"></script>
+</body>
+</html>

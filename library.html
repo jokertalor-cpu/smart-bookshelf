@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Library - MmBookshelf</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2196F3">
+    <style>
+        .library-header {
+            padding: 20px;
+            background: #fff;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .empty-message {
+            text-align: center;
+            padding: 50px 20px;
+            color: #888;
+        }
+        .empty-message i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+        /* ဒေါင်းလုဒ်စာရင်းအတွက် Grid Layout */
+        #downloaded-list-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-overlay" id="menu-overlay"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            <div class="logo">
+                <a href="index.html"><img src="photo_2026-03-20_09-18-40.jpg" alt="logo"></a>
+            </div>
+            
+            <div class="search-wrapper">
+                <div class="search-box" id="search-box">
+                    <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." oninput="handleInput()" onkeydown="handleKeyDown(event)" autocomplete="off">
+                    <div id="search-suggestions" class="suggestions-list"></div>
+                </div>
+                <button id="search-trigger" class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
+                <li><a href="authors.html"><i class="fa-solid fa-pen-nib"></i> AUTHORS</a></li>
+                <li><a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="library-header">
+        <h2 style="font-size: 1.2em; margin: 0;"><i class="fa-solid fa-folder-open"></i> ဒေါင်းလုဒ်ဆွဲထားသော စာအုပ်များ</h2>
+    </div>
+
+    <div id="download-section">
+        <div id="downloaded-list-container">
+            <div class="empty-message">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+                <p>ဒေါင်းလုဒ်ဆွဲထားသော စာအုပ်မရှိသေးပါ။</p>
+                <a href="index.html" style="color: #2196F3; text-decoration: none; font-size: 14px;">စာအုပ်များ သွားရှာရန်</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="mainscript.js"></script>
+    <script src="libraryscript.js">
+        
+    </script>
+</body>
+</html>
