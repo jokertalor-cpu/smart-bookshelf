@@ -4,6 +4,7 @@
     "title": "ဗေဒါလမ်းကဗျာစု",
     "category": "poem",
     "is_editor_choice": true,
+    "download_count": 500,
     "file_size":"1.2MB",
     "cover": "https://d191t37l2t6oht.cloudfront.net/book/sample/zg_baydarlane/OEBPS/image/cover.jpg",
     "author": "Zaw Gyi"
@@ -12,6 +13,7 @@
     "id": 2,
     "title": "စီးပွားရေးစီမံခန့်ခွဲမှု နှင့် ဆွန်ဇူးဧ။်စစ်ရေဗျူဟာ",
     "category": "Business",
+    "download_count": 400,
     "is_editor_choice": true,
     "cover": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQz9ZFQcs_h2EGmDly9pqTxJq-J5RWHMAl6g&s",
     "author": "Win Thein Oo"
@@ -19,6 +21,7 @@
   {
     "id": 3,
     "title": "College physics 12th edition",
+    "download_count": 499,
     "category": "technical",
     "cover": "https://covers.vitalsource.com/vbid/9798214382838/width/320?style=preview",
     "author": "Narasimha"
