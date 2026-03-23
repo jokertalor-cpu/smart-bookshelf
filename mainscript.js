@@ -1,3 +1,8 @@
+// mainscript.js ရဲ့ အပေါ်ဆုံးမှာ ထည့်ရန်
+const supabaseUrl = 'https://cmguamftohgcgwdggwde.supabase.co'; // သင့် Project URL
+const supabaseKey = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9'; // သင့် Publishable Key
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
 const menuToggle = document.querySelector('#mobile-menu'); 
 const navMenu = document.querySelector('#nav-menu'); 
 const overlay = document.querySelector('#menu-overlay'); 
@@ -10,7 +15,7 @@ const viewAllBtn = document.getElementById('view-all-btn');
 
 let allBooks = [];
 
-// ၁။ Mobile Menu ဖွင့်/ပိတ် Logic
+// ၂။ Mobile Menu Logic
 if (menuToggle) {
     menuToggle.addEventListener('click', () => {
         navMenu.classList.toggle('active');
@@ -25,18 +30,26 @@ if (overlay) {
     });
 }
 
-// ၂။ JSON Data ဖတ်ယူခြင်းနှင့် Ranking ခေါ်ယူခြင်း
 async function loadBooks() {
     try {
-        const response = await fetch('books.json');
-        allBooks = await response.json();
+        // 'books' ဆိုတာ သင့် Supabase table နာမည်ဖြစ်ရပါမယ်
+        const { data, error } = await supabase
+            .from('books')
+            .select('*');
+
+        if (error) throw error;
         
-        // Ranking Container ရှိလျှင် Ranking ကို အရင်ပြမည်
+        allBooks = data; // Supabase ကရတဲ့ data array ကို allBooks ထဲထည့်
+
+        // UI ပြသခြင်း logic များ
         if (document.getElementById('top-ranking-container')) {
             displayTopRanking(allBooks);
         }
 
-        // Editor Choice သို့မဟုတ် Search Result ပြသခြင်း
+        if (document.getElementById('latest-10-container')) {
+            displayLatest10(allBooks);
+        }
+
         if (document.getElementById('book-list-container')) {
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('q');
@@ -49,26 +62,22 @@ async function loadBooks() {
             }
         }
     } catch (error) {
-        console.error("Error loading JSON:", error);
+        console.error("Supabase Error:", error.message);
+        const container = document.getElementById('book-list-container');
+        if (container) container.innerHTML = "<p>Data ချိတ်ဆက်မှု အမှားရှိနေပါသည်။</p>";
     }
 }
-
-// ၃။ Top 10 Ranking ပြသသည့် Logic (New Added)
+// ၄။ Top Ranking Logic
 function displayTopRanking(books) {
     const rankingContainer = document.getElementById('top-ranking-container');
     if (!rankingContainer) return;
 
-    // Download အရေအတွက်အလိုက် Sort လုပ်ပြီး Top 10 ယူခြင်း
     const sortedBooks = [...books].sort((a, b) => (b.download_count || 0) - (a.download_count || 0));
     const top10 = sortedBooks.slice(0, 10);
 
     rankingContainer.innerHTML = top10.map((book, index) => `
         <div class="book-card" onclick="window.location.href='detail.html?id=${book.id}'" style="position: relative; flex: 0 0 140px; cursor: pointer;">
-            <div class="rank-badge" style="
-                position: absolute; top: 0; left: 0; 
-                background: ${index < 3 ? '#e74c3c' : '#3498db'}; 
-                color: white; padding: 2px 8px; font-weight: bold; 
-                border-radius: 5px 0 5px 0; font-size: 11px; z-index: 1;">
+            <div class="rank-badge" style="position: absolute; top: 0; left: 0; background: ${index < 3 ? '#e74c3c' : '#3498db'}; color: white; padding: 2px 8px; font-weight: bold; border-radius: 5px 0 5px 0; font-size: 11px; z-index: 1;">
                 #${index + 1}
             </div>
             <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
@@ -80,14 +89,11 @@ function displayTopRanking(books) {
     `).join('');
 }
 
-
-// --- နောက်ဆုံးတင်သော စာအုပ် ၁၀ အုပ်ပြသသည့် Function ---
+// ၅။ Latest 10 Logic
 function displayLatest10(books) {
     const latestContainer = document.getElementById('latest-10-container');
     if (!latestContainer) return;
 
-    // ၁။ ID အရသော်လည်းကောင်း၊ Date အရသော်လည်းကောင်း နောက်ဆုံးတင်တာကို ရှေ့ဆုံးပို့ရန်
-    // ဒီမှာတော့ ID အကြီးဆုံးက နောက်ဆုံးတင်တာလို့ ယူဆပြီး Sort လုပ်ပါမယ်
     const sortedByLatest = [...books].sort((a, b) => b.id - a.id);
     const latest10 = sortedByLatest.slice(0, 10);
 
@@ -98,48 +104,12 @@ function displayLatest10(books) {
             </div>
             <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
             <p class="title" style="font-size: 13px; font-weight: bold; margin: 8px 0 2px; height: 32px; overflow: hidden;">${book.title}</p>
-            <small style="color: #888;">${book.category.toUpperCase()}</small>
+            <small style="color: #888;">${book.category?.toUpperCase() || ''}</small>
         </div>
     `).join('');
 }
 
-// loadBooks function ကို Update လုပ်ရန်
-async function loadBooks() {
-    try {
-        const response = await fetch('books.json');
-        allBooks = await response.json();
-        
-        // Ranking ပြရန်
-        if (document.getElementById('top-ranking-container')) {
-            displayTopRanking(allBooks);
-        }
-
-        // Latest 10 ပြရန် (အသစ်ထည့်သော line)
-        if (document.getElementById('latest-10-container')) {
-            displayLatest10(allBooks);
-        }
-
-        // ကျန်တဲ့ Editor Choice/Search စသည်တို့
-        if (document.getElementById('book-list-container')) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const query = urlParams.get('q');
-            
-            if (query) {
-                searchInput.value = query;
-                executeSearch();
-            } else {
-                filterBooks('all');
-            }
-        }
-    } catch (error) {
-        console.error("Error loading JSON:", error);
-    }
-}
-
-
-
-
-// ၄။ UI မှာ စာအုပ်ကတ်များ ပြသခြင်း
+// ၆။ Books Render Logic
 function renderBooks(books) {
     const container = document.getElementById('book-list-container');
     if (!container) return; 
@@ -156,27 +126,14 @@ function renderBooks(books) {
             <div class="book-card" onclick="window.location.href='detail.html?id=${book.id}'" style="cursor:pointer;">
                 <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
                 <p class="title">${book.title}</p>
-                <small>${book.category.toUpperCase()}</small>
+                <small>${book.category?.toUpperCase() || ''}</small>
             </div>
         `;
         container.innerHTML += bookHTML;
     });
 }
 
-// ၅။ Search UI Toggle Logic
-if (searchTrigger) {
-    searchTrigger.addEventListener('click', () => {
-        searchBox.classList.toggle('active');
-        if (searchBox.classList.contains('active')) {
-            searchInput.focus();
-        } else {
-            suggestionsList.style.display = 'none';
-            searchInput.value = '';
-        }
-    });
-}
-
-// ၆။ Search Suggestion Logic
+// ၇။ Search Suggestion
 function handleInput() {
     const keyword = searchInput.value.toLowerCase().trim();
     if (keyword === "") {
@@ -217,7 +174,6 @@ function handleKeyDown(event) {
     }
 }
 
-// ၇။ Execute Search Logic
 function executeSearch() {
     const keyword = searchInput.value.toLowerCase().trim();
     if (keyword === "") return;
@@ -233,9 +189,7 @@ function executeSearch() {
     );
     
     renderBooks(filtered);
-    
     if (sectionTitle) sectionTitle.innerText = "SEARCH RESULT";
-    
     if (viewAllBtn) {
         viewAllBtn.innerText = "BACK TO EDITOR CHOICE";
         viewAllBtn.onclick = () => filterBooks('all');
@@ -244,7 +198,7 @@ function executeSearch() {
     scrollToBooks();
 }
 
-// ၈။ Category Filter Logic
+// ၈။ Category Filter
 function filterBooks(category) {
     if (!document.getElementById('book-list-container')) return;
 
@@ -266,7 +220,7 @@ function filterBooks(category) {
             viewAllBtn.style.backgroundColor = "#f39c12";
         }
     } else {
-        const filtered = allBooks.filter(b => b.category.toLowerCase() === category.toLowerCase());
+        const filtered = allBooks.filter(b => b.category && b.category.toLowerCase() === category.toLowerCase());
         renderBooks(filtered);
         if (sectionTitle) sectionTitle.innerText = category.toUpperCase() + " BOOKS";
         if (viewAllBtn) {
@@ -283,4 +237,5 @@ function scrollToBooks() {
     if(section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// စတင်ခေါ်ယူခြင်း
 loadBooks();
