@@ -1,0 +1,44 @@
+{
+  "books":[
+  {
+    "id": 0,
+    "title": "ဗေဒါလမ်းကဗျာစု",
+    "category": "poem",
+    "is_editor_choice": true,
+    "file_size":"1.2MB",
+    "cover": "https://d191t37l2t6oht.cloudfront.net/book/sample/zg_baydarlane/OEBPS/image/cover.jpg",
+    "author": "Zaw Gyi"
+  },
+  {
+    "id": 1,
+    "title": "စီးပွားရေးစီမံခန့်ခွဲမှု နှင့် ဆွန်ဇူးဧ။်စစ်ရေဗျူဟာ",
+    "category": "Business",
+    "is_editor_choice": true,
+    "cover": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQz9ZFQcs_h2EGmDly9pqTxJq-J5RWHMAl6g&s",
+    "author": "Win Thein Oo"
+  },
+  {
+    "id": 2,
+    "title": "College physics 12th edition",
+    "category": "technical",
+    "cover": "https://covers.vitalsource.com/vbid/9798214382838/width/320?style=preview",
+    "author": "Narasimha"
+  },
+  {
+    "id":3,
+    "title":"datastructure and Algorithms",
+    "category":"technical",
+     "is_editor_choice": true,
+    "cover":"https://img.freepik.com/premium-vector/vector-hand-drawing-physics-education-doodle-icon-idea-set_602351-720.jpg?semt=ais_hybrid&w=740&q=80",
+    "author":"another"
+  },
+   {
+    "id":4,
+    "title":"datastructure and Algorithms",
+    "category":"technical",
+     "is_editor_choice": true,
+   "cover":"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1473390844i/31923984.jpg",
+   "author":"Narasimha"
+  }
+]
+}
