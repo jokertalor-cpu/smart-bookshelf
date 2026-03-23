@@ -22,6 +22,7 @@
     margin-right: 5px;
 }</style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 </head>
 <body>
    <div class="menu-overlay" id="menu-overlay"></div>
@@ -68,37 +69,77 @@
     <script src="mainscript.js"></script>
 
     <script>
-        function renderLibrary() {
-            const container = document.getElementById('library-container');
-            const savedIds = JSON.parse(localStorage.getItem('myLibrary')) || [];
+        // ၁။ Database ကိုအရင် ချိတ်ဆက်မယ် (mainscript.js ထဲကအတိုင်း နာမည်တူရပါမယ်)
+const db = new Dexie("MmBookshelfDB");
+db.version(1).stores({
+    downloaded_books: 'id, title, author, cover, fileBlob, file_size'
+});
 
-            if (savedIds.length === 0) {
-                container.innerHTML = "<p>သိမ်းဆည်းထားသော စာအုပ်မရှိသေးပါ။</p>";
-                return;
-            }
+// ၂။ Library ထဲကစာအုပ်များကို ဆွဲထုတ်ပြမည့် Function
+async function renderLibrary() {
+    const container = document.getElementById('library-container');
+    
+    try {
+        // IndexedDB ထဲမှာ တကယ်ရှိနေတဲ့ စာအုပ်တွေကို ယူမယ်
+        const offlineBooks = await db.downloaded_books.toArray();
 
-            // allBooks ထဲကနေ saved IDs နဲ့ ကိုက်ညီတာကို စစ်ထုတ်မယ်
-            const myBooks = allBooks.filter(book => savedIds.includes(book.id));
-
-            container.innerHTML = myBooks.map(book => `
-                <div class="book-card" style="position: relative;">
-                    <img src="${book.cover}" alt="${book.title}" onclick="location.href='detail.html?id=${book.id}'">
-                    <p class="title">${book.title}</p>
-                    <button onclick="removeFromLibrary(${book.id})" 
-                            style="position: absolute; top: 5px; right: 5px; background: rgba(231, 76, 60, 0.9); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            `).join('');
+        if (offlineBooks.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding: 50px; color: #888;">
+                    <i class="fa-solid fa-book-open" style="font-size: 50px; margin-bottom: 10px;"></i>
+                    <p>ဒေါင်းလုဒ်လုပ်ထားသော စာအုပ်မရှိသေးပါ။</p>
+                    <a href="index.html" style="color: #2196F3; text-decoration: none;">စာအုပ်များသွားရှာရန်</a>
+                </div>`;
+            return;
         }
 
-        // Data load ဖြစ်လာတာနဲ့ render လုပ်မယ်
-        const checkData = setInterval(() => {
-            if (typeof allBooks !== 'undefined' && allBooks.length > 0) {
-                renderLibrary();
-                clearInterval(checkData);
-            }
-        }, 500);
+        // စာအုပ်ကတ်ပြားများကို Render လုပ်မယ်
+        container.innerHTML = offlineBooks.map(book => `
+            <div class="book-card" style="position: relative;">
+                <img src="${book.cover}" alt="${book.title}" style="cursor: pointer;" onclick="readOfflineBook(${book.id})">
+                <p class="title">${book.title}</p>
+                <p style="font-size: 11px; color: #888; margin: 5px 0;">Size: ${book.file_size || 'N/A'}</p>
+                
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="readOfflineBook(${book.id})" class="btn-read-small" 
+                            style="flex: 1; padding: 8px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fa-solid fa-book-open"></i> Read
+                    </button>
+                    <button onclick="deleteOfflineBook(${book.id})" 
+                            style="padding: 8px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error("Error loading library:", error);
+    }
+}
+
+// ၃။ Offline ဖတ်ရန် (Blob URL ဖန်တီးပြီး ဖွင့်ခြင်း)
+async function readOfflineBook(id) {
+    const book = await db.downloaded_books.get(id);
+    if (book && book.fileBlob) {
+        const fileURL = URL.createObjectURL(book.fileBlob);
+        // Browser Reader ဖြင့် အသစ်ဖွင့်ပေးမည်
+        window.open(fileURL, '_blank');
+    } else {
+        alert("ဖိုင်ရှာမတွေ့ပါ။ တစ်ကြိမ်ပြန်လည် ဒေါင်းလုဒ်ဆွဲပေးပါ။");
+    }
+}
+
+// ၄။ Offline စာရင်းမှ ဖျက်ထုတ်ရန်
+async function deleteOfflineBook(id) {
+    if(confirm("ဤစာအုပ်ကို ဒေါင်းလုဒ်စာရင်းမှ ဖျက်ရန် သေချာပါသလား?")) {
+        await db.downloaded_books.delete(id);
+        renderLibrary(); // စာရင်းကိုချက်ချင်း Update လုပ်မယ်
+    }
+}
+
+// ၅။ စာမျက်နှာဖွင့်လိုက်တာနဲ့ စတင်ခေါ်ယူရန်
+document.addEventListener('DOMContentLoaded', renderLibrary);
     </script>
 </body>
 </html>

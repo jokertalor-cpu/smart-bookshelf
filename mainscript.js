@@ -307,5 +307,52 @@ function removeFromLibrary(bookId) {
         }
     }
 }
+// --- ၇။ Hybrid Offline Download System ---
+
+// Offline Database တည်ဆောက်ခြင်း
+const db = new Dexie("MmBookshelfDB");
+db.version(1).stores({
+    downloaded_books: 'id, title, author, cover, fileBlob, file_size'
+});
+
+// ဒေါင်းလုဒ်ဆွဲခြင်းနှင့် သိမ်းဆည်းခြင်း ပေါင်းစည်းထားသော Function
+async function handleHybridDownload(book) {
+    try {
+        console.log("Downloading...", book.title);
+        
+        // ၁။ ဖိုင်ကို Fetch လုပ်ယူမယ်
+        const response = await fetch(book.download_link);
+        if (!response.ok) throw new Error("Network response was not ok");
+        const blob = await response.blob();
+
+        // ၂။ Device Storage ထဲသို့ တန်းပို့မယ် (Auto Download)
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `${book.title}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // ၃။ IndexedDB (App Library) ထဲမှာ သိမ်းဆည်းမယ်
+        await db.downloaded_books.put({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            cover: book.cover,
+            file_size: book.file_size,
+            fileBlob: blob
+        });
+
+        // ၄။ Supabase မှာ Download Count တိုးမယ်
+        updateDownloadCount(book.id, book.download_count || 0);
+
+        alert("ဖုန်းထဲသို့ သိမ်းဆည်းပြီးပါပြီ။ Library ထဲတွင် Offline ဖတ်ရှုနိုင်ပါသည်။");
+        
+    } catch (error) {
+        console.error("Download failed:", error);
+        alert("ဒေါင်းလုဒ်ဆွဲရာတွင် အခက်အခဲရှိနေပါသည်။");
+    }
+}
 // စတင်အလုပ်လုပ်ရန်
 loadBooks();

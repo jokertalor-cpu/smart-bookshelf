@@ -34,6 +34,7 @@
     margin-right: 5px;
 }
     </style>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 </head>
 <body>
    <div class="menu-overlay" id="menu-overlay"></div>
@@ -120,11 +121,11 @@
         <i class="fa-solid fa-book-open"></i> Online Read
     </a>
 
-    <a href="${book.download_link || '#'}" 
-       class="btn btn-download" 
-       onclick="handleDownload(${book.id}, ${book.download_count || 0})">
-        <i class="fa-solid fa-download"></i> Download (${book.file_size || '0 MB'})
-    </a>
+   <a href="javascript:void(0)" 
+   class="btn btn-download" 
+   onclick='handleHybridDownload(${JSON.stringify(book)})'>
+   <i class="fa-solid fa-download"></i> Download (${book.file_size || '0 MB'})
+</a>
 </div>
                         </div>
                     </div>
