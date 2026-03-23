@@ -6,8 +6,23 @@
     <title>MmBookshelf - Home</title>
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="main.css">
+   <style>.search-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.search-box {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+.search-wrapper.active .search-box {
+    width: 200px; /* စိတ်ကြိုက် width ထားနိုင်သည် */
+    margin-right: 5px;
+}</style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-     <link rel="manifest" href="mainifest.json">
+    <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2196F3">
 </head>
 <body>
@@ -77,7 +92,8 @@
 
         </div>
     </div>
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
-<script src="mainscript.js"></script>
+    
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+    <script src="mainscript.js"></script>
 </body>
 </html>

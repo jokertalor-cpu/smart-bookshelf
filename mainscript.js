@@ -1,8 +1,7 @@
-// mainscript.js ရဲ့ အပေါ်ဆုံးမှာ ထည့်ရန်
+// ၁။ Supabase ချိတ်ဆက်ခြင်း
 const supabaseUrl = 'https://cmguamftohgcgwdggwde.supabase.co'; // သင့် Project URL
 const supabaseKey = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9'; // သင့် Publishable Key
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
 const menuToggle = document.querySelector('#mobile-menu'); 
 const navMenu = document.querySelector('#nav-menu'); 
 const overlay = document.querySelector('#menu-overlay'); 
@@ -15,7 +14,7 @@ const viewAllBtn = document.getElementById('view-all-btn');
 
 let allBooks = [];
 
-// ၂။ Mobile Menu Logic
+// ၁။ Mobile Menu ဖွင့်/ပိတ် Logic
 if (menuToggle) {
     menuToggle.addEventListener('click', () => {
         navMenu.classList.toggle('active');
@@ -40,6 +39,7 @@ async function loadBooks() {
         if (error) throw error;
         
         allBooks = data; // Supabase ကရတဲ့ data array ကို allBooks ထဲထည့်
+        checkURLParameters();
 
         // UI ပြသခြင်း logic များ
         if (document.getElementById('top-ranking-container')) {
@@ -67,7 +67,7 @@ async function loadBooks() {
         if (container) container.innerHTML = "<p>Data ချိတ်ဆက်မှု အမှားရှိနေပါသည်။</p>";
     }
 }
-// ၄။ Top Ranking Logic
+// ၃။ Top 10 Ranking ပြသခြင်း
 function displayTopRanking(books) {
     const rankingContainer = document.getElementById('top-ranking-container');
     if (!rankingContainer) return;
@@ -89,7 +89,7 @@ function displayTopRanking(books) {
     `).join('');
 }
 
-// ၅။ Latest 10 Logic
+// ၄။ Latest 10 ပြသခြင်း
 function displayLatest10(books) {
     const latestContainer = document.getElementById('latest-10-container');
     if (!latestContainer) return;
@@ -99,42 +99,54 @@ function displayLatest10(books) {
 
     latestContainer.innerHTML = latest10.map(book => `
         <div class="book-card" onclick="window.location.href='detail.html?id=${book.id}'" style="flex: 0 0 140px; cursor: pointer;">
-            <div style="position: absolute; top: 0; right: 0; background: #2ecc71; color: white; padding: 2px 6px; font-size: 10px; border-radius: 0 5px 0 5px; z-index: 1;">
-                NEW
-            </div>
+            <div style="position: absolute; top: 0; right: 0; background: #2ecc71; color: white; padding: 2px 6px; font-size: 10px; border-radius: 0 5px 0 5px; z-index: 1;">NEW</div>
             <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
             <p class="title" style="font-size: 13px; font-weight: bold; margin: 8px 0 2px; height: 32px; overflow: hidden;">${book.title}</p>
-            <small style="color: #888;">${book.category?.toUpperCase() || ''}</small>
+            <small style="color: #888;">${book.category ? book.category.toUpperCase() : 'GENERAL'}</small>
         </div>
     `).join('');
 }
 
-// ၆။ Books Render Logic
+// ဤ function သည် Card နှိပ်ရင် Detail သို့သွားရန် link ပါပြီးသားဖြစ်သည်
 function renderBooks(books) {
     const container = document.getElementById('book-list-container');
-    if (!container) return; 
-
-    container.innerHTML = ""; 
+    if (!container) return;
 
     if (books.length === 0) {
-        container.innerHTML = "<p style='padding:20px; width:100%; text-align:center;'>ရလဒ်မရှိပါ။</p>";
+        container.innerHTML = "<p style='text-align:center; width:100%;'>စာအုပ်ရှာမတွေ့ပါ။</p>";
         return;
     }
 
-    books.forEach(book => {
-        const bookHTML = `
-            <div class="book-card" onclick="window.location.href='detail.html?id=${book.id}'" style="cursor:pointer;">
-                <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
-                <p class="title">${book.title}</p>
-                <small>${book.category?.toUpperCase() || ''}</small>
+    container.innerHTML = books.map(book => `
+        <div class="book-card" onclick="location.href='detail.html?id=${book.id}'" style="cursor:pointer;">
+            <div class="book-cover">
+                <img src="${book.cover}" alt="${book.title}" loading="lazy">
             </div>
-        `;
-        container.innerHTML += bookHTML;
+            <div class="book-info">
+                <p class="book-title">${book.title}</p>
+                <p class="book-author">${book.author || 'Unknown'}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// --- ၆။ Search & Navigation Logic (Updated) ---
+
+// Search Box ဆန့်ထွက်လာစေရန် (Trigger Logic)
+if (searchTrigger) {
+    searchTrigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        const wrapper = document.querySelector('.search-wrapper');
+        wrapper.classList.toggle('active');
+        
+        if (wrapper.classList.contains('active')) {
+            searchInput.focus();
+        }
     });
 }
 
-// ၇။ Search Suggestion
-function handleInput() {
+// စာရိုက်နေစဉ် Suggestion ပြရန်
+window.handleInput = function() {
     const keyword = searchInput.value.toLowerCase().trim();
     if (keyword === "") {
         suggestionsList.style.display = 'none';
@@ -147,42 +159,47 @@ function handleInput() {
     );
     
     if (matches.length > 0) {
-        const limitedMatches = matches.slice(0, 6); 
-        suggestionsList.innerHTML = limitedMatches.map(book => `
+        suggestionsList.innerHTML = matches.slice(0, 6).map(book => `
             <div class="suggestion-item" onclick="selectSuggestion('${book.title.replace(/'/g, "\\\\'")}')">
                 <div style="font-weight: bold; font-size: 13px;">${book.title}</div>
-                <div style="font-size: 11px; color: #888;">${book.author || 'Unknown Author'}</div>
+                <div style="font-size: 11px; color: #888;">${book.author || ''}</div>
             </div>
         `).join('');
         suggestionsList.style.display = 'block';
     } else {
-        suggestionsList.innerHTML = '<div class="suggestion-item">ရှာမတွေ့ပါ။</div>';
-        suggestionsList.style.display = 'block';
+        suggestionsList.style.display = 'none';
     }
 }
 
-function selectSuggestion(title) {
+// Suggestion ထဲမှ တစ်ခုကို ရွေးလိုက်လျှင်
+window.selectSuggestion = function(title) {
     searchInput.value = title;
     suggestionsList.style.display = 'none';
     executeSearch();
 }
 
-function handleKeyDown(event) {
+// Enter ခေါက်လိုက်လျှင်
+window.handleKeyDown = function(event) {
     if (event.key === "Enter") {
-        suggestionsList.style.display = 'none';
         executeSearch();
     }
 }
 
+// အဓိက ရှာဖွေသည့် Function
 function executeSearch() {
     const keyword = searchInput.value.toLowerCase().trim();
     if (keyword === "") return;
+    
+    // Suggestion box ကို ပိတ်မယ်
+    if (suggestionsList) suggestionsList.style.display = 'none';
 
-    if (window.location.pathname.includes('authors.html') || window.location.pathname.includes('detail.html')) {
-        window.location.href = `index.html?q=${encodeURIComponent(keyword)}`;
+    // လက်ရှိ page က index.html မဟုတ်ရင် index ကို search parameter နဲ့ လှမ်းပို့မယ်
+    if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
+        window.location.href = `index.html?search=${encodeURIComponent(keyword)}`;
         return;
     }
 
+    // index.html မှာပဲဆိုရင် ပုံမှန်အတိုင်း ရှာဖွေပြီး result ပြမယ်
     const filtered = allBooks.filter(book => 
         book.title.toLowerCase().includes(keyword) || 
         (book.author && book.author.toLowerCase().includes(keyword))
@@ -190,44 +207,62 @@ function executeSearch() {
     
     renderBooks(filtered);
     if (sectionTitle) sectionTitle.innerText = "SEARCH RESULT";
-    if (viewAllBtn) {
-        viewAllBtn.innerText = "BACK TO EDITOR CHOICE";
-        viewAllBtn.onclick = () => filterBooks('all');
-        viewAllBtn.style.backgroundColor = "#f39c12";
-    }
     scrollToBooks();
 }
 
-// ၈။ Category Filter
-function filterBooks(category) {
-    if (!document.getElementById('book-list-container')) return;
+// Category သို့မဟုတ် View All ကို နှိပ်သည့်အခါ
+window.filterBooks = function(category) {
+    if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
+        window.location.href = `index.html?category=${encodeURIComponent(category)}`;
+        return;
+    }
 
     if (category === 'all') {
-        const editorChoices = allBooks.filter(book => book.is_editor_choice === true);
-        renderBooks(editorChoices.length > 0 ? editorChoices : allBooks);
-        if (sectionTitle) sectionTitle.innerText = "EDITOR CHOICE";
-        if (viewAllBtn) {
-            viewAllBtn.innerText = "View All";
-            viewAllBtn.onclick = () => filterBooks('show-all-latest');
-            viewAllBtn.style.backgroundColor = "#007bff";
-        }
-    } else if (category === 'show-all-latest') {
-        renderBooks(allBooks);
+        // View All နှိပ်ရင် Editor Choice မဟုတ်ဘဲ စာအုပ်အားလုံးပြချင်ရင် allBooks ကိုသုံးပါ
+        renderBooks(allBooks); 
         if (sectionTitle) sectionTitle.innerText = "ALL BOOKS";
-        if (viewAllBtn) {
-            viewAllBtn.innerText = "BACK TO EDITOR CHOICE";
-            viewAllBtn.onclick = () => filterBooks('all');
-            viewAllBtn.style.backgroundColor = "#f39c12";
-        }
     } else {
         const filtered = allBooks.filter(b => b.category && b.category.toLowerCase() === category.toLowerCase());
         renderBooks(filtered);
         if (sectionTitle) sectionTitle.innerText = category.toUpperCase() + " BOOKS";
-        if (viewAllBtn) {
-            viewAllBtn.innerText = "BACK TO EDITOR CHOICE";
-            viewAllBtn.onclick = () => filterBooks('all');
-            viewAllBtn.style.backgroundColor = "#f39c12";
-        }
+    }
+    scrollToBooks();
+}
+
+// URL Parameter များကို စစ်ဆေးသည့် Function
+async function checkURLParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchKey = urlParams.get('search');
+    const catKey = urlParams.get('category');
+
+    if (searchKey || catKey) {
+        const waitForData = setInterval(() => {
+            if (typeof allBooks !== 'undefined' && allBooks.length > 0) {
+                if (searchKey) {
+                    searchInput.value = searchKey;
+                    const filtered = allBooks.filter(book => 
+                        book.title.toLowerCase().includes(searchKey.toLowerCase())
+                    );
+                    renderBooks(filtered);
+                    if (sectionTitle) sectionTitle.innerText = "SEARCH RESULT";
+                } else if (catKey) {
+                    filterBooks(catKey);
+                }
+                clearInterval(waitForData);
+            }
+        }, 300);
+    }
+}
+// ၇။ Category Filter
+window.filterBooks = function(category) {
+    if (category === 'all') {
+        const editorChoices = allBooks.filter(book => book.is_editor_choice === true);
+        renderBooks(editorChoices.length > 0 ? editorChoices : allBooks);
+        if (sectionTitle) sectionTitle.innerText = "EDITOR CHOICE";
+    } else {
+        const filtered = allBooks.filter(b => b.category && b.category.toLowerCase() === category.toLowerCase());
+        renderBooks(filtered);
+        if (sectionTitle) sectionTitle.innerText = category.toUpperCase() + " BOOKS";
     }
     scrollToBooks();
 }
@@ -237,5 +272,40 @@ function scrollToBooks() {
     if(section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// စတင်ခေါ်ယူခြင်း
+// Download ဆွဲချိန်မှာ အကုန်လုံးကို တစ်ခါတည်းလုပ်ပေးမယ့် function
+async function handleDownload(bookId, currentCount) {
+    // ၁။ Library ထဲသို့ ထည့်ခြင်း
+    let library = JSON.parse(localStorage.getItem('myLibrary')) || [];
+    if (!library.includes(bookId)) {
+        library.push(bookId);
+        localStorage.setItem('myLibrary', JSON.stringify(library));
+        console.log("Added to Library");
+    }
+
+    // ၂။ Database မှာ Count တိုးခြင်း
+    try {
+        await supabase
+            .from('books')
+            .update({ download_count: (currentCount || 0) + 1 })
+            .eq('id', bookId);
+        console.log("Count Updated");
+    } catch (err) {
+        console.error("Update failed:", err);
+    }
+    
+    // မှတ်ချက် - HTML ထဲက <a> tag ရဲ့ href ကြောင့် download က အလိုအလျောက် ကျလာပါလိမ့်မယ်။
+}
+function removeFromLibrary(bookId) {
+    if (confirm("ဤစာအုပ်ကို Library ထဲမှ ဖျက်ထုတ်ရန် သေချာပါသလား?")) {
+        let library = JSON.parse(localStorage.getItem('myLibrary')) || [];
+        library = library.filter(id => id !== bookId);
+        localStorage.setItem('myLibrary', JSON.stringify(library));
+        
+        // library.html မှာ ရှိနေရင် list ကို ချက်ချင်း refresh လုပ်မယ်
+        if (typeof renderLibrary === 'function') {
+            renderLibrary();
+        }
+    }
+}
+// စတင်အလုပ်လုပ်ရန်
 loadBooks();
