@@ -17,6 +17,21 @@
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+          .search-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.search-box {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+.search-wrapper.active .search-box {
+    width: 200px; /* စိတ်ကြိုက် width ထားနိုင်သည် */
+    margin-right: 5px;
+}
         .authors-page-container { padding: 80px 15px 20px; max-width: 1000px; margin: 0 auto; }
         
         /* Search Section */
