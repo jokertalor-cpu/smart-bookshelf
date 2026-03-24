@@ -49,43 +49,7 @@
         .lib-actions button { flex: 1; padding: 10px; border: none; cursor: pointer; background: white; }
         .btn-read-lib { color: #2196F3; border-right: 1px solid #eee !important; }
         .btn-delete-lib { color: #ff4757; }
-        /* Mobile Menu Styles */
-@media (max-width: 768px) {
-    .nav-menu {
-        position: fixed;
-        left: -100%;
-        top: 70px;
-        flex-direction: column;
-        background: #fff;
-        width: 100%;
-        text-align: center;
-        transition: 0.3s;
-        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
-        z-index: 1001;
-    }
-    .nav-menu.active {
-        left: 0;
-    }
-    .menu-toggle {
-        display: block;
-        cursor: pointer;
-    }
-}
-
-/* Overlay for Mobile Menu */
-.menu-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: none;
-    z-index: 1000;
-}
-.menu-overlay.active {
-    display: block;
-}
+       
     </style>
 </head>
 <body>
