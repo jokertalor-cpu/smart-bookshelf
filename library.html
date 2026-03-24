@@ -3,27 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Library - MmBookshelf</title>
+    <title>My Library - smart-bookshelf</title>
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <style>
         .library-container { padding: 80px 15px; max-width: 1000px; margin: 0 auto; }
-        .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+        
+        /* Search Bar Styling */
+        .lib-search-wrapper {
+            margin-bottom: 25px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .lib-search-input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .lib-search-input:focus { border-color: #2196F3; box-shadow: 0 0 8px rgba(33, 150, 243, 0.2); }
+        .lib-search-icon { position: absolute; left: 15px; color: #888; }
+
+        .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 15px; }
         .lib-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
         .lib-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .lib-info { padding: 10px; flex-grow: 1; text-align: center; }
-        .lib-title { font-size: 13px; font-weight: bold; height: 32px; overflow: hidden; margin-bottom: 5px; }
+        .lib-info { padding: 8px; flex-grow: 1; text-align: center; }
+        .lib-title { font-size: 13px; font-weight: bold; height: 32px; overflow: hidden; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        
         .lib-actions { display: flex; border-top: 1px solid #eee; }
-        .lib-actions button { flex: 1; padding: 10px; border: none; cursor: pointer; transition: 0.3s; background: white; }
+        .lib-actions button { flex: 1; padding: 10px; border: none; cursor: pointer; background: white; transition: 0.2s; }
         .btn-read-lib { color: #2196F3; border-right: 1px solid #eee !important; }
         .btn-delete-lib { color: #ff4757; }
         .lib-actions button:hover { background: #f8f9fa; }
     </style>
 </head>
 <body>
-     <div class="menu-overlay" id="menu-overlay"></div>
+ <div class="menu-overlay" id="menu-overlay"></div>
     
     <nav class="navbar">
         <div class="nav-container">
@@ -57,85 +78,89 @@
 
 
     <div class="library-container">
-        <h2><i class="fa-solid fa-bookmark"></i> My Offline Library</h2>
-        <hr><br>
+        <div class="section-header" style="margin-bottom: 20px;">
+            <h2 style="margin: 0;"><i class="fa-solid fa-bookmark" style="color: #2196F3;"></i> My Library</h2>
+        </div>
+
+        <div class="lib-search-wrapper">
+            <i class="fa-solid fa-magnifying-glass lib-search-icon"></i>
+            <input type="text" id="lib-search-input" class="lib-search-input" placeholder="Library ထဲရှိ စာအုပ်အမည်ဖြင့် ရှာရန်..." oninput="filterLibrary()">
+        </div>
+
         <div id="library-list" class="lib-grid">
-            <p style="text-align: center; grid-column: 1/-1;">ဒေတာများကို စစ်ဆေးနေသည်...</p>
+            <p style="text-align: center; grid-column: 1/-1;">Loading library...</p>
         </div>
     </div>
 
     <script>
-        // ၁။ Database အမည်ကို MmBookshelfDB ဟု တိတိကျကျ သတ်မှတ်ပါ
         const db = new Dexie("MmBookshelfDB");
         db.version(1).stores({
-            downloaded_books: 'id, title, author, cover, fileBlob, file_size'
+            downloaded_books: 'id, title, author, cover, fileBlob, lastPage'
         });
 
-        async function renderLibrary() {
-            const container = document.getElementById('library-list');
+        let allDownloadedBooks = [];
+
+        async function initLibrary() {
             try {
-                // Database ထဲရှိ စာအုပ်အားလုံးကို ယူသည်
-                const books = await db.downloaded_books.toArray();
-
-                if (books.length === 0) {
-                    container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p>";
-                    return;
-                }
-
-                container.innerHTML = books.map(book => `
-                    <div class="lib-card">
-                        <img src="${book.cover}" onerror="this.src='https://via.placeholder.com/150x200'">
-                        <div class="lib-info">
-                            <div class="lib-title">${book.title}</div>
-                            <small style="color: #888;">${book.file_size || '0 MB'}</small>
-                        </div>
-                        <div class="lib-actions">
-                            <button class="btn-read-lib" onclick="readBook('${book.id}')">
-                                <i class="fa-solid fa-book-open"></i> Read
-                            </button>
-                            <button class="btn-delete-lib" onclick="deleteBook('${book.id}')">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
+                // Database ထဲမှ စာအုပ်အားလုံးကို တစ်ခါတည်း ယူထားပါမည်
+                allDownloadedBooks = await db.downloaded_books.toArray();
+                displayLibrary(allDownloadedBooks);
             } catch (err) {
                 console.error("Library Error:", err);
-                container.innerHTML = "<p>ဒေတာဖတ်ရာတွင် အမှားရှိနေပါသည်။</p>";
+                document.getElementById('library-list').innerHTML = "<p>ဒေတာဖတ်ရာတွင် အမှားရှိနေပါသည်။</p>";
             }
         }
 
-     // ပြင်ဆင်ထားသော Read Function
-async function readBook(id) {
-    try {
-        // Database ထဲမှာ စာအုပ် တကယ်ရှိမရှိ အရင်စစ်ဆေးပါ
-        const book = await db.downloaded_books.get(id) || await db.downloaded_books.get(Number(id));
-        
-        if (book) {
-            // အသစ်ဆောက်ထားသော reader.html သို့ id နှင့် mode ကို parameter အနေနဲ့ ပို့လိုက်ပါမည်
+        // စာအုပ်များကို ပြသပေးသော Function
+        function displayLibrary(books) {
+            const container = document.getElementById('library-list');
+            if (books.length === 0) {
+                container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; margin-top: 50px; color: #888;'>စာအုပ်ရှာမတွေ့ပါ။</p>";
+                return;
+            }
+
+            container.innerHTML = books.map(book => `
+                <div class="lib-card">
+                    <img src="${book.cover}" onerror="this.src='https://via.placeholder.com/150x200'">
+                    <div class="lib-info">
+                        <div class="lib-title">${book.title}</div>
+                        <small style="color: #888;">${book.author || 'Unknown'}</small>
+                    </div>
+                    <div class="lib-actions">
+                        <button class="btn-read-lib" onclick="readBook('${book.id}')">
+                            <i class="fa-solid fa-book-open"></i> Read
+                        </button>
+                        <button class="btn-delete-lib" onclick="deleteBook('${book.id}')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search ရိုက်လိုက်လျှင် စစ်ထုတ်ပေးမည့် Function
+        function filterLibrary() {
+            const query = document.getElementById('lib-search-input').value.toLowerCase().trim();
+            const filtered = allDownloadedBooks.filter(book => 
+                book.title.toLowerCase().includes(query) || 
+                (book.author && book.author.toLowerCase().includes(query))
+            );
+            displayLibrary(filtered);
+        }
+
+        function readBook(id) {
             window.location.href = `reader.html?id=${id}&mode=offline`;
-        } else {
-            alert("ဖိုင်ရှာမတွေ့ပါ။ ဒေါင်းလုဒ် ပြန်ဆွဲကြည့်ပါ။");
         }
-    } catch (err) {
-        console.error("Read Error:", err);
-    }
-}
 
-        // ၃။ Delete Function
         async function deleteBook(id) {
-            if (confirm("ဤစာအုပ်ကို Library ထဲမှ ဖျက်ထုတ်ရန် သေချာပါသလား?")) {
-                try {
-                    await db.downloaded_books.delete(id); // string id အတွက်
-                    await db.downloaded_books.delete(Number(id)); // number id အတွက်
-                    renderLibrary(); // list ကို refresh လုပ်သည်
-                } catch (err) {
-                    alert("ဖျက်၍မရပါ။ " + err.message);
-                }
+            if (confirm("ဤစာအုပ်ကို Library ထဲမှ အပြီးဖျက်လိုပါသလား?")) {
+                await db.downloaded_books.delete(id);
+                await db.downloaded_books.delete(Number(id));
+                initLibrary(); // စာရင်းပြန် update လုပ်မယ်
             }
         }
 
-        document.addEventListener('DOMContentLoaded', renderLibrary);
+        document.addEventListener('DOMContentLoaded', initLibrary);
     </script>
 </body>
 </html>
