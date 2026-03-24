@@ -354,5 +354,14 @@ async function handleHybridDownload(book) {
         alert("ဒေါင်းလုဒ်ဆွဲရာတွင် အခက်အခဲရှိနေပါသည်။");
     }
 }
+async function updateDownloadCount(bookId) {
+    try {
+        const { data, error } = await supabase.rpc('increment_download', { row_id: bookId });
+        if (error) throw error;
+        console.log("Download count updated!");
+    } catch (err) {
+        console.error("Error updating count:", err);
+    }
+}
 // စတင်အလုပ်လုပ်ရန်
 loadBooks();
