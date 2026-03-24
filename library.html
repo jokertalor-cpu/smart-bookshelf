@@ -23,15 +23,38 @@
     </style>
 </head>
 <body>
+     <div class="menu-overlay" id="menu-overlay"></div>
+    
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo"><img src="photo_2026-03-20_09-18-40.jpg"></div>
-            <ul class="nav-menu">
-                <li><a href="index.html">HOME</a></li>
-                <li><a href="library.html" class="active">LIBRARY</a></li>
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            <div class="logo">
+                <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
+            </div>
+
+            <div class="search-wrapper">
+    <div class="search-box" id="search-box">
+        <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." oninput="handleInput()" onkeydown="handleKeyDown(event)" autocomplete="off">
+        <div id="search-suggestions" class="suggestions-list"></div>
+    </div>
+    <button id="search-trigger" class="search-btn">
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+</div>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
+                <li><a href="latest.html"><i class="fa-solid fa-book"></i> LATEST</a></li>
+                <li><a href="authors.html"><i class="fa-solid fa-pen-nib"?></i>AUTHORS</a></li>
+                 <li><a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
             </ul>
         </div>
     </nav>
+
 
     <div class="library-container">
         <h2><i class="fa-solid fa-bookmark"></i> My Offline Library</h2>
