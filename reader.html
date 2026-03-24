@@ -12,7 +12,51 @@
         body.dark-mode { --bg-color: #1a1a1a; --topbar-bg: #000000; }
         
         body, html { margin: 0; padding: 0; height: 100%; background: var(--bg-color); font-family: sans-serif; overflow: hidden; transition: 0.3s; }
-        
+        <style>
+    .reader-header {
+        height: 55px;
+        background: var(--topbar-bg);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        box-sizing: border-box;
+    }
+
+    .controls-left, .controls-right {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-icon {
+        padding: 10px 8px; /* Mobile မှာ နှိပ်ရလွယ်အောင် space ချဲ့ထားသည် */
+        font-size: 1.1rem;
+        cursor: pointer;
+        color: var(--text-color);
+    }
+
+    /* စာအုပ်ခေါင်းစဉ် ရှည်နေရင် ဖြတ်ချရန် */
+    .truncate {
+        max-width: 80px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    /* Mobile Screen အတွက် သီးသန့် ညှိချက် */
+    @media (max-width: 480px) {
+        .btn-icon { font-size: 1rem; padding: 8px 5px; }
+        .page-info { font-size: 11px; padding: 3px 6px; }
+        .truncate { max-width: 60px; }
+    }
+</style>
         .reader-header {
             height: 50px; background: var(--topbar-bg); color: var(--text-color);
             display: flex; align-items: center; justify-content: space-between;
@@ -41,26 +85,22 @@
 </head>
 <body>
 
-    <div class="reader-header">
-        <div class="controls">
-            <i class="fa-solid fa-arrow-left btn-icon" onclick="history.back()"></i>
-            <span id="book-title" style="font-size: 13px; font-weight: bold; max-width: 120px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Reader</span>
-            <span id="awake-status" title="Screen Stay Awake Active"><i class="fa-solid fa-sun"></i></span>
-        </div>
-        
-        <div class="controls">
-            <i class="fa-solid fa-chevron-left btn-icon" id="prev-page"></i>
-            <span class="page-info"><span id="page-num">0</span> / <span id="page-count">0</span></span>
-            <i class="fa-solid fa-chevron-right btn-icon" id="next-page"></i>
-            <i class="fa-solid fa-magnifying-glass-minus btn-icon" id="zoom-out"></i>
-            <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in"></i>
-            <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle"></i>
-        </div>
+   <div class="reader-header">
+    <div class="controls-left">
+        <i class="fa-solid fa-arrow-left btn-icon" onclick="history.back()"></i>
+        <span id="book-title" class="truncate">Reader</span>
+        <span id="awake-status"><i class="fa-solid fa-sun"></i></span>
     </div>
-
-    <div id="loading"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
-    <div id="viewer-container"><canvas id="pdf-canvas"></canvas></div>
-
+    
+    <div class="controls-right">
+        <i class="fa-solid fa-chevron-left btn-icon" id="prev-page"></i>
+        <span class="page-info"><span id="page-num">0</span>/<span id="page-count">0</span></span>
+        <i class="fa-solid fa-chevron-right btn-icon" id="next-page"></i>
+        
+        <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle"></i>
+        <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in"></i>
+    </div>
+</div>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
