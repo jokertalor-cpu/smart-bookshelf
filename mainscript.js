@@ -210,6 +210,24 @@ function executeSearch() {
     scrollToBooks();
 }
 
+// Category သို့မဟုတ် View All ကို နှိပ်သည့်အခါ
+window.filterBooks = function(category) {
+    if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
+        window.location.href = `index.html?category=${encodeURIComponent(category)}`;
+        return;
+    }
+
+    if (category === 'all') {
+        // View All နှိပ်ရင် Editor Choice မဟုတ်ဘဲ စာအုပ်အားလုံးပြချင်ရင် allBooks ကိုသုံးပါ
+        renderBooks(allBooks); 
+        if (sectionTitle) sectionTitle.innerText = "ALL BOOKS";
+    } else {
+        const filtered = allBooks.filter(b => b.category && b.category.toLowerCase() === category.toLowerCase());
+        renderBooks(filtered);
+        if (sectionTitle) sectionTitle.innerText = category.toUpperCase() + " BOOKS";
+    }
+    scrollToBooks();
+}
 
 // URL Parameter များကို စစ်ဆေးသည့် Function
 async function checkURLParameters() {
@@ -234,6 +252,24 @@ async function checkURLParameters() {
             }
         }, 300);
     }
+}
+// ၇။ Category Filter
+window.filterBooks = function(category) {
+    if (category === 'all') {
+        const editorChoices = allBooks.filter(book => book.is_editor_choice === true);
+        renderBooks(editorChoices.length > 0 ? editorChoices : allBooks);
+        if (sectionTitle) sectionTitle.innerText = "EDITOR CHOICE";
+    } else {
+        const filtered = allBooks.filter(b => b.category && b.category.toLowerCase() === category.toLowerCase());
+        renderBooks(filtered);
+        if (sectionTitle) sectionTitle.innerText = category.toUpperCase() + " BOOKS";
+    }
+    scrollToBooks();
+}
+
+function scrollToBooks() {
+    const section = document.getElementById('book-display-section');
+    if(section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Download ဆွဲချိန်မှာ အကုန်လုံးကို တစ်ခါတည်းလုပ်ပေးမယ့် function
