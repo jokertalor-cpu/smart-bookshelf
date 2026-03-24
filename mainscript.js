@@ -210,44 +210,6 @@ function executeSearch() {
     scrollToBooks();
 }
 
-// Category သို့မဟုတ် View All ကို နှိပ်သည့်အခါ (Updated Version)
-window.filterBooks = function(category) {
-    const viewAllBtn = document.getElementById('view-all-btn');
-    const sectionTitle = document.getElementById('section-title');
-
-    // index.html မဟုတ်တဲ့ page ကနေ category နှိပ်ရင် index ကို parameter နဲ့ လှမ်းပို့မယ်
-    if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
-        window.location.href = `index.html?category=${encodeURIComponent(category)}`;
-        return;
-    }
-
-    if (category === 'all') {
-        // Back to Editor Choice ကို နှိပ်လိုက်ရင်
-        if (viewAllBtn && viewAllBtn.innerText === "Back to Editor Choice") {
-            const editorChoices = allBooks.filter(book => book.is_editor_choice === true);
-            // Editor Choice မရှိရင် ပထမဆုံး စာအုပ် ၈ အုပ်လောက်ပဲ ပြမယ် (ဥပမာ)
-            renderBooks(editorChoices.length > 0 ? editorChoices : allBooks.slice(0, 8));
-            
-            if (sectionTitle) sectionTitle.innerText = "EDITOR CHOICE";
-            if (viewAllBtn) viewAllBtn.innerText = "View All";
-        } else {
-            // View All ကို နှိပ်လိုက်ရင် စာအုပ်အားလုံးပြမယ်
-            renderBooks(allBooks); 
-            if (sectionTitle) sectionTitle.innerText = "ALL BOOKS";
-            if (viewAllBtn) viewAllBtn.innerText = "Back to Editor Choice";
-        }
-    } else {
-        // Category တစ်ခုခုကို နှိပ်လိုက်ရင်
-        const filtered = allBooks.filter(b => b.category && b.category.toLowerCase() === category.toLowerCase());
-        renderBooks(filtered);
-        
-        if (sectionTitle) sectionTitle.innerText = category.toUpperCase() + " BOOKS";
-        // Category ပြနေချိန်မှာ Button ကို Back to Editor Choice လို့ ပြောင်းထားမယ်
-        if (viewAllBtn) viewAllBtn.innerText = "Back to Editor Choice";
-    }
-    
-    scrollToBooks();
-}
 
 // URL Parameter များကို စစ်ဆေးသည့် Function
 async function checkURLParameters() {
