@@ -91,17 +91,33 @@
 <body>
  
 <div class="menu-overlay" id="menu-overlay"></div>
+
 <nav class="navbar">
     <div class="nav-container">
-        <button class="menu-toggle" id="mobile-menu" style="background:none; border:none; color:white; font-size:1.5rem; display:none;">
-            <i class="fa-solid fa-bars"></i>
+        <button class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
         </button>
-        
-        <div class="logo"><img src="photo_2026-03-20_09-18-40.jpg"></div>
-        
+
+        <div class="logo">
+            <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
+        </div>
+
+        <div class="search-wrapper">
+            <div class="search-box" id="search-box">
+                <input type="text" id="lib-search-input" placeholder="Library ထဲရှိစာအုပ်ရှာရန်..." oninput="applyFilters()" autocomplete="off">
+            </div>
+            <button id="search-trigger" class="search-btn">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
         <ul class="nav-menu" id="nav-menu">
-            <li><a href="index.html">HOME</a></li>
-            <li><a href="library.html" class="active">LIBRARY</a></li>
+            <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
+            <li><a href="latest.html"><i class="fa-solid fa-book"></i> LATEST</a></li>
+            <li><a href="authors.html"><i class="fa-solid fa-pen-nib"></i> AUTHORS</a></li>
+            <li><a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
         </ul>
     </div>
 </nav>
@@ -217,7 +233,8 @@
         document.addEventListener('DOMContentLoaded', initLibrary);
     </script>
     <script>
-    const menuToggle = document.querySelector('#mobile-menu');
+    // --- Mobile Menu Logic ---
+const menuToggle = document.querySelector('#mobile-menu');
 const navMenu = document.querySelector('#nav-menu');
 const overlay = document.querySelector('#menu-overlay');
 
@@ -225,14 +242,7 @@ if (menuToggle) {
     menuToggle.addEventListener('click', () => {
         navMenu.classList.toggle('active');
         overlay.classList.toggle('active');
-        
-        // Icon ကို bars ကနေ x mark ပြောင်းချင်ရင်
-        const icon = menuToggle.querySelector('i');
-        if (navMenu.classList.contains('active')) {
-            icon.classList.replace('fa-bars', 'fa-xmark');
-        } else {
-            icon.classList.replace('fa-xmark', 'fa-bars');
-        }
+        menuToggle.classList.toggle('active'); // Hamburger ကို X ပြောင်းရန်
     });
 }
 
@@ -240,8 +250,22 @@ if (overlay) {
     overlay.addEventListener('click', () => {
         navMenu.classList.remove('active');
         overlay.classList.remove('active');
-        menuToggle.querySelector('i').classList.replace('fa-xmark', 'fa-bars');
+        menuToggle.classList.remove('active');
     });
-}</script>
+}
+
+// --- Search Box Expand Logic (index.html အတိုင်း) ---
+const searchTrigger = document.getElementById('search-trigger');
+if (searchTrigger) {
+    searchTrigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        const wrapper = document.querySelector('.search-wrapper');
+        wrapper.classList.toggle('active');
+        if (wrapper.classList.contains('active')) {
+            document.getElementById('lib-search-input').focus();
+        }
+    });
+}
+</script>
 </body>
 </html>
