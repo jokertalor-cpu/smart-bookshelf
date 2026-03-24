@@ -3,79 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced PDF Reader - smart-bookshelf</title>
+    <title>Pro Reader - MmBookshelf</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <style>
-        :root { --bg-color: #525659; --topbar-bg: #323639; --text-color: white; --canvas-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-        body.dark-mode { --bg-color: #1a1a1a; --topbar-bg: #000000; --canvas-shadow: 0 4px 15px rgba(255,255,255,0.1); }
+        :root { --bg-color: #525659; --topbar-bg: #323639; --text-color: white; }
+        body.dark-mode { --bg-color: #1a1a1a; --topbar-bg: #000000; }
         
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg-color); font-family: sans-serif; transition: background 0.3s; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg-color); font-family: sans-serif; overflow: hidden; transition: 0.3s; }
         
-        /* Top Navigation Bar */
         .reader-header {
             height: 50px; background: var(--topbar-bg); color: var(--text-color);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; position: fixed; top: 0; width: 100%; z-index: 100;
-            box-sizing: border-box;
+            padding: 0 15px; position: fixed; top: 0; width: 100%; z-index: 100; box-sizing: border-box;
         }
 
-        .controls { display: flex; align-items: center; gap: 10px; }
-        .btn-icon { cursor: pointer; font-size: 1.1rem; padding: 8px; border-radius: 5px; transition: 0.2s; color: var(--text-color); }
-        .btn-icon:hover { background-color: rgba(255,255,255,0.1); color: #2196F3; }
-        .btn-icon.disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+        .controls { display: flex; align-items: center; gap: 8px; }
+        .btn-icon { cursor: pointer; font-size: 1.1rem; padding: 8px; border-radius: 5px; color: var(--text-color); }
+        .btn-icon:hover { background: rgba(255,255,255,0.1); }
+        .disabled { opacity: 0.3; pointer-events: none; }
 
-        /* PDF Viewer Container */
         #viewer-container {
             margin-top: 50px; height: calc(100vh - 50px); overflow: auto;
-            display: flex; justify-content: center; align-items: flex-start; padding: 20px;
-            box-sizing: border-box; scroll-behavior: smooth;
+            display: flex; justify-content: center; align-items: flex-start; padding: 15px; box-sizing: border-box;
         }
 
-        /* Canvas (PDF Page) Styling */
-        #pdf-canvas {
-            box-shadow: var(--canvas-shadow);
-            transition: transform 0.2s ease, filter 0.3s;
-            max-width: 100%; transform-origin: top center; /* Important for Zoom */
-        }
-        
-        /* Dark Mode Filter for PDF Content */
-        body.dark-mode #pdf-canvas { filter: invert(0.9) hue-rotate(180deg); }
+        canvas { box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 100%; transform-origin: top center; }
+        body.dark-mode canvas { filter: invert(0.9) hue-rotate(180deg); }
 
-        .page-info { font-size: 14px; background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 20px; min-width: 60px; text-align: center; }
+        .page-info { font-size: 13px; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 15px; min-width: 50px; text-align: center; }
+        #loading { position: fixed; top: 55%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; }
         
-        /* Loading Screen */
-        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; z-index: 150; }
+        /* Stay Awake Status */
+        #awake-status { font-size: 10px; color: #2ecc71; margin-left: 5px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="reader-header">
         <div class="controls">
-            <i class="fa-solid fa-arrow-left btn-icon" onclick="history.back()" title="Back"></i>
-            <span id="book-title" style="font-size: 14px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold;">Loading...</span>
+            <i class="fa-solid fa-arrow-left btn-icon" onclick="history.back()"></i>
+            <span id="book-title" style="font-size: 13px; font-weight: bold; max-width: 120px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Reader</span>
+            <span id="awake-status" title="Screen Stay Awake Active"><i class="fa-solid fa-sun"></i></span>
         </div>
         
         <div class="controls">
-            <i class="fa-solid fa-chevron-left btn-icon" id="prev-page" title="Previous Page"></i>
+            <i class="fa-solid fa-chevron-left btn-icon" id="prev-page"></i>
             <span class="page-info"><span id="page-num">0</span> / <span id="page-count">0</span></span>
-            <i class="fa-solid fa-chevron-right btn-icon" id="next-page" title="Next Page"></i>
-            
-            <i class="fa-solid fa-magnifying-glass-minus btn-icon" id="zoom-out" title="Zoom Out"></i>
-            <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in" title="Zoom In"></i>
-            <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle" title="Toggle Dark Mode"></i>
+            <i class="fa-solid fa-chevron-right btn-icon" id="next-page"></i>
+            <i class="fa-solid fa-magnifying-glass-minus btn-icon" id="zoom-out"></i>
+            <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in"></i>
+            <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle"></i>
         </div>
     </div>
 
-    <div id="loading">
-        <i class="fa-solid fa-circle-notch fa-spin fa-3x"></i>
-        <p>စာမျက်နှာကို ဖော်ထုတ်နေသည်...</p>
-    </div>
-
-    <div id="viewer-container">
-        <canvas id="pdf-canvas"></canvas>
-    </div>
+    <div id="loading"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+    <div id="viewer-container"><canvas id="pdf-canvas"></canvas></div>
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
@@ -85,21 +69,30 @@
         const mode = urlParams.get('mode');
 
         const db = new Dexie("MmBookshelfDB");
-        db.version(1).stores({
-            downloaded_books: 'id, title, author, cover, fileBlob, file_size, lastPage' // file_size ကို detail ကနေထည့်ပေးရမယ်
+        db.version(1).stores({ downloaded_books: 'id, title, author, cover, fileBlob, lastPage' });
+
+        let pdfDoc = null, currentPage = 1, currentScale = 1.2;
+        const canvas = document.getElementById('pdf-canvas'), ctx = canvas.getContext('2d');
+
+        // --- ၁။ Stay Awake Function (Wake Lock API) ---
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    document.getElementById('awake-status').style.display = 'inline';
+                    console.log("Screen Wake Lock is active");
+                }
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+        // App ကိုပြန်ဖွင့်ရင်လည်း Stay Awake ပြန်ဖြစ်အောင်လုပ်မယ်
+        document.addEventListener('visibilitychange', () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') requestWakeLock();
         });
 
-        // Reader State
-        let pdfDoc = null;
-        let currentPage = 1;
-        let currentScale = localStorage.getItem('reader-zoom-scale') ? parseFloat(localStorage.getItem('reader-zoom-scale')) : 1.2; // Default scale 1.2
-        const canvas = document.getElementById('pdf-canvas');
-        const ctx = canvas.getContext('2d');
-        const container = document.getElementById('viewer-container');
-
-        // --- ⚙️ UI Interaction Logic ---
-
-        // ၁။ Dark Mode Logic
+        // --- ၂။ Dark Mode & Zoom ---
         const darkToggle = document.getElementById('dark-mode-toggle');
         darkToggle.onclick = () => {
             document.body.classList.toggle('dark-mode');
@@ -107,128 +100,60 @@
             localStorage.setItem('reader-dark-mode', isDark);
             darkToggle.className = isDark ? "fa-solid fa-sun btn-icon" : "fa-solid fa-moon btn-icon";
         };
-
         if(localStorage.getItem('reader-dark-mode') === 'true') {
             document.body.classList.add('dark-mode');
             darkToggle.className = "fa-solid fa-sun btn-icon";
         }
 
-        // ၂။ Zoom In/Out Logic
-        document.getElementById('zoom-in').onclick = () => {
-            currentScale += 0.2;
-            if(currentScale > 3.0) currentScale = 3.0; // Max zoom
-            localStorage.setItem('reader-zoom-scale', currentScale);
-            renderCurrentPage();
-        };
+        document.getElementById('zoom-in').onclick = () => { currentScale += 0.2; renderPage(); };
+        document.getElementById('zoom-out').onclick = () => { if(currentScale > 0.6) currentScale -= 0.2; renderPage(); };
 
-        document.getElementById('zoom-out').onclick = () => {
-            currentScale -= 0.2;
-            if(currentScale < 0.6) currentScale = 0.6; // Min zoom
-            localStorage.setItem('reader-zoom-scale', currentScale);
-            renderCurrentPage();
-        };
+        // --- ၃။ Page Navigation & Bookmark ---
+        document.getElementById('prev-page').onclick = () => { if(currentPage > 1) { currentPage--; renderPage(); } };
+        document.getElementById('next-page').onclick = () => { if(currentPage < pdfDoc.numPages) { currentPage++; renderPage(); } };
 
-        // ၃။ Page Navigation Logic
-        const prevBtn = document.getElementById('prev-page');
-        const nextBtn = document.getElementById('next-page');
-
-        prevBtn.onclick = () => {
-            if (currentPage <= 1) return;
-            currentPage--;
-            renderCurrentPage();
-            container.scrollTop = 0; // Scroll back to top
-        };
-
-        nextBtn.onclick = () => {
-            if (currentPage >= pdfDoc.numPages) return;
-            currentPage++;
-            renderCurrentPage();
-            container.scrollTop = 0; // Scroll back to top
-        };
-
-        // --- 📖 PDF Rendering Logic ---
-
-        // ၄။ PDF File ကို Load လုပ်ခြင်း
         async function loadPDF() {
             try {
-                document.getElementById('loading').style.display = 'block';
                 let pdfData;
-                let bookName = "Loading...";
-
                 if (mode === 'offline') {
-                    // Library (IndexedDB) ထဲက Blob ကိုဖတ်မယ်
+                    // ID ကို Number/String နှစ်မျိုးလုံးစစ်ပြီး စာအုပ်ရှာမယ်
                     const book = await db.downloaded_books.get(bookId) || await db.downloaded_books.get(Number(bookId));
-                    if (!book) throw new Error("Offline file not found. Please download again.");
+                    if (!book) throw new Error("File not found");
                     pdfData = await book.fileBlob.arrayBuffer();
-                    bookName = book.title;
-                    
-                    // Bookmark (Last Page) ကို စစ်ဆေးမယ်
-                    currentPage = book.lastPage || 1;
+                    document.getElementById('book-title').innerText = book.title;
+                    currentPage = book.lastPage ? Number(book.lastPage) : 1; // Bookmark ပြန်ယူခြင်း
                 } else {
-                    // Online ကနေ link ဖြင့်ဖတ်မယ်
-                    const url = decodeURIComponent(urlParams.get('url'));
-                    if(!url) throw new Error("No PDF URL provided.");
-                    pdfData = url;
-                    currentPage = 1; // Online မှာတော့ page 1 ကပဲစမယ်
+                    pdfData = decodeURIComponent(urlParams.get('url'));
+                    currentPage = 1;
                 }
 
-                document.getElementById('book-title').innerText = bookName;
-                document.getElementById('book-title').title = bookName; // Tooltip for full title
-
-                // PDF document ကို render လုပ်မယ်
                 pdfDoc = await pdfjsLib.getDocument(pdfData).promise;
                 document.getElementById('page-count').innerText = pdfDoc.numPages;
-
-                renderCurrentPage();
+                renderPage();
+                requestWakeLock(); // စာအုပ်ပွင့်တာနဲ့ Stay Awake စတင်မယ်
             } catch (err) {
-                console.error(err);
-                alert("Error opening PDF: " + err.message);
-                document.getElementById('loading').style.display = 'none';
+                alert("Error: " + err.message);
             }
         }
 
-        // ၅။ လက်ရှိစာမျက်နှာကို Render လုပ်ခြင်း
-        async function renderCurrentPage() {
-            if (!pdfDoc) return;
+        async function renderPage() {
             document.getElementById('loading').style.display = 'block';
+            const page = await pdfDoc.getPage(currentPage);
+            const viewport = page.getViewport({ scale: currentScale });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
 
-            try {
-                const page = await pdfDoc.getPage(currentPage);
-                const viewport = page.getViewport({ scale: currentScale });
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            document.getElementById('page-num').innerText = currentPage;
+            document.getElementById('loading').style.display = 'none';
 
-                // Canvas dimensions ကို viewport နဲ့ ညှိမယ်
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-                
-                // Canvas ပေါ်မှာ PDF page ကိုဆွဲမယ်
-                await page.render(renderContext).promise;
-                
-                // Info update logic
-                document.getElementById('page-num').innerText = currentPage;
-                document.getElementById('loading').style.display = 'none';
-
-                // Button states update
-                prevBtn.classList.toggle('disabled', currentPage <= 1);
-                nextBtn.classList.toggle('disabled', currentPage >= pdfDoc.numPages);
-
-                // Bookmark (Last Page Memory) logic - Offline သာ
-                if (mode === 'offline' && bookId) {
-                    db.downloaded_books.update(bookId || Number(bookId), { lastPage: currentPage });
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("Error rendering page: " + err.message);
-                document.getElementById('loading').style.display = 'none';
+            // Bookmark သိမ်းဆည်းခြင်း (ID နှစ်မျိုးလုံးအတွက် သေချာအောင်လုပ်ပေးထားသည်)
+            if (mode === 'offline' && bookId) {
+                db.downloaded_books.update(bookId, { lastPage: currentPage });
+                db.downloaded_books.update(Number(bookId), { lastPage: currentPage });
             }
         }
 
-        // စတင်အလုပ်လုပ်ရန်
         window.onload = loadPDF;
     </script>
 </body>
