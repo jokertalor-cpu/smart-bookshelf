@@ -8,100 +8,113 @@
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-    
     <style>
-        .library-container { padding: 80px 15px 20px; max-width: 1000px; margin: 0 auto; }
-        .library-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-            gap: 15px; 
-        }
-        .book-card { 
-            background: #fff; border-radius: 8px; overflow: hidden; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; padding: 10px;
-        }
-        .book-card img { width: 100%; border-radius: 5px; height: 180px; object-fit: cover; }
-        .book-card p { margin: 8px 0; font-weight: bold; font-size: 13px; height: 32px; overflow: hidden; }
-        .btn-group { display: flex; gap: 5px; margin-top: 10px; }
-        .btn-read { flex: 1; background: #2196F3; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
-        .btn-del { background: #ff4757; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
-        .no-book { grid-column: 1/-1; text-align: center; padding: 50px; color: #888; }
+        .library-container { padding: 80px 15px; max-width: 1000px; margin: 0 auto; }
+        .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+        .lib-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .lib-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .lib-info { padding: 10px; flex-grow: 1; text-align: center; }
+        .lib-title { font-size: 13px; font-weight: bold; height: 32px; overflow: hidden; margin-bottom: 5px; }
+        .lib-actions { display: flex; border-top: 1px solid #eee; }
+        .lib-actions button { flex: 1; padding: 10px; border: none; cursor: pointer; transition: 0.3s; background: white; }
+        .btn-read-lib { color: #2196F3; border-right: 1px solid #eee !important; }
+        .btn-delete-lib { color: #ff4757; }
+        .lib-actions button:hover { background: #f8f9fa; }
     </style>
 </head>
 <body>
-
     <nav class="navbar">
         <div class="nav-container">
-            <h2 style="color: white; margin: 0;">My Library</h2>
-            <a href="index.html" style="color: white; text-decoration: none;"><i class="fa-solid fa-house"></i> Home</a>
+            <div class="logo"><img src="photo_2026-03-20_09-18-40.jpg"></div>
+            <ul class="nav-menu">
+                <li><a href="index.html">HOME</a></li>
+                <li><a href="library.html" class="active">LIBRARY</a></li>
+            </ul>
         </div>
     </nav>
 
     <div class="library-container">
-        <div id="library-books-grid" class="library-grid">
-            <p class="no-book">Loading Library...</p>
+        <h2><i class="fa-solid fa-bookmark"></i> My Offline Library</h2>
+        <hr><br>
+        <div id="library-list" class="lib-grid">
+            <p style="text-align: center; grid-column: 1/-1;">ဒေတာများကို စစ်ဆေးနေသည်...</p>
         </div>
     </div>
 
     <script>
-        // ၁။ Database ကို detail.html က နာမည်အတိုင်း အတိအကျပေးပါ
+        // ၁။ Database အမည်ကို MmBookshelfDB ဟု တိတိကျကျ သတ်မှတ်ပါ
         const db = new Dexie("MmBookshelfDB");
         db.version(1).stores({
-            downloaded_books: 'id, title, author, cover, file_size, fileBlob'
+            downloaded_books: 'id, title, author, cover, fileBlob, file_size'
         });
 
-        // ၂။ စာအုပ်များ ထုတ်ပြခြင်း
-        async function loadLibrary() {
-            const grid = document.getElementById('library-books-grid');
+        async function renderLibrary() {
+            const container = document.getElementById('library-list');
             try {
-                // Database ထဲက အကုန်ယူမယ်
+                // Database ထဲရှိ စာအုပ်အားလုံးကို ယူသည်
                 const books = await db.downloaded_books.toArray();
 
                 if (books.length === 0) {
-                    grid.innerHTML = `<div class="no-book">
-                        <i class="fa-solid fa-folder-open" style="font-size: 40px; margin-bottom: 10px;"></i>
-                        <p>ဒေါင်းလုဒ်ဆွဲထားသော စာအုပ်မရှိသေးပါ။</p>
-                    </div>`;
+                    container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p>";
                     return;
                 }
 
-                grid.innerHTML = books.map(book => `
-                    <div class="book-card">
-                        <img src="${book.cover}" alt="${book.title}" onerror="this.src='https://via.placeholder.com/150'">
-                        <p>${book.title}</p>
-                        <div class="btn-group">
-                            <button onclick="readBook('${book.id}')" class="btn-read">Read</button>
-                            <button onclick="deleteBook('${book.id}')" class="btn-del"><i class="fa-solid fa-trash"></i></button>
+                container.innerHTML = books.map(book => `
+                    <div class="lib-card">
+                        <img src="${book.cover}" onerror="this.src='https://via.placeholder.com/150x200'">
+                        <div class="lib-info">
+                            <div class="lib-title">${book.title}</div>
+                            <small style="color: #888;">${book.file_size || '0 MB'}</small>
+                        </div>
+                        <div class="lib-actions">
+                            <button class="btn-read-lib" onclick="readBook('${book.id}')">
+                                <i class="fa-solid fa-book-open"></i> Read
+                            </button>
+                            <button class="btn-delete-lib" onclick="deleteBook('${book.id}')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </div>
                     </div>
                 `).join('');
-
             } catch (err) {
                 console.error("Library Error:", err);
-                grid.innerHTML = `<p style="color:red; text-align:center;">Error: Database ချိတ်ဆက်မှု မအောင်မြင်ပါ။</p>`;
+                container.innerHTML = "<p>ဒေတာဖတ်ရာတွင် အမှားရှိနေပါသည်။</p>";
             }
         }
 
-        // ၃။ Offline ဖတ်ခြင်း
+        // ၂။ Read Function (Blob မှ URL ပြောင်း၍ ဖွင့်ခြင်း)
         async function readBook(id) {
-            const book = await db.downloaded_books.get(id);
-            if (book && book.fileBlob) {
-                const blobUrl = URL.createObjectURL(book.fileBlob);
-                window.open(blobUrl, '_blank');
-            } else {
-                alert("ဖိုင်ရှာမတွေ့ပါ။");
+            try {
+                // ID ကို string နှင့် number နှစ်မျိုးလုံး စစ်ဆေးရှာဖွေပါ
+                const book = await db.downloaded_books.get(id) || await db.downloaded_books.get(Number(id));
+                
+                if (book && book.fileBlob) {
+                    const fileURL = URL.createObjectURL(book.fileBlob);
+                    window.open(fileURL, '_blank');
+                    // Memory မပြည့်စေရန် ခဏကြာလျှင် URL ကို ပြန်ဖျက်ပါ
+                    setTimeout(() => URL.revokeObjectURL(fileURL), 10000);
+                } else {
+                    alert("ဖိုင်ရှာမတွေ့ပါ။ ဒေါင်းလုဒ် ပြန်ဆွဲကြည့်ပါ။");
+                }
+            } catch (err) {
+                console.error("Read Error:", err);
             }
         }
 
-        // ၄။ ဖျက်ခြင်း
+        // ၃။ Delete Function
         async function deleteBook(id) {
-            if(confirm("ဖျက်မှာ သေချာပါသလား?")) {
-                await db.downloaded_books.delete(id);
-                loadLibrary();
+            if (confirm("ဤစာအုပ်ကို Library ထဲမှ ဖျက်ထုတ်ရန် သေချာပါသလား?")) {
+                try {
+                    await db.downloaded_books.delete(id); // string id အတွက်
+                    await db.downloaded_books.delete(Number(id)); // number id အတွက်
+                    renderLibrary(); // list ကို refresh လုပ်သည်
+                } catch (err) {
+                    alert("ဖျက်၍မရပါ။ " + err.message);
+                }
             }
         }
 
-        window.onload = loadLibrary;
+        document.addEventListener('DOMContentLoaded', renderLibrary);
     </script>
 </body>
 </html>
