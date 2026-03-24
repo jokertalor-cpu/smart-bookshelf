@@ -106,37 +106,38 @@
             }, 300);
         }
 
-        function displayBookDetail(book) {
-            const container = document.getElementById('detail-content');
-            container.innerHTML = `
-                <div class="book-hero">
-                    <img src="${book.cover}" alt="${book.title}" onerror="this.src='https://via.placeholder.com/180x250'">
-                    <div class="book-meta">
-                        <h1 style="margin:0 0 10px 0;">${book.title}</h1>
-                        <p style="color:#666; margin:5px 0;"><i class="fa-solid fa-user-pen"></i> စာရေးသူ - ${book.author || 'Unknown'}</p>
-                        <p style="color:#666; margin:5px 0;"><i class="fa-solid fa-tags"></i> အမျိုးအစား - ${book.category || 'General'}</p>
-                      
-<div class="action-buttons">
-    <a href="${book.read_link || '#'}" target="_blank" class="btn btn-read">
-        <i class="fa-solid fa-book-open"></i> Online Read
-    </a>
+     function displayBookDetail(book) {
+    const container = document.getElementById('detail-content');
+    container.innerHTML = `
+        <div class="book-hero">
+            <img src="${book.cover}" alt="${book.title}" onerror="this.src='https://via.placeholder.com/180x250'">
+            <div class="book-meta">
+                <h1 style="margin:0 0 10px 0;">${book.title}</h1>
+                <p style="color:#666; margin:5px 0;"><i class="fa-solid fa-user-pen"></i> စာရေးသူ - ${book.author || 'Unknown'}</p>
+                <p style="color:#666; margin:5px 0;"><i class="fa-solid fa-tags"></i> အမျိုးအစား - ${book.category || 'General'}</p>
+              
+                <div class="action-buttons">
+                    <a href="${book.read_link || '#'}" target="_blank" class="btn btn-read">
+                        <i class="fa-solid fa-book-open"></i> Online Read
+                    </a>
 
-   <a href="javascript:void(0)" 
-   class="btn btn-download" 
-   onclick='handleHybridDownload(${JSON.stringify(book)})'>
-   <i class="fa-solid fa-download"></i> Download (${book.file_size || '0 MB'})
-</a>
-</div>
-                        </div>
-                    </div>
+                    <button class="btn btn-download" id="download-btn-trigger">
+                        <i class="fa-solid fa-download"></i> Download (${book.file_size || '0 MB'})
+                    </button>
                 </div>
-                <div class="description">
-                    <h3 style="border-left: 4px solid #2196F3; padding-left: 10px;">စာအုပ်အညွှန်း</h3>
-                    <p style="line-height: 1.6; color: #444;">${book.description || 'ဤစာအုပ်အတွက် အညွှန်းမရှိသေးပါ။'}</p>
-                </div>
-            `;
-        }
+            </div>
+        </div>
+        <div class="description">
+            <h3 style="border-left: 4px solid #2196F3; padding-left: 10px;">စာအုပ်အညွှန်း</h3>
+            <p style="line-height: 1.6; color: #444;">${book.description || 'ဤစာအုပ်အတွက် အညွှန်းမရှိသေးပါ။'}</p>
+        </div>
+    `;
 
+    // ခလုတ်နှိပ်ရင် Hybrid Download အလုပ်လုပ်ဖို့ Event ကြေညာပေးရပါမယ်
+    document.getElementById('download-btn-trigger').addEventListener('click', () => {
+        handleHybridDownload(book);
+    });
+}
         function displayRelatedBooks(currentBook) {
             const relatedContainer = document.getElementById('related-books-container');
             
