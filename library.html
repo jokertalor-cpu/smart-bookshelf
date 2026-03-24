@@ -105,24 +105,22 @@
             }
         }
 
-        // ၂။ Read Function (Blob မှ URL ပြောင်း၍ ဖွင့်ခြင်း)
-        async function readBook(id) {
-            try {
-                // ID ကို string နှင့် number နှစ်မျိုးလုံး စစ်ဆေးရှာဖွေပါ
-                const book = await db.downloaded_books.get(id) || await db.downloaded_books.get(Number(id));
-                
-                if (book && book.fileBlob) {
-                    const fileURL = URL.createObjectURL(book.fileBlob);
-                    window.open(fileURL, '_blank');
-                    // Memory မပြည့်စေရန် ခဏကြာလျှင် URL ကို ပြန်ဖျက်ပါ
-                    setTimeout(() => URL.revokeObjectURL(fileURL), 10000);
-                } else {
-                    alert("ဖိုင်ရှာမတွေ့ပါ။ ဒေါင်းလုဒ် ပြန်ဆွဲကြည့်ပါ။");
-                }
-            } catch (err) {
-                console.error("Read Error:", err);
-            }
+     // ပြင်ဆင်ထားသော Read Function
+async function readBook(id) {
+    try {
+        // Database ထဲမှာ စာအုပ် တကယ်ရှိမရှိ အရင်စစ်ဆေးပါ
+        const book = await db.downloaded_books.get(id) || await db.downloaded_books.get(Number(id));
+        
+        if (book) {
+            // အသစ်ဆောက်ထားသော reader.html သို့ id နှင့် mode ကို parameter အနေနဲ့ ပို့လိုက်ပါမည်
+            window.location.href = `reader.html?id=${id}&mode=offline`;
+        } else {
+            alert("ဖိုင်ရှာမတွေ့ပါ။ ဒေါင်းလုဒ် ပြန်ဆွဲကြည့်ပါ။");
         }
+    } catch (err) {
+        console.error("Read Error:", err);
+    }
+}
 
         // ၃။ Delete Function
         async function deleteBook(id) {
