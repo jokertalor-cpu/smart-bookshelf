@@ -6,140 +6,102 @@
     <title>My Library - MmBookshelf</title>
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="main.css">
-     <style>.search-wrapper {
-    display: flex;
-    align-items: center;
-}
-
-.search-box {
-    width: 0;
-    overflow: hidden;
-    transition: width 0.3s ease;
-}
-
-.search-wrapper.active .search-box {
-    width: 200px; /* စိတ်ကြိုက် width ထားနိုင်သည် */
-    margin-right: 5px;
-}</style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    
+    <style>
+        .library-container { padding: 80px 15px 20px; max-width: 1000px; margin: 0 auto; }
+        .library-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 15px; 
+        }
+        .book-card { 
+            background: #fff; border-radius: 8px; overflow: hidden; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; padding: 10px;
+        }
+        .book-card img { width: 100%; border-radius: 5px; height: 180px; object-fit: cover; }
+        .book-card p { margin: 8px 0; font-weight: bold; font-size: 13px; height: 32px; overflow: hidden; }
+        .btn-group { display: flex; gap: 5px; margin-top: 10px; }
+        .btn-read { flex: 1; background: #2196F3; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
+        .btn-del { background: #ff4757; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
+        .no-book { grid-column: 1/-1; text-align: center; padding: 50px; color: #888; }
+    </style>
 </head>
 <body>
-   <div class="menu-overlay" id="menu-overlay"></div>
-    
+
     <nav class="navbar">
         <div class="nav-container">
-            <button class="menu-toggle" id="mobile-menu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>
-            <div class="logo">
-                <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
-            </div>
-
-            <div class="search-wrapper">
-    <div class="search-box" id="search-box">
-        <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." oninput="handleInput()" onkeydown="handleKeyDown(event)" autocomplete="off">
-        <div id="search-suggestions" class="suggestions-list"></div>
-    </div>
-    <button id="search-trigger" class="search-btn">
-        <i class="fa-solid fa-magnifying-glass"></i>
-    </button>
-</div>
-
-            <ul class="nav-menu" id="nav-menu">
-                <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
-                <li><a href="latest.html"><i class="fa-solid fa-book"></i> LATEST</a></li>
-                <li><a href="authors.html"><i class="fa-solid fa-pen-nib"?></i>AUTHORS</a></li>
-                 <li><a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
-            </ul>
+            <h2 style="color: white; margin: 0;">My Library</h2>
+            <a href="index.html" style="color: white; text-decoration: none;"><i class="fa-solid fa-house"></i> Home</a>
         </div>
     </nav>
 
-    <div class="container" style="padding-top: 80px;">
-        <h2><i class="fa-solid fa-bookmark" style="color: #f1c40f;"></i> My Personal Library</h2>
-        <hr>
-        <div id="library-container" class="scroll-wrapper" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; margin-top: 20px;">
-            <p>Library ထဲမှာ စာအုပ်များ မရှိသေးပါ။</p>
+    <div class="library-container">
+        <div id="library-books-grid" class="library-grid">
+            <p class="no-book">Loading Library...</p>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
-    <script src="mainscript.js"></script>
-
     <script>
-        // ၁။ Database ကိုအရင် ချိတ်ဆက်မယ် (mainscript.js ထဲကအတိုင်း နာမည်တူရပါမယ်)
-const db = new Dexie("MmBookshelfDB");
-db.version(1).stores({
-    downloaded_books: 'id, title, author, cover, fileBlob, file_size'
-});
+        // ၁။ Database ကို detail.html က နာမည်အတိုင်း အတိအကျပေးပါ
+        const db = new Dexie("MmBookshelfDB");
+        db.version(1).stores({
+            downloaded_books: 'id, title, author, cover, file_size, fileBlob'
+        });
 
-// ၂။ Library ထဲကစာအုပ်များကို ဆွဲထုတ်ပြမည့် Function
-async function renderLibrary() {
-    const container = document.getElementById('library-container');
-    
-    try {
-        // IndexedDB ထဲမှာ တကယ်ရှိနေတဲ့ စာအုပ်တွေကို ယူမယ်
-        const offlineBooks = await db.downloaded_books.toArray();
+        // ၂။ စာအုပ်များ ထုတ်ပြခြင်း
+        async function loadLibrary() {
+            const grid = document.getElementById('library-books-grid');
+            try {
+                // Database ထဲက အကုန်ယူမယ်
+                const books = await db.downloaded_books.toArray();
 
-        if (offlineBooks.length === 0) {
-            container.innerHTML = `
-                <div style="text-align:center; padding: 50px; color: #888;">
-                    <i class="fa-solid fa-book-open" style="font-size: 50px; margin-bottom: 10px;"></i>
-                    <p>ဒေါင်းလုဒ်လုပ်ထားသော စာအုပ်မရှိသေးပါ။</p>
-                    <a href="index.html" style="color: #2196F3; text-decoration: none;">စာအုပ်များသွားရှာရန်</a>
-                </div>`;
-            return;
+                if (books.length === 0) {
+                    grid.innerHTML = `<div class="no-book">
+                        <i class="fa-solid fa-folder-open" style="font-size: 40px; margin-bottom: 10px;"></i>
+                        <p>ဒေါင်းလုဒ်ဆွဲထားသော စာအုပ်မရှိသေးပါ။</p>
+                    </div>`;
+                    return;
+                }
+
+                grid.innerHTML = books.map(book => `
+                    <div class="book-card">
+                        <img src="${book.cover}" alt="${book.title}" onerror="this.src='https://via.placeholder.com/150'">
+                        <p>${book.title}</p>
+                        <div class="btn-group">
+                            <button onclick="readBook('${book.id}')" class="btn-read">Read</button>
+                            <button onclick="deleteBook('${book.id}')" class="btn-del"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error("Library Error:", err);
+                grid.innerHTML = `<p style="color:red; text-align:center;">Error: Database ချိတ်ဆက်မှု မအောင်မြင်ပါ။</p>`;
+            }
         }
 
-        // စာအုပ်ကတ်ပြားများကို Render လုပ်မယ်
-        container.innerHTML = offlineBooks.map(book => `
-            <div class="book-card" style="position: relative;">
-                <img src="${book.cover}" alt="${book.title}" style="cursor: pointer;" onclick="readOfflineBook(${book.id})">
-                <p class="title">${book.title}</p>
-                <p style="font-size: 11px; color: #888; margin: 5px 0;">Size: ${book.file_size || 'N/A'}</p>
-                
-                <div style="display: flex; gap: 5px;">
-                    <button onclick="readOfflineBook(${book.id})" class="btn-read-small" 
-                            style="flex: 1; padding: 8px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        <i class="fa-solid fa-book-open"></i> Read
-                    </button>
-                    <button onclick="deleteOfflineBook(${book.id})" 
-                            style="padding: 8px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-        
-    } catch (error) {
-        console.error("Error loading library:", error);
-    }
-}
+        // ၃။ Offline ဖတ်ခြင်း
+        async function readBook(id) {
+            const book = await db.downloaded_books.get(id);
+            if (book && book.fileBlob) {
+                const blobUrl = URL.createObjectURL(book.fileBlob);
+                window.open(blobUrl, '_blank');
+            } else {
+                alert("ဖိုင်ရှာမတွေ့ပါ။");
+            }
+        }
 
-// ၃။ Offline ဖတ်ရန် (Blob URL ဖန်တီးပြီး ဖွင့်ခြင်း)
-async function readOfflineBook(id) {
-    const book = await db.downloaded_books.get(id);
-    if (book && book.fileBlob) {
-        const fileURL = URL.createObjectURL(book.fileBlob);
-        // Browser Reader ဖြင့် အသစ်ဖွင့်ပေးမည်
-        window.open(fileURL, '_blank');
-    } else {
-        alert("ဖိုင်ရှာမတွေ့ပါ။ တစ်ကြိမ်ပြန်လည် ဒေါင်းလုဒ်ဆွဲပေးပါ။");
-    }
-}
+        // ၄။ ဖျက်ခြင်း
+        async function deleteBook(id) {
+            if(confirm("ဖျက်မှာ သေချာပါသလား?")) {
+                await db.downloaded_books.delete(id);
+                loadLibrary();
+            }
+        }
 
-// ၄။ Offline စာရင်းမှ ဖျက်ထုတ်ရန်
-async function deleteOfflineBook(id) {
-    if(confirm("ဤစာအုပ်ကို ဒေါင်းလုဒ်စာရင်းမှ ဖျက်ရန် သေချာပါသလား?")) {
-        await db.downloaded_books.delete(id);
-        renderLibrary(); // စာရင်းကိုချက်ချင်း Update လုပ်မယ်
-    }
-}
-
-// ၅။ စာမျက်နှာဖွင့်လိုက်တာနဲ့ စတင်ခေါ်ယူရန်
-document.addEventListener('DOMContentLoaded', renderLibrary);
+        window.onload = loadLibrary;
     </script>
 </body>
 </html>
