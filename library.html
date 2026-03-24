@@ -49,7 +49,20 @@
         .lib-actions button { flex: 1; padding: 10px; border: none; cursor: pointer; background: white; }
         .btn-read-lib { color: #2196F3; border-right: 1px solid #eee !important; }
         .btn-delete-lib { color: #ff4757; }
-       
+       .search-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.search-box {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+.search-wrapper.active .search-box {
+    width: 200px; /* စိတ်ကြိုက် width ထားနိုင်သည် */
+    margin-right: 5px;
     </style>
 </head>
 <body>
