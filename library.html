@@ -49,20 +49,62 @@
         .lib-actions button { flex: 1; padding: 10px; border: none; cursor: pointer; background: white; }
         .btn-read-lib { color: #2196F3; border-right: 1px solid #eee !important; }
         .btn-delete-lib { color: #ff4757; }
+        /* Mobile Menu Styles */
+@media (max-width: 768px) {
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        flex-direction: column;
+        background: #fff;
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+        z-index: 1001;
+    }
+    .nav-menu.active {
+        left: 0;
+    }
+    .menu-toggle {
+        display: block;
+        cursor: pointer;
+    }
+}
+
+/* Overlay for Mobile Menu */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1000;
+}
+.menu-overlay.active {
+    display: block;
+}
     </style>
 </head>
 <body>
  
- <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo"><img src="photo_2026-03-20_09-18-40.jpg"></div>
-            <ul class="nav-menu">
-                <li><a href="index.html">HOME</a></li>
-                <li><a href="library.html" class="active">LIBRARY</a></li>
-            </ul>
-        </div>
-    </nav>
-
+<div class="menu-overlay" id="menu-overlay"></div>
+<nav class="navbar">
+    <div class="nav-container">
+        <button class="menu-toggle" id="mobile-menu" style="background:none; border:none; color:white; font-size:1.5rem; display:none;">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        
+        <div class="logo"><img src="photo_2026-03-20_09-18-40.jpg"></div>
+        
+        <ul class="nav-menu" id="nav-menu">
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="library.html" class="active">LIBRARY</a></li>
+        </ul>
+    </div>
+</nav>
     <div class="library-container">
         <div class="lib-controls">
             <div class="lib-search-wrapper">
@@ -174,5 +216,32 @@
 
         document.addEventListener('DOMContentLoaded', initLibrary);
     </script>
+    <script>
+    const menuToggle = document.querySelector('#mobile-menu');
+const navMenu = document.querySelector('#nav-menu');
+const overlay = document.querySelector('#menu-overlay');
+
+if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        // Icon ကို bars ကနေ x mark ပြောင်းချင်ရင်
+        const icon = menuToggle.querySelector('i');
+        if (navMenu.classList.contains('active')) {
+            icon.classList.replace('fa-bars', 'fa-xmark');
+        } else {
+            icon.classList.replace('fa-xmark', 'fa-bars');
+        }
+    });
+}
+
+if (overlay) {
+    overlay.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        overlay.classList.remove('active');
+        menuToggle.querySelector('i').classList.replace('fa-xmark', 'fa-bars');
+    });
+}</script>
 </body>
 </html>
