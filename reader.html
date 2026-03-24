@@ -2,196 +2,262 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Reader - MmBookshelf</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MmBookshelf - Pro Reader</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+
     <style>
-        :root { --bg-color: #525659; --topbar-bg: #323639; --text-color: white; }
-        body.dark-mode { --bg-color: #1a1a1a; --topbar-bg: #000000; }
-        
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg-color); font-family: sans-serif; overflow: hidden; transition: 0.3s; }
-        <style>
-    .reader-header {
-        height: 55px;
-        background: var(--topbar-bg);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 10px;
-        position: fixed;
-        top: 0;
-        width: 100%;
-        z-index: 1000;
-        box-sizing: border-box;
-    }
+        :root {
+            --bg-color: #525659;
+            --topbar-bg: #323639;
+            --text-color: #ffffff;
+            --accent-color: #2196F3;
+        }
 
-    .controls-left, .controls-right {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --topbar-bg: #000000;
+        }
 
-    .btn-icon {
-        padding: 10px 8px; /* Mobile မှာ နှိပ်ရလွယ်အောင် space ချဲ့ထားသည် */
-        font-size: 1.1rem;
-        cursor: pointer;
-        color: var(--text-color);
-    }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* Scroll ကို container ထဲမှာပဲထားမယ် */
+            transition: background 0.3s;
+        }
 
-    /* စာအုပ်ခေါင်းစဉ် ရှည်နေရင် ဖြတ်ချရန် */
-    .truncate {
-        max-width: 80px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 12px;
-        font-weight: bold;
-    }
-
-    /* Mobile Screen အတွက် သီးသန့် ညှိချက် */
-    @media (max-width: 480px) {
-        .btn-icon { font-size: 1rem; padding: 8px 5px; }
-        .page-info { font-size: 11px; padding: 3px 6px; }
-        .truncate { max-width: 60px; }
-    }
-</style>
+        /* --- Header / Navigation --- */
         .reader-header {
-            height: 50px; background: var(--topbar-bg); color: var(--text-color);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; position: fixed; top: 0; width: 100%; z-index: 100; box-sizing: border-box;
+            height: 55px;
+            background-color: var(--topbar-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            position: fixed;
+            top: 0; width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            box-sizing: border-box;
         }
 
-        .controls { display: flex; align-items: center; gap: 8px; }
-        .btn-icon { cursor: pointer; font-size: 1.1rem; padding: 8px; border-radius: 5px; color: var(--text-color); }
+        .nav-group { display: flex; align-items: center; gap: 8px; }
+
+        .btn-icon {
+            padding: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: var(--text-color);
+            border-radius: 50%;
+            transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
         .btn-icon:hover { background: rgba(255,255,255,0.1); }
-        .disabled { opacity: 0.3; pointer-events: none; }
+        .btn-icon.disabled { opacity: 0.2; pointer-events: none; }
 
-        #viewer-container {
-            margin-top: 50px; height: calc(100vh - 50px); overflow: auto;
-            display: flex; justify-content: center; align-items: flex-start; padding: 15px; box-sizing: border-box;
+        #book-title {
+            font-size: 14px;
+            font-weight: 600;
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        canvas { box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 100%; transform-origin: top center; }
-        body.dark-mode canvas { filter: invert(0.9) hue-rotate(180deg); }
+        .page-info {
+            background: rgba(0,0,0,0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            min-width: 50px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
 
-        .page-info { font-size: 13px; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 15px; min-width: 50px; text-align: center; }
-        #loading { position: fixed; top: 55%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; }
-        
-        /* Stay Awake Status */
-        #awake-status { font-size: 10px; color: #2ecc71; margin-left: 5px; display: none; }
+        /* --- Viewer Area --- */
+        #viewer-container {
+            margin-top: 55px;
+            height: calc(100vh - 55px);
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        canvas {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            max-width: 100%;
+            height: auto !important;
+            transform-origin: top center;
+        }
+
+        body.dark-mode canvas {
+            filter: invert(0.9) hue-rotate(180deg);
+        }
+
+        /* --- UI Elements --- */
+        #loading {
+            position: fixed;
+            top: 55%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            text-align: center;
+        }
+
+        #awake-status {
+            font-size: 10px;
+            color: #2ecc71;
+            display: none;
+            margin-left: 5px;
+        }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 600px) {
+            .nav-group { gap: 4px; }
+            .btn-icon { padding: 8px; font-size: 1rem; }
+            #book-title { max-width: 70px; font-size: 12px; }
+            .page-info { font-size: 11px; padding: 3px 8px; }
+        }
     </style>
 </head>
 <body>
 
-   <div class="reader-header">
-    <div class="controls-left">
-        <i class="fa-solid fa-arrow-left btn-icon" onclick="history.back()"></i>
-        <span id="book-title" class="truncate">Reader</span>
-        <span id="awake-status"><i class="fa-solid fa-sun"></i></span>
+    <header class="reader-header">
+        <div class="nav-group">
+            <i class="fa-solid fa-arrow-left btn-icon" onclick="history.back()"></i>
+            <span id="book-title">Loading...</span>
+            <span id="awake-status"><i class="fa-solid fa-sun"></i></span>
+        </div>
+
+        <div class="nav-group">
+            <i class="fa-solid fa-chevron-left btn-icon" id="prev-page"></i>
+            <span class="page-info"><span id="page-num">0</span> / <span id="page-count">0</span></span>
+            <i class="fa-solid fa-chevron-right btn-icon" id="next-page"></i>
+            
+            <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in"></i>
+            <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle"></i>
+        </div>
+    </header>
+
+    <div id="loading">
+        <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i>
+        <p style="font-size: 12px; margin-top: 10px;">စာမျက်နှာကို ဖော်ထုတ်နေသည်...</p>
     </div>
-    
-    <div class="controls-right">
-        <i class="fa-solid fa-chevron-left btn-icon" id="prev-page"></i>
-        <span class="page-info"><span id="page-num">0</span>/<span id="page-count">0</span></span>
-        <i class="fa-solid fa-chevron-right btn-icon" id="next-page"></i>
-        
-        <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle"></i>
-        <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in"></i>
+
+    <div id="viewer-container">
+        <canvas id="pdf-canvas"></canvas>
     </div>
-</div>
+
     <script>
+        // PDF.js worker setup
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const bookId = urlParams.get('id');
-        const mode = urlParams.get('mode');
-
+        // URL & Database setup
+        const params = new URLSearchParams(window.location.search);
+        const bookId = params.get('id');
+        const mode = params.get('mode');
         const db = new Dexie("MmBookshelfDB");
         db.version(1).stores({ downloaded_books: 'id, title, author, cover, fileBlob, lastPage' });
 
-        let pdfDoc = null, currentPage = 1, currentScale = 1.2;
+        let pdfDoc = null, currentPage = 1, currentScale = 1.3, wakeLock = null;
         const canvas = document.getElementById('pdf-canvas'), ctx = canvas.getContext('2d');
+        const container = document.getElementById('viewer-container');
 
-        // --- ၁။ Stay Awake Function (Wake Lock API) ---
-        let wakeLock = null;
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
+        // ၁။ Screen Stay Awake (Wake Lock)
+        async function initWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
                     wakeLock = await navigator.wakeLock.request('screen');
-                    document.getElementById('awake-status').style.display = 'inline';
-                    console.log("Screen Wake Lock is active");
-                }
-            } catch (err) {
-                console.error(`${err.name}, ${err.message}`);
+                    document.getElementById('awake-status').style.display = 'inline-block';
+                } catch (err) { console.warn("WakeLock error:", err); }
             }
         }
-        // App ကိုပြန်ဖွင့်ရင်လည်း Stay Awake ပြန်ဖြစ်အောင်လုပ်မယ်
-        document.addEventListener('visibilitychange', () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') requestWakeLock();
-        });
 
-        // --- ၂။ Dark Mode & Zoom ---
-        const darkToggle = document.getElementById('dark-mode-toggle');
-        darkToggle.onclick = () => {
+        // ၂။ Dark Mode Logic
+        const darkBtn = document.getElementById('dark-mode-toggle');
+        darkBtn.onclick = () => {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             localStorage.setItem('reader-dark-mode', isDark);
-            darkToggle.className = isDark ? "fa-solid fa-sun btn-icon" : "fa-solid fa-moon btn-icon";
+            darkBtn.className = isDark ? "fa-solid fa-sun btn-icon" : "fa-solid fa-moon btn-icon";
         };
         if(localStorage.getItem('reader-dark-mode') === 'true') {
             document.body.classList.add('dark-mode');
-            darkToggle.className = "fa-solid fa-sun btn-icon";
+            darkBtn.className = "fa-solid fa-sun btn-icon";
         }
 
-        document.getElementById('zoom-in').onclick = () => { currentScale += 0.2; renderPage(); };
-        document.getElementById('zoom-out').onclick = () => { if(currentScale > 0.6) currentScale -= 0.2; renderPage(); };
+        // ၃။ Zoom Logic
+        document.getElementById('zoom-in').onclick = () => {
+            currentScale = currentScale >= 3.0 ? 1.0 : currentScale + 0.4;
+            renderPage();
+        };
 
-        // --- ၃။ Page Navigation & Bookmark ---
-        document.getElementById('prev-page').onclick = () => { if(currentPage > 1) { currentPage--; renderPage(); } };
-        document.getElementById('next-page').onclick = () => { if(currentPage < pdfDoc.numPages) { currentPage++; renderPage(); } };
+        // ၄။ Navigation Logic
+        document.getElementById('prev-page').onclick = () => { if(currentPage > 1) { currentPage--; renderPage(); container.scrollTop = 0; } };
+        document.getElementById('next-page').onclick = () => { if(currentPage < pdfDoc.numPages) { currentPage++; renderPage(); container.scrollTop = 0; } };
 
+        // ၅။ Main Load Function
         async function loadPDF() {
             try {
-                let pdfData;
+                let data;
                 if (mode === 'offline') {
-                    // ID ကို Number/String နှစ်မျိုးလုံးစစ်ပြီး စာအုပ်ရှာမယ်
+                    // ID format နှစ်မျိုးလုံးစစ်ပြီး စာအုပ်ရှာမယ်
                     const book = await db.downloaded_books.get(bookId) || await db.downloaded_books.get(Number(bookId));
-                    if (!book) throw new Error("File not found");
-                    pdfData = await book.fileBlob.arrayBuffer();
+                    if (!book) throw new Error("Offline file not found");
+                    data = await book.fileBlob.arrayBuffer();
                     document.getElementById('book-title').innerText = book.title;
-                    currentPage = book.lastPage ? Number(book.lastPage) : 1; // Bookmark ပြန်ယူခြင်း
+                    currentPage = book.lastPage ? parseInt(book.lastPage) : 1;
                 } else {
-                    pdfData = decodeURIComponent(urlParams.get('url'));
+                    data = decodeURIComponent(params.get('url'));
+                    document.getElementById('book-title').innerText = "Online Read";
                     currentPage = 1;
                 }
 
-                pdfDoc = await pdfjsLib.getDocument(pdfData).promise;
+                pdfDoc = await pdfjsLib.getDocument(data).promise;
                 document.getElementById('page-count').innerText = pdfDoc.numPages;
-                renderPage();
-                requestWakeLock(); // စာအုပ်ပွင့်တာနဲ့ Stay Awake စတင်မယ်
+                
+                await renderPage();
+                initWakeLock();
             } catch (err) {
-                alert("Error: " + err.message);
+                console.error(err);
+                document.getElementById('loading').innerHTML = `<p style='color:red;'>Error: ${err.message}</p>`;
             }
         }
 
+        // ၆။ Rendering Function (Bookmark ပါဝင်သည်)
         async function renderPage() {
+            if(!pdfDoc) return;
             document.getElementById('loading').style.display = 'block';
-            const page = await pdfDoc.getPage(currentPage);
-            const viewport = page.getViewport({ scale: currentScale });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
 
-            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-            document.getElementById('page-num').innerText = currentPage;
-            document.getElementById('loading').style.display = 'none';
+            try {
+                const page = await pdfDoc.getPage(currentPage);
+                const viewport = page.getViewport({ scale: currentScale });
+                
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
 
-            // Bookmark သိမ်းဆည်းခြင်း (ID နှစ်မျိုးလုံးအတွက် သေချာအောင်လုပ်ပေးထားသည်)
-            if (mode === 'offline' && bookId) {
-                db.downloaded_books.update(bookId, { lastPage: currentPage });
-                db.downloaded_books.update(Number(bookId), { lastPage: currentPage });
-            }
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                
+                document.getElementById('page-num').innerText = currentPage;
+                document.getElementById('loading').style.display = 'none';
+
+                // Button States
+                document.getElementById('prev-page').classList.toggle('disabled', currentPage <= 1);
+                document.getElementById('next-page').classList.toggle('disabled', currentPage >= pdfDoc.numPages);
+
+                // Bookmark Save (Offline Mode သာ)
+                if (mode === 'offline' && bookId) {
+                    await db.downloaded_books.update(bookId, { lastPage: currentPage });
+                    await db.downloaded_books.update(Number(bookId), { lastPage: currentPage });
+                }
+            } catch (e) { console.error("Render Error:", e); }
         }
 
         window.onload = loadPDF;
