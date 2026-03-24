@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MmBookshelf - Pro Reader</title>
+    <title>MmBookshelf - HD Reader</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
@@ -15,11 +15,13 @@
             --topbar-bg: #323639;
             --text-color: #ffffff;
             --accent-color: #2196F3;
+            --canvas-shadow: 0 5px 25px rgba(0,0,0,0.6);
         }
 
         body.dark-mode {
             --bg-color: #1a1a1a;
             --topbar-bg: #000000;
+            --canvas-shadow: 0 5px 25px rgba(255,255,255,0.05);
         }
 
         body, html {
@@ -27,18 +29,17 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden; /* Scroll ကို container ထဲမှာပဲထားမယ် */
+            overflow: hidden;
             transition: background 0.3s;
         }
 
-        /* --- Header / Navigation --- */
         .reader-header {
             height: 55px;
             background-color: var(--topbar-bg);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 15px;
+            padding: 0 10px;
             position: fixed;
             top: 0; width: 100%;
             z-index: 1000;
@@ -46,7 +47,7 @@
             box-sizing: border-box;
         }
 
-        .nav-group { display: flex; align-items: center; gap: 8px; }
+        .nav-group { display: flex; align-items: center; gap: 5px; }
 
         .btn-icon {
             padding: 10px;
@@ -58,12 +59,12 @@
             display: flex; align-items: center; justify-content: center;
         }
         .btn-icon:hover { background: rgba(255,255,255,0.1); }
-        .btn-icon.disabled { opacity: 0.2; pointer-events: none; }
+        .btn-icon.disabled { opacity: 0.3; pointer-events: none; }
 
         #book-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            max-width: 120px;
+            max-width: 90px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -71,15 +72,14 @@
 
         .page-info {
             background: rgba(0,0,0,0.3);
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 13px;
-            min-width: 50px;
+            font-size: 12px;
+            min-width: 45px;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* --- Viewer Area --- */
         #viewer-container {
             margin-top: 55px;
             height: calc(100vh - 55px);
@@ -92,38 +92,37 @@
         }
 
         canvas {
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            box-shadow: var(--canvas-shadow);
             max-width: 100%;
             height: auto !important;
             transform-origin: top center;
+            /* High Quality Scaling */
+            image-rendering: crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
         }
 
         body.dark-mode canvas {
             filter: invert(0.9) hue-rotate(180deg);
         }
 
-        /* --- UI Elements --- */
         #loading {
             position: fixed;
             top: 55%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2000;
             text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 10px;
         }
 
-        #awake-status {
-            font-size: 10px;
-            color: #2ecc71;
-            display: none;
-            margin-left: 5px;
-        }
+        #awake-status { font-size: 10px; color: #2ecc71; display: none; margin-left: 5px; }
 
-        /* --- Mobile Responsive --- */
         @media (max-width: 600px) {
-            .nav-group { gap: 4px; }
+            .nav-group { gap: 2px; }
             .btn-icon { padding: 8px; font-size: 1rem; }
-            #book-title { max-width: 70px; font-size: 12px; }
-            .page-info { font-size: 11px; padding: 3px 8px; }
+            #book-title { max-width: 60px; font-size: 11px; }
+            .page-info { font-size: 10px; padding: 3px 6px; }
         }
     </style>
 </head>
@@ -132,23 +131,24 @@
     <header class="reader-header">
         <div class="nav-group">
             <i class="fa-solid fa-arrow-left btn-icon" onclick="history.back()"></i>
-            <span id="book-title">Loading...</span>
+            <span id="book-title">Reader</span>
             <span id="awake-status"><i class="fa-solid fa-sun"></i></span>
         </div>
 
         <div class="nav-group">
-            <i class="fa-solid fa-chevron-left btn-icon" id="prev-page"></i>
+            <i class="fa-solid fa-chevron-left btn-icon" id="prev-page" title="Previous Page"></i>
             <span class="page-info"><span id="page-num">0</span> / <span id="page-count">0</span></span>
-            <i class="fa-solid fa-chevron-right btn-icon" id="next-page"></i>
+            <i class="fa-solid fa-chevron-right btn-icon" id="next-page" title="Next Page"></i>
             
-            <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in"></i>
-            <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle"></i>
+            <i class="fa-solid fa-magnifying-glass-minus btn-icon" id="zoom-out" title="Zoom Out"></i>
+            <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in" title="Zoom In"></i>
+            <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle" title="Toggle Dark Mode"></i>
         </div>
     </header>
 
     <div id="loading">
         <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i>
-        <p style="font-size: 12px; margin-top: 10px;">စာမျက်နှာကို ဖော်ထုတ်နေသည်...</p>
+        <p style="font-size: 12px; margin-top: 10px; color: white;">စာမျက်နှာကို ဖော်ထုတ်နေသည်...</p>
     </div>
 
     <div id="viewer-container">
@@ -156,19 +156,20 @@
     </div>
 
     <script>
-        // PDF.js worker setup
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        // URL & Database setup
         const params = new URLSearchParams(window.location.search);
         const bookId = params.get('id');
         const mode = params.get('mode');
         const db = new Dexie("MmBookshelfDB");
         db.version(1).stores({ downloaded_books: 'id, title, author, cover, fileBlob, lastPage' });
 
-        let pdfDoc = null, currentPage = 1, currentScale = 1.3, wakeLock = null;
+        let pdfDoc = null, currentPage = 1, wakeLock = null;
         const canvas = document.getElementById('pdf-canvas'), ctx = canvas.getContext('2d');
         const container = document.getElementById('viewer-container');
+
+        // Initial scale based on device
+        let currentScale = window.innerWidth < 600 ? 1.0 : 1.3;
 
         // ၁။ Screen Stay Awake (Wake Lock)
         async function initWakeLock() {
@@ -176,7 +177,7 @@
                 try {
                     wakeLock = await navigator.wakeLock.request('screen');
                     document.getElementById('awake-status').style.display = 'inline-block';
-                } catch (err) { console.warn("WakeLock error:", err); }
+                } catch (err) { console.warn("WakeLock:", err); }
             }
         }
 
@@ -193,10 +194,18 @@
             darkBtn.className = "fa-solid fa-sun btn-icon";
         }
 
-        // ၃။ Zoom Logic
+        // ၃။ Fixed Zoom Logic
         document.getElementById('zoom-in').onclick = () => {
-            currentScale = currentScale >= 3.0 ? 1.0 : currentScale + 0.4;
-            renderPage();
+            if (currentScale < 3.0) {
+                currentScale += 0.4;
+                renderPage();
+            }
+        };
+        document.getElementById('zoom-out').onclick = () => {
+            if (currentScale > 0.6) {
+                currentScale -= 0.4;
+                renderPage();
+            }
         };
 
         // ၄။ Navigation Logic
@@ -208,7 +217,6 @@
             try {
                 let data;
                 if (mode === 'offline') {
-                    // ID format နှစ်မျိုးလုံးစစ်ပြီး စာအုပ်ရှာမယ်
                     const book = await db.downloaded_books.get(bookId) || await db.downloaded_books.get(Number(bookId));
                     if (!book) throw new Error("Offline file not found");
                     data = await book.fileBlob.arrayBuffer();
@@ -231,20 +239,41 @@
             }
         }
 
-        // ၆။ Rendering Function (Bookmark ပါဝင်သည်)
+        // ၆။ Rendering Function with High Quality & Bookmark
         async function renderPage() {
             if(!pdfDoc) return;
             document.getElementById('loading').style.display = 'block';
 
             try {
                 const page = await pdfDoc.getPage(currentPage);
+                
+                // --- HD Rendering Setup ---
+                // Device Pixel Ratio ကို ယူပြီး Canvas ကို scale လုပ်မယ်
+                const dpr = window.devicePixelRatio || 1;
                 const viewport = page.getViewport({ scale: currentScale });
                 
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                // Canvas back-store size ကို dpr နဲ့ မြှောက်ပြီး တိုးပေးမယ်
+                canvas.width = Math.floor(viewport.width * dpr);
+                canvas.height = Math.floor(viewport.height * dpr);
                 
+                // CSS size ကိုတော့ မူရင်း viewport အတိုင်းပဲ ထားမယ်
+                canvas.style.width = viewport.width + "px";
+                canvas.style.height = viewport.height + "px";
+
+                // Canvas Context ကို DPR အတိုင်း scale လုပ်မယ်
+                ctx.scale(dpr, dpr);
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport,
+                    // Quality အတွက် အရေးကြီးတဲ့ parameter
+                    intent: 'display'
+                };
+                
+                // Render function ကို စောင့်မယ်
+                await page.render(renderContext).promise;
+                
+                // --- Post-Render Logic ---
                 document.getElementById('page-num').innerText = currentPage;
                 document.getElementById('loading').style.display = 'none';
 
