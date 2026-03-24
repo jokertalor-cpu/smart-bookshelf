@@ -210,22 +210,42 @@ function executeSearch() {
     scrollToBooks();
 }
 
-// Category သို့မဟုတ် View All ကို နှိပ်သည့်အခါ
+// Category သို့မဟုတ် View All ကို နှိပ်သည့်အခါ (Updated Version)
 window.filterBooks = function(category) {
+    const viewAllBtn = document.getElementById('view-all-btn');
+    const sectionTitle = document.getElementById('section-title');
+
+    // index.html မဟုတ်တဲ့ page ကနေ category နှိပ်ရင် index ကို parameter နဲ့ လှမ်းပို့မယ်
     if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
         window.location.href = `index.html?category=${encodeURIComponent(category)}`;
         return;
     }
 
     if (category === 'all') {
-        // View All နှိပ်ရင် Editor Choice မဟုတ်ဘဲ စာအုပ်အားလုံးပြချင်ရင် allBooks ကိုသုံးပါ
-        renderBooks(allBooks); 
-        if (sectionTitle) sectionTitle.innerText = "ALL BOOKS";
+        // Back to Editor Choice ကို နှိပ်လိုက်ရင်
+        if (viewAllBtn && viewAllBtn.innerText === "Back to Editor Choice") {
+            const editorChoices = allBooks.filter(book => book.is_editor_choice === true);
+            // Editor Choice မရှိရင် ပထမဆုံး စာအုပ် ၈ အုပ်လောက်ပဲ ပြမယ် (ဥပမာ)
+            renderBooks(editorChoices.length > 0 ? editorChoices : allBooks.slice(0, 8));
+            
+            if (sectionTitle) sectionTitle.innerText = "EDITOR CHOICE";
+            if (viewAllBtn) viewAllBtn.innerText = "View All";
+        } else {
+            // View All ကို နှိပ်လိုက်ရင် စာအုပ်အားလုံးပြမယ်
+            renderBooks(allBooks); 
+            if (sectionTitle) sectionTitle.innerText = "ALL BOOKS";
+            if (viewAllBtn) viewAllBtn.innerText = "Back to Editor Choice";
+        }
     } else {
+        // Category တစ်ခုခုကို နှိပ်လိုက်ရင်
         const filtered = allBooks.filter(b => b.category && b.category.toLowerCase() === category.toLowerCase());
         renderBooks(filtered);
+        
         if (sectionTitle) sectionTitle.innerText = category.toUpperCase() + " BOOKS";
+        // Category ပြနေချိန်မှာ Button ကို Back to Editor Choice လို့ ပြောင်းထားမယ်
+        if (viewAllBtn) viewAllBtn.innerText = "Back to Editor Choice";
     }
+    
     scrollToBooks();
 }
 
@@ -252,24 +272,6 @@ async function checkURLParameters() {
             }
         }, 300);
     }
-}
-// ၇။ Category Filter
-window.filterBooks = function(category) {
-    if (category === 'all') {
-        const editorChoices = allBooks.filter(book => book.is_editor_choice === true);
-        renderBooks(editorChoices.length > 0 ? editorChoices : allBooks);
-        if (sectionTitle) sectionTitle.innerText = "EDITOR CHOICE";
-    } else {
-        const filtered = allBooks.filter(b => b.category && b.category.toLowerCase() === category.toLowerCase());
-        renderBooks(filtered);
-        if (sectionTitle) sectionTitle.innerText = category.toUpperCase() + " BOOKS";
-    }
-    scrollToBooks();
-}
-
-function scrollToBooks() {
-    const section = document.getElementById('book-display-section');
-    if(section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Download ဆွဲချိန်မှာ အကုန်လုံးကို တစ်ခါတည်းလုပ်ပေးမယ့် function
