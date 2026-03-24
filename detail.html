@@ -117,10 +117,9 @@
                 <p style="color:#666; margin:5px 0;"><i class="fa-solid fa-tags"></i> အမျိုးအစား - ${book.category || 'General'}</p>
               
                 <div class="action-buttons">
-<a href="reader.html?url=${encodeURIComponent(book.read_link)}&mode=online" class="btn btn-read">
-    <i class="fa-solid fa-book-open"></i> Online Read
-</a>
-
+<a href="${book.read_link}" target="_blank" class="btn btn-read">
+                            <i class="fa-solid fa-book-open"></i> Online Read
+                        </a>
                     <button class="btn btn-download" id="download-btn-trigger">
                         <i class="fa-solid fa-download"></i> Download (${book.file_size || '0 MB'})
                     </button>
