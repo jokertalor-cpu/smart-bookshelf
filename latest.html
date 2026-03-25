@@ -100,45 +100,118 @@
     <script src="mainscript.js"></script>
     <script>
       
-// latest.js
-document.addEventListener('DOMContentLoaded', () => {
-    loadLatestBooks();
-    loadTopRankedBooks();
-});
+async function loadBooks() {
+    try {
+        // 'books' ဆိုတာ သင့် Supabase table နာမည်ဖြစ်ရပါမယ်
+        const { data, error } = await supabase
+            .from('books')
+            .select('*');
 
-async function loadLatestBooks() {
-    const container = document.getElementById('latest-10-container');
-    if (!container) return;
+        if (error) throw error;
+        
+        allBooks = data; // Supabase ကရတဲ့ data array ကို allBooks ထဲထည့်
+        checkURLParameters();
 
-    const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
+        // UI ပြသခြင်း logic များ
+        if (document.getElementById('top-ranking-container')) {
+            displayTopRanking(allBooks);
+        }
 
-    if (error) console.error(error);
-    else displayInContainer(data, container);
+        if (document.getElementById('latest-10-container')) {
+            displayLatest10(allBooks);
+        }
+
+        if (document.getElementById('book-list-container')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+            
+            if (query) {
+                searchInput.value = query;
+                executeSearch();
+            } else {
+                filterBooks('all');
+            }
+        }
+    } catch (error) {
+        console.error("Supabase Error:", error.message);
+        const container = document.getElementById('book-list-container');
+        if (container) container.innerHTML = "<p>Data ချိတ်ဆက်မှု အမှားရှိနေပါသည်။</p>";
+    }
+}
+async function loadBooks() {
+    try {
+        // 'books' ဆိုတာ သင့် Supabase table နာမည်ဖြစ်ရပါမယ်
+        const { data, error } = await supabase
+            .from('books')
+            .select('*');
+
+        if (error) throw error;
+        
+        allBooks = data; // Supabase ကရတဲ့ data array ကို allBooks ထဲထည့်
+        checkURLParameters();
+
+        // UI ပြသခြင်း logic များ
+        if (document.getElementById('top-ranking-container')) {
+            displayTopRanking(allBooks);
+        }
+
+        if (document.getElementById('latest-10-container')) {
+            displayLatest10(allBooks);
+        }
+
+        if (document.getElementById('book-list-container')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+            
+            if (query) {
+                searchInput.value = query;
+                executeSearch();
+            } else {
+                filterBooks('all');
+            }
+        }
+    } catch (error) {
+        console.error("Supabase Error:", error.message);
+        const container = document.getElementById('book-list-container');
+        if (container) container.innerHTML = "<p>Data ချိတ်ဆက်မှု အမှားရှိနေပါသည်။</p>";
+    }
+}
+// ၃။ Top 10 Ranking ပြသခြင်း
+function displayTopRanking(books) {
+    const rankingContainer = document.getElementById('top-ranking-container');
+    if (!rankingContainer) return;
+
+    const sortedBooks = [...books].sort((a, b) => (b.download_count || 0) - (a.download_count || 0));
+    const top10 = sortedBooks.slice(0, 10);
+
+    rankingContainer.innerHTML = top10.map((book, index) => `
+        <div class="book-card" onclick="window.location.href='detail.html?id=${book.id}'" style="position: relative; flex: 0 0 140px; cursor: pointer;">
+            <div class="rank-badge" style="position: absolute; top: 0; left: 0; background: ${index < 3 ? '#e74c3c' : '#3498db'}; color: white; padding: 2px 8px; font-weight: bold; border-radius: 5px 0 5px 0; font-size: 11px; z-index: 1;">
+                #${index + 1}
+            </div>
+            <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
+            <p class="title" style="font-size: 13px; font-weight: bold; margin: 8px 0 2px; height: 32px; overflow: hidden;">${book.title}</p>
+            <div style="font-size: 11px; color: #888;">
+                <i class="fa-solid fa-download"></i> ${book.download_count?.toLocaleString() || 0}
+            </div>
+        </div>
+    `).join('');
 }
 
-async function loadTopRankedBooks() {
-    const container = document.getElementById('top-10-container');
-    if (!container) return;
+// ၄။ Latest 10 ပြသခြင်း
+function displayLatest10(books) {
+    const latestContainer = document.getElementById('latest-10-container');
+    if (!latestContainer) return;
 
-    const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .order('download_count', { ascending: false }) // download အများဆုံးက top rank
-        .limit(10);
+    const sortedByLatest = [...books].sort((a, b) => b.id - a.id);
+    const latest10 = sortedByLatest.slice(0, 10);
 
-    if (error) console.error(error);
-    else displayInContainer(data, container);
-}
-
-function displayInContainer(books, container) {
-    container.innerHTML = books.map(book => `
-        <div class="book-card" onclick="location.href='detail.html?id=${book.id}'">
-            <img src="${book.cover}" loading="lazy">
-            <p>${book.title}</p>
+    latestContainer.innerHTML = latest10.map(book => `
+        <div class="book-card" onclick="window.location.href='detail.html?id=${book.id}'" style="flex: 0 0 140px; cursor: pointer;">
+            <div style="position: absolute; top: 0; right: 0; background: #2ecc71; color: white; padding: 2px 6px; font-size: 10px; border-radius: 0 5px 0 5px; z-index: 1;">NEW</div>
+            <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
+            <p class="title" style="font-size: 13px; font-weight: bold; margin: 8px 0 2px; height: 32px; overflow: hidden;">${book.title}</p>
+            <small style="color: #888;">${book.category ? book.category.toUpperCase() : 'GENERAL'}</small>
         </div>
     `).join('');
 }
