@@ -6,11 +6,14 @@
     <title>Admin - Smart Bookshelf</title>
     <link rel="stylesheet" href="main.css">
     <style>
-        #admin-panel { display: none; } /* Login မဝင်မချင်း ဖျောက်ထားမည် */
+        #admin-panel { display: none; } 
         .auth-container { max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
         .form-group { margin-bottom: 15px; }
-        input[type="text"], input[type="password"], input[type="file"], select { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; }
+        input[type="text"], input[type="email"], input[type="password"], input[type="file"], select { 
+            width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; 
+        }
         .btn-main { background: #2196F3; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; width: 100%; }
+        .btn-main:disabled { background: #ccc; }
     </style>
 </head>
 <body>
@@ -18,58 +21,62 @@
     <div id="login-section" class="auth-container">
         <h2>Admin Login</h2>
         <div class="form-group">
-            <input type="email" id="login-email" placeholder="Email">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="example@gmail.com">
         </div>
         <div class="form-group">
+            <label>Password</label>
             <input type="password" id="login-pw" placeholder="Password">
         </div>
         <button class="btn-main" onclick="handleLogin()">Login</button>
     </div>
 
     <div id="admin-panel" class="admin-container" style="padding: 20px;">
-        <h2>Welcome Admin <button onclick="handleLogout()" style="float:right;">Logout</button></h2>
+        <h2>Welcome Admin <button onclick="handleLogout()" style="float:right; padding: 5px 10px;">Logout</button></h2>
         <hr>
         
-        <div style="background: #f4f4f4; padding: 20px; border-radius: 8px;">
+        <div style="background: #f4f4f4; padding: 20px; border-radius: 8px; max-width: 600px; margin: 20px auto;">
             <h3>Upload New Book</h3>
+            
             <div class="form-group">
                 <label>Book Title</label>
-                <input type="text" id="title">
+                <input type="text" id="title" required>
             </div>
+            
             <div class="form-group">
                 <label>Author</label>
                 <input type="text" id="author">
             </div>
+            
             <div class="form-group">
                 <label>Category</label>
                 <select id="category">
-                    <option value="technical">Technical</option>
-                    <option value="novel">Novel</option>
-                    <option value="xianxia">Xianxia</option>
+                    <option value="Technical">Technical</option>
+                    <option value="Novel">Novel</option>
+                    <option value="Xianxia">Xianxia</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Book PDF File</label>
-                <input type="file" id="pdf-file" accept=".pdf">
-            </div>
-            <div class="form-group">
-                <label>Cover Image URL (or upload)</label>
-                <input type="text" id="cover-url" placeholder="https://...">
-            </div>
-            <div class="form-group">
-    <label>File Size (e.g. 2.5 MB)</label>
-    <input type="text" id="file-size" placeholder="2.5 MB">
-</div>
 
-<div class="form-group">
-    <label>Download Link</label>
-    <input type="text" id="download-link" placeholder="Direct URL or Supabase URL">
-</div>
+            <div class="form-group">
+                <label>Cover Image URL</label>
+                <input type="text" id="cover-url" placeholder="https://example.com/image.jpg">
+            </div>
 
-<div class="form-group">
-    <input type="checkbox" id="is_editor_choice">
-    <label style="display:inline;"> Editor's Choice အဖြစ် ပြသမည်</label>
-</div>
+            <div class="form-group">
+                <label>File Size (e.g. 2.5 MB)</label>
+                <input type="text" id="file-size" placeholder="2.5 MB">
+            </div>
+
+            <div class="form-group">
+                <label>Download Link (PDF Link)</label>
+                <input type="text" id="download-link" placeholder="https://supabase.co/storage/v1/object/public/books/mybook.pdf">
+            </div>
+
+            <div class="form-group">
+                <input type="checkbox" id="is_editor_choice" style="width: auto;">
+                <label style="display:inline; margin-left: 5px;"> Editor's Choice အဖြစ် ပြသမည်</label>
+            </div>
+
             <button class="btn-main" id="upload-btn" onclick="uploadBook()">Upload & Save</button>
         </div>
     </div>
