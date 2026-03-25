@@ -1,4 +1,3 @@
-
 const supabaseUrl = 'https://cmguamftohgcgwdggwde.supabase.co'; // သင့် Project URL
 const supabaseKey = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9'; // သင့် Publishable Key
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
