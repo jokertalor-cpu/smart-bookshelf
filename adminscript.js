@@ -35,51 +35,70 @@ async function handleLogout() {
 // စာမျက်နှာစဖွင့်ချင်း user ရှိမရှိစစ်မယ်
 checkUser();
 
-// --- ၂။ FILE UPLOAD & DATABASE SAVE ---
-async function uploadBook() {
-    const title = document.getElementById('title').value;
-    const author = document.getElementById('author').value;
-    const category = document.getElementById('category').value;
-    const cover = document.getElementById('cover-url').value;
-    const fileInput = document.getElementById('pdf-file');
+// အရင်ရှိပြီးသား saveBook function ကို ဒါလေးနဲ့ အစားထိုးလိုက်ပါ
+async function saveBook() {
+    const id = document.getElementById('edit-book-id').value;
     const btn = document.getElementById('upload-btn');
-
-    if (!fileInput.files[0]) return alert("PDF ဖိုင်ရွေးပေးပါ");
     
+    // Form ထဲက Data များကို ယူခြင်း
+    const bookData = {
+        title: document.getElementById('title').value,
+        author: document.getElementById('author').value,
+        category: document.getElementById('category').value,
+        cover: document.getElementById('cover-url').value,
+        is_editor_choice: document.getElementById('is_editor_choice').checked,
+        file_size: document.getElementById('file-size').value, // အသစ်ထည့်ထားသော field
+        download_link: document.getElementById('download-link').value,
+        // download_count ကို အသစ်တင်ရင် 0 ကစမယ်၊ Edit ဆိုရင်တော့ မပြင်ဘူး
+    };
+
+    if (!bookData.title || !bookData.download_link) {
+        return alert("စာအုပ်အမည်နဲ့ Download Link အနည်းဆုံး ထည့်ပေးရပါမယ်");
+    }
+
     btn.disabled = true;
-    btn.innerText = "Uploading...";
+    btn.innerText = "Saving...";
 
     try {
-        const file = fileInput.files[0];
-        const fileName = `${Date.now()}_${file.name}`;
-        
-        // A. Supabase Storage ထဲ ဖိုင်တင်မယ်
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('book-files')
-            .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        // B. တင်လိုက်တဲ့ဖိုင်ရဲ့ Public URL ကို ယူမယ်
-        const { data: { publicUrl } } = supabase.storage
-            .from('book-files')
-            .getPublicUrl(fileName);
-
-        // C. Database ထဲ အချက်အလက် သိမ်းမယ်
-        const { error: dbError } = await supabase.from('books').insert([{
-            title, author, category, cover,
-            download_link: publicUrl
-        }]);
-
-        if (dbError) throw dbError;
-
-        alert("အောင်မြင်စွာ တင်ပြီးပါပြီ!");
-        location.reload();
-
+        if (id) {
+            // Update လုပ်ခြင်း
+            const { error } = await supabase.from('books').update(bookData).eq('id', id);
+            if (error) throw error;
+            alert("စာအုပ်ပြင်ဆင်ပြီးပါပြီ");
+        } else {
+            // အသစ်ထည့်ခြင်း (download_count ကို 0 ထားမယ်)
+            bookData.download_count = 0;
+            const { error } = await supabase.from('books').insert([bookData]);
+            if (error) throw error;
+            alert("စာအုပ်အသစ် သိမ်းဆည်းပြီးပါပြီ");
+        }
+        resetForm();
+        fetchAdminBooks(); // Table ကို Refresh လုပ်မယ်
     } catch (err) {
         alert("Error: " + err.message);
     } finally {
         btn.disabled = false;
-        btn.innerText = "Upload & Save";
+        btn.innerText = "Save Book";
     }
+}
+
+// Table မှာ ပြသတဲ့ function ကိုလည်း update လုပ်ပါ
+function renderAdminTable(books) {
+    const tbody = document.getElementById('admin-book-list');
+    tbody.innerHTML = books.map(book => `
+        <tr>
+            <td>${book.id}</td>
+            <td><img src="${book.cover}" style="width:40px;height:55px;object-fit:cover;"></td>
+            <td>${book.title}</td>
+            <td>${book.category}</td>
+            <td>${book.author || '-'}</td>
+            <td>${book.is_editor_choice ? '✅' : '❌'}</td>
+            <td>${book.download_count || 0}</td>
+            <td>${book.file_size || '-'}</td>
+            <td>
+                <button class="btn-edit" onclick="editBook(${book.id})">Edit</button>
+                <button class="btn-delete" onclick="deleteBook(${book.id})" style="color:red;">Del</button>
+            </td>
+        </tr>
+    `).join('');
 }
