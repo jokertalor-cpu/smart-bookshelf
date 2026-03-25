@@ -1,50 +1,122 @@
-<div class="admin-container">
-    <div id="book-form-section" style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
-        <h3 id="form-title">Add / Edit Book</h3>
-        <input type="hidden" id="edit-book-id">
-        
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Smart Bookshelf</title>
+    <link rel="stylesheet" href="style.css"> <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .hidden { display: none; }
+        .form-container { background: #f4f4f4; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #eee; }
+        .btn-main { background: #2196F3; color: white; border: none; padding: 10px 20px; cursor: pointer; }
+        .btn-edit { background: #4CAF50; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+        .btn-delete { background: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="login-section">
+        <h2>Admin Login</h2>
         <div class="form-group">
-            <label>စာအုပ်အမည် (Title)</label>
-            <input type="text" id="title">
+            <input type="email" id="login-email" placeholder="Admin Email">
         </div>
         <div class="form-group">
-            <label>အမျိုးအစား (Category)</label>
-            <select id="category">
-                <option value="Xianxia">Xianxia</option>
-                <option value="System">System</option>
-                <option value="Knowledge">Knowledge</option>
-                <option value="Fantasy">Fantasy</option>
-                <option value="Translation">Translation</option>
-                <option value="Action">Action</option>
-                <option value="Romance">Romance</option>
-            </select>
+            <input type="password" id="login-pw" placeholder="Password">
         </div>
-        <div class="form-group">
-            <label>စာရေးသူ (Author)</label>
-            <input type="text" id="author">
-        </div>
-        <div class="form-group">
-            <label>Cover Image URL (Direct Link သာထည့်ပါ)</label>
-            <input type="text" id="cover-url" placeholder="https://example.com/image.jpg">
-        </div>
-        <div class="form-group">
-            <label>File Size (ဥပမာ - 1.5 MB)</label>
-            <input type="text" id="file-size">
-        </div>
-        <div class="form-group">
-            <label>Download Link (Direct Link)</label>
-            <input type="text" id="download-link">
-        </div>
-        <div class="form-group">
-            <label>Read Link (Online ဖတ်ရန် Link)</label>
-            <input type="text" id="read-link">
-        </div>
-        <div class="form-group">
-            <input type="checkbox" id="is-editor-choice">
-            <label style="display:inline;"> Editor's Choice</label>
-        </div>
-        
-        <button class="btn-main" id="upload-btn" onclick="uploadBook()">Save Book</button>
-        <button onclick="resetForm()" id="cancel-btn" style="display:none;">Cancel</button>
+        <button class="btn-main" onclick="handleLogin()">Login</button>
     </div>
-</div>
+
+    <div id="admin-panel" class="hidden">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Admin Dashboard</h2>
+            <button onclick="handleLogout()">Logout</button>
+        </header>
+
+        <div class="form-container">
+            <h3 id="form-title">Add New Book</h3>
+            <input type="hidden" id="edit-book-id"> <div class="form-group">
+                <label>စာအုပ်အမည် (Title)</label>
+                <input type="text" id="title">
+            </div>
+            <div class="form-group">
+                <label>အမျိုးအစား (Category)</label>
+                <select id="category">
+                   <option value="xianxia">XIANXIA</option>
+                <option value="technical">TECHNICAL</option>
+                <option value="novel">NOVEL</option>
+                <option value="knowledge">KNOWLEDGE</option>
+                <option value="poem">POEM</option>
+                <option value="magazine">MAGAZINE</option>
+                <option value="history">HISTORY</option>
+                 <option value="action">ACTION</option>
+                 <option value="adventure">ADVENTURE</option>
+                 <option value="health">HEALTH</option>
+                 <option value="martial">MARTIAL</option>
+                 <option value="agriculture">AGRICULTURE</option>
+                 <option value="mystry">MYSTRY</option>
+                 <option value="rarebook">RAREBOOK</option>
+                 <option value="business">BUSINESS</option>
+                 <option value="comic">COMIC</option>
+                 <option value="horror">HORROR</option>
+                 <option value="drama">DRAMA</option>
+                
+                </select>
+            </div>
+            <div class="form-group">
+                <label>စာရေးသူ (Author)</label>
+                <input type="text" id="author">
+            </div>
+            <div class="form-group">
+                <label>မျက်နှာဖုံးပုံ (Cover Image File)</label>
+                <input type="file" id="cover-file" accept="image/*">
+                <input type="text" id="cover-url" placeholder="သို့မဟုတ် URL ထည့်ပါ">
+            </div>
+            <div class="form-group">
+                <label>စာအုပ်ဖိုင် (Book PDF File)</label>
+                <input type="file" id="pdf-file" accept=".pdf">
+                <input type="text" id="download-link" placeholder="သို့မဟုတ် Link ထည့်ပါ">
+            </div>
+            <div class="form-group">
+                <label>File Size (e.g. 1.2 MB)</label>
+                <input type="text" id="file-size">
+            </div>
+            <div class="form-group">
+                <label>ဖတ်ရန်လင့် (Read Link)</label>
+                <input type="text" id="read-link">
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="is-editor-choice"> Editor's Choice</label>
+            </div>
+
+            <button class="btn-main" id="save-btn" onclick="saveBook()">Save Book</button>
+            <button class="hidden" id="cancel-btn" onclick="resetForm()">Cancel</button>
+        </div>
+
+        <h3>စာအုပ်စာရင်းများ</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cover</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Download Count</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="admin-book-list">
+                </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+    <script src="adminscript.js"></script>
+</body>
+</html>
