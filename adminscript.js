@@ -1,5 +1,5 @@
-const supabaseUrl = 'https://your-project.supabase.co';
-const supabaseKey = 'your-anon-key';
+const supabaseUrl = 'https://cmguamftohgcgwdggwde.supabase.co';
+const supabaseKey = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- ၁။ LOGIN & AUTH CHECK ---
