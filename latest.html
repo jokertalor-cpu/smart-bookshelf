@@ -95,8 +95,53 @@
         </div>
 </div>
    
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
-   
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+    <script src="config.js"></script>
     <script src="mainscript.js"></script>
+    <script>
+      
+// latest.js
+document.addEventListener('DOMContentLoaded', () => {
+    loadLatestBooks();
+    loadTopRankedBooks();
+});
+
+async function loadLatestBooks() {
+    const container = document.getElementById('latest-10-container');
+    if (!container) return;
+
+    const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+    if (error) console.error(error);
+    else displayInContainer(data, container);
+}
+
+async function loadTopRankedBooks() {
+    const container = document.getElementById('top-10-container');
+    if (!container) return;
+
+    const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .order('download_count', { ascending: false }) // download အများဆုံးက top rank
+        .limit(10);
+
+    if (error) console.error(error);
+    else displayInContainer(data, container);
+}
+
+function displayInContainer(books, container) {
+    container.innerHTML = books.map(book => `
+        <div class="book-card" onclick="location.href='detail.html?id=${book.id}'">
+            <img src="${book.cover}" loading="lazy">
+            <p>${book.title}</p>
+        </div>
+    `).join('');
+}
+    </script>
 </body>
 </html>

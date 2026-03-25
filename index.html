@@ -77,34 +77,40 @@
             <p>Loading books...</p>
         </div>
     </div>
-
+                <div id="pagination-container" style="text-align: center; margin: 20px 0;">
+    <button id="load-more-btn" onclick="loadMore()" class="view-all" style="padding: 10px 30px;">
+        နောက်ထပ်ကြည့်ရန်
+    </button>
+    <p id="no-more-books" style="display: none; color: #888;">စာအုပ်များ အားလုံးပြသပြီးပါပြီ။</p>
+</div>
     <div class="category-section">
         <h2>Book Categories</h2>
         <div class="tag-container">
             <a href="javascript:void(0)"class="tag-box" onclick="filterBooks('xianxia')">XIANXIA</a>
             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('technical')">TECHNICAL</a>
             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('novel')">NOVEL</a>
-           <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('knowledge')">KNOWLEDGE</a>
-           <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('poem')">POEM</a>
-           <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('magazine')">MAGAZINE</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('knowledge')">KNOWLEDGE</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('poem')">POEM</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('magazine')">MAGAZINE</a>
             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('history')">HISTORY</a>
-           <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('action')">ACTION</a>
-          <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('adventure')">ADVENTURE</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('health')">HEALTH</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('martial')">MARIAL</a>
-                   <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('agriculture')">AGRICULTURE</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('mystery')">MYSTERY</a>
-                   <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('rarebook')">RARE BOOK</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('business')">BUSINESS</a>
-                   <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('comic')">COMIC</a>
-                   <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('horror')">HORROR</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('drama')">DRAMA</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('action')">ACTION</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('adventure')">ADVENTURE</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('health')">HEALTH</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('martial')">MARIAL</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('agriculture')">AGRICULTURE</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('mystery')">MYSTERY</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('rarebook')">RARE BOOK</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('business')">BUSINESS</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('comic')">COMIC</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('horror')">HORROR</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('drama')">DRAMA</a>
 
         </div>
     </div>
     <a href="admin.html">Admin</a>
-    
+
      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+    <script src="config.js"></script>
     <script src="mainscript.js"></script>
 </body>
 </html>

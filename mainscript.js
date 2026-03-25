@@ -1,7 +1,3 @@
-// ၁။ Supabase ချိတ်ဆက်ခြင်း
-const supabaseUrl = 'https://cmguamftohgcgwdggwde.supabase.co'; // သင့် Project URL
-const supabaseKey = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9'; // သင့် Publishable Key
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 const menuToggle = document.querySelector('#mobile-menu'); 
 const navMenu = document.querySelector('#nav-menu'); 
 const overlay = document.querySelector('#menu-overlay'); 
@@ -12,7 +8,74 @@ const suggestionsList = document.getElementById('search-suggestions');
 const sectionTitle = document.getElementById('section-title');
 const viewAllBtn = document.getElementById('view-all-btn');
 
-let allBooks = [];
+// mainscript.js ထိပ်ပိုင်းတွင် သတ်မှတ်ပါ
+let currentPage = 0;
+const itemsPerPage = 12; // တစ်ခါဆွဲရင် စာအုပ် ၁၂ အုပ်ပဲ ဆွဲမယ်
+let allBooks = []; // ဆွဲပြီးသားစာအုပ်အားလုံး သိမ်းထားဖို့
+
+// ၁။ စာမျက်နှာ စဖွင့်ချင်း ခေါ်မယ့် function
+async function loadBooks() {
+    currentPage = 0; // စဖွင့်ရင် page 0 က စမယ်
+    allBooks = []; // list ကို အသစ်ပြန်စမယ်
+    await fetchBooksFromSupabase(currentPage);
+}
+
+// ၂။ Supabase ထံကနေ သတ်မှတ်ထားတဲ့ range အလိုက် ဆွဲယူတဲ့ logic
+async function fetchBooksFromSupabase(page) {
+    try {
+        const from = page * itemsPerPage;
+        const to = from + itemsPerPage - 1;
+
+        const { data, error } = await supabase
+            .from('books')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .range(from, to); // ဤနေရာသည် အဓိက Pagination logic ဖြစ်သည်
+
+        if (error) throw error;
+
+        if (data.length > 0) {
+            allBooks = [...allBooks, ...data]; // အရင်ရှိပြီးသားထဲကို အသစ်ထပ်ပေါင်းမယ်
+            displayBooks(allBooks); // UI မှာ ပြမယ်
+
+            // စာအုပ် ၁၂ အုပ်ထက် နည်းနေရင် နောက်ထပ်ဆွဲစရာမရှိတော့ဘူးလို့ မှတ်ယူမယ်
+            if (data.length < itemsPerPage) {
+                toggleLoadMoreBtn(false);
+            } else {
+                toggleLoadMoreBtn(true);
+            }
+        } else {
+            toggleLoadMoreBtn(false);
+        }
+    } catch (error) {
+        console.error("Error loading books:", error);
+    }
+}
+
+// ၃။ Load More ခလုတ်နှိပ်ရင် ခေါ်မယ့် function
+async function loadMore() {
+    currentPage++; // page count ကို ၁ တိုးမယ်
+    const btn = document.getElementById('load-more-btn');
+    btn.innerText = "Loading..."; // ခေတ္တခဏ စာသားပြောင်းထားမယ်
+    
+    await fetchBooksFromSupabase(currentPage);
+    
+    btn.innerText = "နောက်ထပ်ကြည့်ရန်";
+}
+
+// ၄။ ခလုတ် ပိတ်/ဖွင့် logic
+function toggleLoadMoreBtn(isVisible) {
+    const btn = document.getElementById('load-more-btn');
+    const msg = document.getElementById('no-more-books');
+    
+    if (isVisible) {
+        btn.style.display = 'inline-block';
+        msg.style.display = 'none';
+    } else {
+        btn.style.display = 'none';
+        msg.style.display = 'block';
+    }
+}
 
 // ၁။ Mobile Menu ဖွင့်/ပိတ် Logic
 if (menuToggle) {
@@ -29,44 +92,7 @@ if (overlay) {
     });
 }
 
-async function loadBooks() {
-    try {
-        // 'books' ဆိုတာ သင့် Supabase table နာမည်ဖြစ်ရပါမယ်
-        const { data, error } = await supabase
-            .from('books')
-            .select('*');
 
-        if (error) throw error;
-        
-        allBooks = data; // Supabase ကရတဲ့ data array ကို allBooks ထဲထည့်
-        checkURLParameters();
-
-        // UI ပြသခြင်း logic များ
-        if (document.getElementById('top-ranking-container')) {
-            displayTopRanking(allBooks);
-        }
-
-        if (document.getElementById('latest-10-container')) {
-            displayLatest10(allBooks);
-        }
-
-        if (document.getElementById('book-list-container')) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const query = urlParams.get('q');
-            
-            if (query) {
-                searchInput.value = query;
-                executeSearch();
-            } else {
-                filterBooks('all');
-            }
-        }
-    } catch (error) {
-        console.error("Supabase Error:", error.message);
-        const container = document.getElementById('book-list-container');
-        if (container) container.innerHTML = "<p>Data ချိတ်ဆက်မှု အမှားရှိနေပါသည်။</p>";
-    }
-}
 // ၃။ Top 10 Ranking ပြသခြင်း
 function displayTopRanking(books) {
     const rankingContainer = document.getElementById('top-ranking-container');
