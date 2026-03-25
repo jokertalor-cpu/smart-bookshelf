@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Smart Bookshelf</title>
+    <link rel="stylesheet" href="main.css">
+    <style>
+        #admin-panel { display: none; } /* Login မဝင်မချင်း ဖျောက်ထားမည် */
+        .auth-container { max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .form-group { margin-bottom: 15px; }
+        input[type="text"], input[type="password"], input[type="file"], select { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; }
+        .btn-main { background: #2196F3; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="login-section" class="auth-container">
+        <h2>Admin Login</h2>
+        <div class="form-group">
+            <input type="email" id="login-email" placeholder="Email">
+        </div>
+        <div class="form-group">
+            <input type="password" id="login-pw" placeholder="Password">
+        </div>
+        <button class="btn-main" onclick="handleLogin()">Login</button>
+    </div>
+
+    <div id="admin-panel" class="admin-container" style="padding: 20px;">
+        <h2>Welcome Admin <button onclick="handleLogout()" style="float:right;">Logout</button></h2>
+        <hr>
+        
+        <div style="background: #f4f4f4; padding: 20px; border-radius: 8px;">
+            <h3>Upload New Book</h3>
+            <div class="form-group">
+                <label>Book Title</label>
+                <input type="text" id="title">
+            </div>
+            <div class="form-group">
+                <label>Author</label>
+                <input type="text" id="author">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="category">
+                    <option value="technical">Technical</option>
+                    <option value="novel">Novel</option>
+                    <option value="xianxia">Xianxia</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Book PDF File</label>
+                <input type="file" id="pdf-file" accept=".pdf">
+            </div>
+            <div class="form-group">
+                <label>Cover Image URL (or upload)</label>
+                <input type="text" id="cover-url" placeholder="https://...">
+            </div>
+            <button class="btn-main" id="upload-btn" onclick="uploadBook()">Upload & Save</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+    <script src="adminscript.js"></script>
+</body>
+</html>
