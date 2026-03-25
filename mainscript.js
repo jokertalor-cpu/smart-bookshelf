@@ -36,7 +36,7 @@ async function fetchBooksFromSupabase(page) {
 
         if (data.length > 0) {
             allBooks = [...allBooks, ...data]; // အရင်ရှိပြီးသားထဲကို အသစ်ထပ်ပေါင်းမယ်
-            displayBooks(allBooks); // UI မှာ ပြမယ်
+            renderBooks(allBooks); // UI မှာ ပြမယ်
 
             // စာအုပ် ၁၂ အုပ်ထက် နည်းနေရင် နောက်ထပ်ဆွဲစရာမရှိတော့ဘူးလို့ မှတ်ယူမယ်
             if (data.length < itemsPerPage) {
