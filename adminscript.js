@@ -81,13 +81,24 @@ async function saveBook() {
     try {
         let coverUrl = document.getElementById('cover-url').value;
         let downloadLink = document.getElementById('download-link').value;
+        let readLink = document.getElementById('read-link').value; // လက်ရှိ input ထဲက တန်ဖိုးယူထားမယ်
 
         // File တွေ ရွေးထားရင် အရင်တင်မယ်
         const coverFile = document.getElementById('cover-file');
         const pdfFile = document.getElementById('pdf-file');
 
-        if (coverFile.files[0]) coverUrl = await uploadToStorage(coverFile, 'covers');
-        if (pdfFile.files[0]) downloadLink = await uploadToStorage(pdfFile, 'pdfs');
+        if (coverFile.files[0]) {
+            coverUrl = await uploadToStorage(coverFile, 'covers');
+        }
+        
+        if (pdfFile.files[0]) {
+            const uploadedUrl = await uploadToStorage(pdfFile, 'pdfs');
+            downloadLink = uploadedUrl;
+            // အကယ်၍ read link box ထဲမှာ ဘာမှမရှိရင် upload တင်လိုက်တဲ့ URL ကိုပဲ ထည့်လိုက်မယ်
+            if (!readLink) {
+                readLink = uploadedUrl; 
+            }
+        }
 
         const bookData = {
             title: document.getElementById('title').value,
@@ -96,10 +107,11 @@ async function saveBook() {
             cover: coverUrl,
             file_size: document.getElementById('file-size').value,
             download_link: downloadLink,
-            read_link: document.getElementById('read-link').value,
+            read_link: readLink, // ဒီနေရာမှာ URL အမှန် ရောက်သွားပါလိမ့်မယ်
             is_editor_choice: document.getElementById('is-editor-choice').checked
         };
 
+        // ကျန်တဲ့အပိုင်းတွေက အတူတူပါပဲ...
         if (id) {
             const { error } = await supabase.from('books').update(bookData).eq('id', id);
             if (error) throw error;
@@ -120,7 +132,6 @@ async function saveBook() {
         saveBtn.innerText = "Save Book";
     }
 }
-
 // --- ၅။ ဖျက်ခြင်း (Delete) ---
 async function deleteBook(id) {
     if (confirm("Are you sure?")) {
