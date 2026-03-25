@@ -1,19 +1,13 @@
 const supabaseUrl = 'https://cmguamftohgcgwdggwde.supabase.co';
-// မှတ်ချက် - ဒီ Key နေရာမှာ သင့် Dashboard ကရတဲ့ eyJ... နဲ့စတဲ့ Key အရှည်ကြီးကို ထည့်ပါ
 const supabaseKey = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9'; 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-let allBooks = [];
-
-// --- ၁။ LOGIN & AUTH ---
+// --- ၁။ Authentication ပိုင်း ---
 async function handleLogin() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-pw').value;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
         alert("Login failed: " + error.message);
@@ -25,9 +19,9 @@ async function handleLogin() {
 async function checkUser() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('admin-panel').style.display = 'block';
-        fetchAdminBooks(); // Login အောင်မြင်ရင် table ဆွဲထုတ်မယ်
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('admin-panel').classList.remove('hidden');
+        fetchAdminBooks();
     }
 }
 
@@ -36,107 +30,139 @@ async function handleLogout() {
     location.reload();
 }
 
-// --- ၂။ CRUD OPERATIONS (SAVE / UPDATE) ---
-// HTML က uploadBook() လို့ခေါ်ထားလို့ ဒီမှာ နာမည်ကို ညှိထားပါတယ်
-async function uploadBook() {
-    // Edit လုပ်နေတာလား သိဖို့ ID ယူမယ်
-    const editId = document.getElementById('edit-book-id') ? document.getElementById('edit-book-id').value : null;
-    const btn = document.getElementById('upload-btn');
-    
-    const bookData = {
-        title: document.getElementById('title').value,
-        author: document.getElementById('author').value,
-        category: document.getElementById('category').value,
-        cover: document.getElementById('cover-url').value,
-        is_editor_choice: document.getElementById('is_editor_choice').checked,
-        file_size: document.getElementById('file-size').value,
-        download_link: document.getElementById('download-link').value
-    };
+// Page ဖွင့်တာနဲ့ login ဝင်ပြီးသားလား စစ်မယ်
+checkUser();
 
-    if (!bookData.title || !bookData.download_link) {
-        return alert("စာအုပ်အမည်နဲ့ Download Link ထည့်ပေးပါ");
-    }
-
-    btn.disabled = true;
-    btn.innerText = "Saving...";
-
-    try {
-        if (editId) {
-            const { error } = await supabase.from('books').update(bookData).eq('id', editId);
-            if (error) throw error;
-            alert("ပြင်ဆင်ပြီးပါပြီ");
-        } else {
-            bookData.download_count = 0;
-            const { error } = await supabase.from('books').insert([bookData]);
-            if (error) throw error;
-            alert("အသစ်သိမ်းဆည်းပြီးပါပြီ");
-        }
-        location.reload(); // Page ကို refresh လုပ်ပြီး table ပြန်ပြမယ်
-    } catch (err) {
-        alert("Error: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Upload & Save";
-    }
-}
-
-// Table ဆွဲထုတ်ခြင်း
+// --- ၂။ စာအုပ်များ ဆွဲထုတ်ခြင်း ---
 async function fetchAdminBooks() {
     const { data, error } = await supabase.from('books').select('*').order('id', { ascending: false });
-    if (!error) {
-        allBooks = data;
-        renderAdminTable(data);
-    }
+    if (error) console.error(error);
+    else renderAdminTable(data);
 }
 
 function renderAdminTable(books) {
     const tbody = document.getElementById('admin-book-list');
-    if(!tbody) return;
     tbody.innerHTML = books.map(book => `
         <tr>
             <td>${book.id}</td>
-            <td><img src="${book.cover}" style="width:40px;height:55px;object-fit:cover;"></td>
+            <td><img src="${book.cover}" width="40"></td>
             <td>${book.title}</td>
             <td>${book.category}</td>
-            <td>${book.author || '-'}</td>
-            <td>${book.is_editor_choice ? '✅' : '❌'}</td>
             <td>${book.download_count || 0}</td>
-            <td>${book.file_size || '-'}</td>
             <td>
-                <button onclick="editBook(${book.id})">Edit</button>
-                <button onclick="deleteBook(${book.id})" style="color:red;">Del</button>
+                <button class="btn-edit" onclick="editBook(${book.id})">Edit</button>
+                <button class="btn-delete" onclick="deleteBook(${book.id})">Del</button>
             </td>
         </tr>
     `).join('');
 }
 
-// Edit Mode သို့ပြောင်းရန်
-window.editBook = function(id) {
-    const book = allBooks.find(b => b.id === id);
-    if (!book) return;
+// --- ၃။ Storage သို့ File Upload တင်ခြင်း ---
+async function uploadToStorage(inputElement, folder) {
+    const file = inputElement.files[0];
+    if (!file) return null;
 
-    // hidden input တစ်ခု HTML မှာ ထည့်ထားဖို့လိုပါတယ် (ဥပမာ- <input type="hidden" id="edit-book-id">)
-    if(document.getElementById('edit-book-id')) document.getElementById('edit-book-id').value = book.id;
+    const fileName = `${folder}/${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage.from('book-assets').upload(fileName, file);
     
-    document.getElementById('title').value = book.title;
-    document.getElementById('author').value = book.author;
-    document.getElementById('category').value = book.category;
-    document.getElementById('cover-url').value = book.cover;
-    document.getElementById('file-size').value = book.file_size;
-    document.getElementById('download-link').value = book.download_link;
-    document.getElementById('is_editor_choice').checked = book.is_editor_choice;
+    if (error) throw error;
     
-    document.getElementById('upload-btn').innerText = "Update Book";
-    window.scrollTo(0, 0);
-};
+    const { data: { publicUrl } } = supabase.storage.from('book-assets').getPublicUrl(fileName);
+    return publicUrl;
+}
 
-// ဖျက်ရန်
-window.deleteBook = async function(id) {
-    if (confirm("ဖျက်မှာ သေချာပါသလား?")) {
-        const { error } = await supabase.from('books').delete().eq('id', id);
-        if (!error) fetchAdminBooks();
+// --- ၄။ သိမ်းဆည်းခြင်း (Add / Update) ---
+async function saveBook() {
+    const id = document.getElementById('edit-book-id').value;
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = true;
+    saveBtn.innerText = "Processing...";
+
+    try {
+        let coverUrl = document.getElementById('cover-url').value;
+        let downloadLink = document.getElementById('download-link').value;
+
+        // File တွေ ရွေးထားရင် အရင်တင်မယ်
+        const coverFile = document.getElementById('cover-file');
+        const pdfFile = document.getElementById('pdf-file');
+
+        if (coverFile.files[0]) coverUrl = await uploadToStorage(coverFile, 'covers');
+        if (pdfFile.files[0]) downloadLink = await uploadToStorage(pdfFile, 'pdfs');
+
+        const bookData = {
+            title: document.getElementById('title').value,
+            category: document.getElementById('category').value,
+            author: document.getElementById('author').value,
+            cover: coverUrl,
+            file_size: document.getElementById('file-size').value,
+            download_link: downloadLink,
+            read_link: document.getElementById('read-link').value,
+            is_editor_choice: document.getElementById('is-editor-choice').checked
+        };
+
+        if (id) {
+            const { error } = await supabase.from('books').update(bookData).eq('id', id);
+            if (error) throw error;
+            alert("Updated Successfully!");
+        } else {
+            bookData.download_count = 0;
+            const { error } = await supabase.from('books').insert([bookData]);
+            if (error) throw error;
+            alert("Added Successfully!");
+        }
+
+        resetForm();
+        fetchAdminBooks();
+    } catch (err) {
+        alert("Error: " + err.message);
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Save Book";
     }
-};
+}
 
-// စတင်အလုပ်လုပ်ရန်
-checkUser();
+// --- ၅။ ဖျက်ခြင်း (Delete) ---
+async function deleteBook(id) {
+    if (confirm("Are you sure?")) {
+        const { error } = await supabase.from('books').delete().eq('id', id);
+        if (error) alert(error.message);
+        else fetchAdminBooks();
+    }
+}
+
+// --- ၆။ ပြင်ဆင်ခြင်း (Edit) ---
+async function editBook(id) {
+    const { data: book } = await supabase.from('books').select('*').eq('id', id).single();
+    if (book) {
+        document.getElementById('edit-book-id').value = book.id;
+        document.getElementById('title').value = book.title;
+        document.getElementById('category').value = book.category;
+        document.getElementById('author').value = book.author;
+        document.getElementById('cover-url').value = book.cover;
+        document.getElementById('file-size').value = book.file_size;
+        document.getElementById('download-link').value = book.download_link;
+        document.getElementById('read-link').value = book.read_link;
+        document.getElementById('is-editor-choice').checked = book.is_editor_choice;
+
+        document.getElementById('form-title').innerText = "Edit Book";
+        document.getElementById('save-btn').innerText = "Update Book";
+        document.getElementById('cancel-btn').classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+}
+
+function resetForm() {
+    document.getElementById('edit-book-id').value = '';
+    document.getElementById('title').value = '';
+    document.getElementById('author').value = '';
+    document.getElementById('cover-url').value = '';
+    document.getElementById('file-size').value = '';
+    document.getElementById('download-link').value = '';
+    document.getElementById('read-link').value = '';
+    document.getElementById('cover-file').value = '';
+    document.getElementById('pdf-file').value = '';
+    document.getElementById('is-editor-choice').checked = false;
+    document.getElementById('form-title').innerText = "Add New Book";
+    document.getElementById('save-btn').innerText = "Save Book";
+    document.getElementById('cancel-btn').classList.add('hidden');
+}
