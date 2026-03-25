@@ -7,7 +7,10 @@ async function handleLogin() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-pw').value;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+   const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password,
+});;
 
     if (error) {
         alert("Login failed: " + error.message);
