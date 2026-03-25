@@ -1,87 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Smart Bookshelf</title>
-    <link rel="stylesheet" href="main.css">
-    <style>
-        #admin-panel { display: none; } 
-        .auth-container { max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-        .form-group { margin-bottom: 15px; }
-        input[type="text"], input[type="email"], input[type="password"], input[type="file"], select { 
-            width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; 
-        }
-        .btn-main { background: #2196F3; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; width: 100%; }
-        .btn-main:disabled { background: #ccc; }
-    </style>
-</head>
-<body>
-
-    <div id="login-section" class="auth-container">
-        <h2>Admin Login</h2>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" id="login-email" placeholder="example@gmail.com">
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="login-pw" placeholder="Password">
-        </div>
-        <button class="btn-main" onclick="handleLogin()">Login</button>
-    </div>
-
-    <div id="admin-panel" class="admin-container" style="padding: 20px;">
-        <h2>Welcome Admin <button onclick="handleLogout()" style="float:right; padding: 5px 10px;">Logout</button></h2>
-        <hr>
+<div class="admin-container">
+    <div id="book-form-section" style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+        <h3 id="form-title">Add / Edit Book</h3>
+        <input type="hidden" id="edit-book-id">
         
-        <div style="background: #f4f4f4; padding: 20px; border-radius: 8px; max-width: 600px; margin: 20px auto;">
-            <h3>Upload New Book</h3>
-            <input type="hidden" id="edit-book-id">
-            <div class="form-group">
-                <label>Book Title</label>
-                <input type="text" id="title" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Author</label>
-                <input type="text" id="author">
-            </div>
-            
-            <div class="form-group">
-                <label>Category</label>
-                <select id="category">
-                    <option value="Technical">Technical</option>
-                    <option value="Novel">Novel</option>
-                    <option value="Xianxia">Xianxia</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Cover Image URL</label>
-                <input type="text" id="cover-url" placeholder="https://example.com/image.jpg">
-            </div>
-
-            <div class="form-group">
-                <label>File Size (e.g. 2.5 MB)</label>
-                <input type="text" id="file-size" placeholder="2.5 MB">
-            </div>
-
-            <div class="form-group">
-                <label>Download Link (PDF Link)</label>
-                <input type="text" id="download-link" placeholder="https://supabase.co/storage/v1/object/public/books/mybook.pdf">
-            </div>
-
-            <div class="form-group">
-                <input type="checkbox" id="is_editor_choice" style="width: auto;">
-                <label style="display:inline; margin-left: 5px;"> Editor's Choice အဖြစ် ပြသမည်</label>
-            </div>
-
-            <button class="btn-main" id="upload-btn" onclick="uploadBook()">Upload & Save</button>
+        <div class="form-group">
+            <label>စာအုပ်အမည် (Title)</label>
+            <input type="text" id="title">
         </div>
+        <div class="form-group">
+            <label>အမျိုးအစား (Category)</label>
+            <select id="category">
+                <option value="Xianxia">Xianxia</option>
+                <option value="System">System</option>
+                <option value="Knowledge">Knowledge</option>
+                <option value="Fantasy">Fantasy</option>
+                <option value="Translation">Translation</option>
+                <option value="Action">Action</option>
+                <option value="Romance">Romance</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>စာရေးသူ (Author)</label>
+            <input type="text" id="author">
+        </div>
+        <div class="form-group">
+            <label>Cover Image URL (Direct Link သာထည့်ပါ)</label>
+            <input type="text" id="cover-url" placeholder="https://example.com/image.jpg">
+        </div>
+        <div class="form-group">
+            <label>File Size (ဥပမာ - 1.5 MB)</label>
+            <input type="text" id="file-size">
+        </div>
+        <div class="form-group">
+            <label>Download Link (Direct Link)</label>
+            <input type="text" id="download-link">
+        </div>
+        <div class="form-group">
+            <label>Read Link (Online ဖတ်ရန် Link)</label>
+            <input type="text" id="read-link">
+        </div>
+        <div class="form-group">
+            <input type="checkbox" id="is-editor-choice">
+            <label style="display:inline;"> Editor's Choice</label>
+        </div>
+        
+        <button class="btn-main" id="upload-btn" onclick="uploadBook()">Save Book</button>
+        <button onclick="resetForm()" id="cancel-btn" style="display:none;">Cancel</button>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
-    <script src="adminscript.js"></script>
-</body>
-</html>
+</div>
