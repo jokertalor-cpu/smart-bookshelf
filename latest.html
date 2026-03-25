@@ -3,16 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Smart Bookshelf - latest-news</title>
-<meta name="title" content="Smart Bookshelf - Your Digital Library">
-<meta name="description" content="Discover, search, and manage your favorite books with Smart Bookshelf. Access a wide range of categories including Xianxia, Technical, Novels, and more for offline reading.">
-<meta name="keywords" content="Smart Bookshelf, Digital Library, Free Books, Myanmar Bookshelf, PDF Reader, Offline Reading, Book Management">
-<meta name="author" content="jokertalor-cpu">
-    <meta property="og:type" content="website">
-<meta property="og:url" content="https://jokertalor-cpu.github.io/wildrift-project/">
-<meta property="og:title" content="Smart Bookshelf - Your Personal Digital Library">
-<meta property="og:description" content="Organize your reading life. Explore a vast collection of books across multiple genres and enjoy seamless offline access.">
-<meta property="og:image" content="photo_2026-03-20_09-18-40.jpg">
+    <title>MmBookshelf - Home</title>
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="main.css">
      <style>.search-wrapper {
@@ -95,126 +86,8 @@
         </div>
 </div>
    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
-    <script src="config.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+   
     <script src="mainscript.js"></script>
-    <script>
-      
-async function loadBooks() {
-    try {
-        // 'books' ဆိုတာ သင့် Supabase table နာမည်ဖြစ်ရပါမယ်
-        const { data, error } = await supabase
-            .from('books')
-            .select('*');
-
-        if (error) throw error;
-        
-        allBooks = data; // Supabase ကရတဲ့ data array ကို allBooks ထဲထည့်
-        checkURLParameters();
-
-        // UI ပြသခြင်း logic များ
-        if (document.getElementById('top-ranking-container')) {
-            displayTopRanking(allBooks);
-        }
-
-        if (document.getElementById('latest-10-container')) {
-            displayLatest10(allBooks);
-        }
-
-        if (document.getElementById('book-list-container')) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const query = urlParams.get('q');
-            
-            if (query) {
-                searchInput.value = query;
-                executeSearch();
-            } else {
-                filterBooks('all');
-            }
-        }
-    } catch (error) {
-        console.error("Supabase Error:", error.message);
-        const container = document.getElementById('book-list-container');
-        if (container) container.innerHTML = "<p>Data ချိတ်ဆက်မှု အမှားရှိနေပါသည်။</p>";
-    }
-}
-async function loadBooks() {
-    try {
-        // 'books' ဆိုတာ သင့် Supabase table နာမည်ဖြစ်ရပါမယ်
-        const { data, error } = await supabase
-            .from('books')
-            .select('*');
-
-        if (error) throw error;
-        
-        allBooks = data; // Supabase ကရတဲ့ data array ကို allBooks ထဲထည့်
-        checkURLParameters();
-
-        // UI ပြသခြင်း logic များ
-        if (document.getElementById('top-ranking-container')) {
-            displayTopRanking(allBooks);
-        }
-
-        if (document.getElementById('latest-10-container')) {
-            displayLatest10(allBooks);
-        }
-
-        if (document.getElementById('book-list-container')) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const query = urlParams.get('q');
-            
-            if (query) {
-                searchInput.value = query;
-                executeSearch();
-            } else {
-                filterBooks('all');
-            }
-        }
-    } catch (error) {
-        console.error("Supabase Error:", error.message);
-        const container = document.getElementById('book-list-container');
-        if (container) container.innerHTML = "<p>Data ချိတ်ဆက်မှု အမှားရှိနေပါသည်။</p>";
-    }
-}
-// ၃။ Top 10 Ranking ပြသခြင်း
-function displayTopRanking(books) {
-    const rankingContainer = document.getElementById('top-ranking-container');
-    if (!rankingContainer) return;
-
-    const sortedBooks = [...books].sort((a, b) => (b.download_count || 0) - (a.download_count || 0));
-    const top10 = sortedBooks.slice(0, 10);
-
-    rankingContainer.innerHTML = top10.map((book, index) => `
-        <div class="book-card" onclick="window.location.href='detail.html?id=${book.id}'" style="position: relative; flex: 0 0 140px; cursor: pointer;">
-            <div class="rank-badge" style="position: absolute; top: 0; left: 0; background: ${index < 3 ? '#e74c3c' : '#3498db'}; color: white; padding: 2px 8px; font-weight: bold; border-radius: 5px 0 5px 0; font-size: 11px; z-index: 1;">
-                #${index + 1}
-            </div>
-            <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
-            <p class="title" style="font-size: 13px; font-weight: bold; margin: 8px 0 2px; height: 32px; overflow: hidden;">${book.title}</p>
-            <div style="font-size: 11px; color: #888;">
-                <i class="fa-solid fa-download"></i> ${book.download_count?.toLocaleString() || 0}
-            </div>
-        </div>
-    `).join('');
-}
-
-// ၄။ Latest 10 ပြသခြင်း
-function displayLatest10(books) {
-    const latestContainer = document.getElementById('latest-10-container');
-    if (!latestContainer) return;
-
-    const sortedByLatest = [...books].sort((a, b) => b.id - a.id);
-    const latest10 = sortedByLatest.slice(0, 10);
-
-    latestContainer.innerHTML = latest10.map(book => `
-        <div class="book-card" onclick="window.location.href='detail.html?id=${book.id}'" style="flex: 0 0 140px; cursor: pointer;">
-            <div style="position: absolute; top: 0; right: 0; background: #2ecc71; color: white; padding: 2px 6px; font-size: 10px; border-radius: 0 5px 0 5px; z-index: 1;">NEW</div>
-            <img src="${book.cover}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
-            <p class="title" style="font-size: 13px; font-weight: bold; margin: 8px 0 2px; height: 32px; overflow: hidden;">${book.title}</p>
-            <small style="color: #888;">${book.category ? book.category.toUpperCase() : 'GENERAL'}</small>
-        </div>
-    `).join('');
-}
-    </script>
 </body>
 </html>
