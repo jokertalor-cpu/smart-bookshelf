@@ -134,10 +134,13 @@
             margin: 100px auto;
             text-align: center;
         }
-
-        @media (max-width: 600px) {
-            header { flex-direction: column; gap: 1rem; text-align: center; }
-        }
+  @media (max-width: 600px) {
+    /* ဖုန်းမှာ အရေးမကြီးတဲ့ Column တွေကို ဖျောက်ထားနည်း */
+    th:nth-child(3), td:nth-child(3), /* Category column */
+    th:nth-child(4), td:nth-child(4)  /* Stats column */ {
+        display: none;
+    }
+}
     </style>
 </head>
 <body>
