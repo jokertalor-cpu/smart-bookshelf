@@ -92,6 +92,44 @@
 .author-suggestions::-webkit-scrollbar-thumb:hover {
     background: #2196F3;
 }
+        /* Mobile Responsive အပြင်အဆင် */
+@media (max-width: 600px) {
+    .authors-page-container {
+        padding: 70px 10px 20px; /* ဘေး margin လျှော့လိုက်မယ် */
+    }
+
+    .author-books-grid {
+        /* ဖုန်းမှာ တစ်တန်းကို ၂ အုပ်စီ သေချာပေါ်အောင် လုပ်ခြင်း */
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 12px; /* စာအုပ်ကြားအကွာအဝေးကို ကျဉ်းလိုက်မယ် */
+    }
+
+    .book-card img {
+        height: 220px; /* ပုံအမြင့်ကို ပုံသေထားပြီး aspect-ratio ထိန်းမယ် */
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .book-title {
+        font-size: 12px; /* ဖုန်းမှာ စာလုံးအရွယ်အစား လျှော့မယ် */
+        -webkit-line-clamp: 2; /* စာကြောင်း ၂ ကြောင်းပဲ ပြမယ် */
+    }
+
+    .author-results-section {
+        padding: 15px 10px;
+    }
+
+    .section-header h2 {
+        font-size: 1.2rem; /* ခေါင်းစဉ်ကို ဖုန်းနဲ့ မျှအောင် လျှော့မယ် */
+    }
+}
+
+/* Tablet screen အတွက် (အပို) */
+@media (min-width: 601px) and (max-width: 900px) {
+    .author-books-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
     </style>
 </head>
 <body>
