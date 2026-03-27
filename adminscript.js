@@ -7,6 +7,7 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 const ADMIN_LIST = [
     "thanhtet2004@gmail.com",
     "khaingzinoo171224@gmail.com"
+    "mthiri897@gmail.com"
 ];
 
 // --- ၂။ Authentication ပိုင်း ---
