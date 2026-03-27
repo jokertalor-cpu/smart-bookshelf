@@ -3,31 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MmBookshelf - Home</title>
-    <link rel="stylesheet" href="home.css">
-    <link rel="stylesheet" href="main.css">
-     <style>.search-wrapper {
+    <title>SMARTBOOKSHELF-UPDATE PAGE </title>
+    <link rel="stylesheet" href="mainstyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+
+/* စာသားအောက်က မျဉ်းတားတာ ဖျောက်ခြင်း */
+.book-card a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* စာအုပ်နာမည် ၂ ကြောင်းထက်ပိုရင် ... ပြခြင်း */
+.book-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 2.8em; /* line-height ပေါ်မူတည်ပြီး ချိန်ရန် */
+    line-height: 1.4em;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 8px 0 4px;
+}
+
+/* Ranking Tag Design - ထူးထူးခြားခြားဖြစ်အောင် */
+.rank-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    z-index: 5;
 }
 
-.search-box {
-    width: 0;
-    overflow: hidden;
-    transition: width 0.3s ease;
+/* Rank အလိုက် အရောင်ခွဲခြင်း */
+.rank-1 { background: linear-gradient(45deg, #ffd700, #ffae00); border: 2px solid #fff; } /* Gold */
+.rank-2 { background: linear-gradient(45deg, #c0c0c0, #8e8e8e); border: 2px solid #fff; } /* Silver */
+.rank-3 { background: linear-gradient(45deg, #cd7f32, #a0522d); border: 2px solid #fff; } /* Bronze */
+.rank-other { background: rgba(0, 0, 0, 0.6); }
+
+/* Download Count တစ်ညီတည်းဖြစ်အောင် */
+.download-info {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
 }
 
-.search-wrapper.active .search-box {
-    width: 200px; /* စိတ်ကြိုက် width ထားနိုင်သည် */
-    margin-right: 5px;
-}</style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2196F3">
-<script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+.pop-info { margin-top: 10px; }
+.pop-info h4 { margin: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pop-info span { font-size: 13px; color: #e11d48; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <div class="menu-overlay" id="menu-overlay"></div>
+      <div class="menu-overlay" id="menu-overlay"></div>
     
     <nav class="navbar">
         <div class="nav-container">
@@ -43,7 +84,7 @@
             <div class="search-wrapper">
     <div class="search-box" id="search-box">
         <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." oninput="handleInput()" onkeydown="handleKeyDown(event)" autocomplete="off">
-        <div id="search-suggestions" class="suggestions-list"></div>
+        <div id="search-suggestions" class="search-suggestions"></div>
     </div>
     <button id="search-trigger" class="search-btn">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -58,36 +99,36 @@
             </ul>
         </div>
     </nav>
- 
-</div>
-    <div class="Editor-choice" id="book-display-section">
-        <div class="header">
-            <h2 id="section-title">EDITOR CHOICE</h2>
-            <button class="view-all" id="view-all-btn" onclick="filterBooks('all')">View All</button>
-        </div>
-        <div class="scroll-wrapper" id="book-list-container">
-            <p>Loading books...</p>
-        </div>
+
+   <div class="container main-content">
+    
+    <div class="section-header" style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+        <i class="fa-solid fa-fire" style="color: #ff4757; font-size: 1.5rem;"></i>
+        <h2 class="section-title">TOP 10 RANKING</h2>
     </div>
-    <div class="container">
-    <div class="section-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+    <div id="top-ranking-container" class="scroll-wrapper" style="margin-bottom: 30px;">
+        </div>
+
+    <hr style="border: 0.5px solid #eee; margin: 20px 0;">
+
+    <div class="section-header" style="display: flex; align-items: center; gap: 10px;">
         <i class="fa-solid fa-clock-rotate-left" style="color: #2ecc71; font-size: 1.5rem;"></i>
-        <h2 class="section-title" style="margin: 0;">LATEST RELEASE (10)</h2>
+        <h2 class="section-title">LATEST RELEASES</h2>
     </div>
     <div id="latest-10-container" class="scroll-wrapper" style="margin-bottom: 30px;">
-        </div>
-    <div class="container">
-    <div class="section-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-        <i class="fa-solid fa-fire" style="color: #ff4757; font-size: 1.5rem;"></i>
-        <h2 class="section-title" style="margin: 0;">TOP 10 RANKING</h2>
+        <p>Loading latest books...</p>
     </div>
-    
-    <div id="top-ranking-container" class="scroll-wrapper" style="margin-bottom: 30px; display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;">
+     <div class="container popular-box">
+    <div class="section-header" style="display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-heart" style="color: #ff4757; font-size: 1.5rem;"></i>
+        <h2 class="section-title">POPULAR BOOKS (LIKES)</h2>
+    </div>
+    <div id="popular-view" class="scroll-wrapper" style="margin-bottom: 30px;">
         </div>
 </div>
-   
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
-   
-    <script src="mainscript.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+<script src="mainscript.js"></script>
+<script src="latestscript.js"></script> ```
 </body>
 </html>

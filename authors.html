@@ -3,21 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart-Bookshelf- Search Authors</title>
-<meta name="title" content="Smart Bookshelf - Your Digital Library">
-<meta name="description" content="Discover, search, and manage your favorite books with Smart Bookshelf. Access a wide range of categories including Xianxia, Technical, Novels, and more for offline reading.">
-<meta name="keywords" content="Smart Bookshelf, Digital Library, Free Books, Myanmar Bookshelf, PDF Reader, Offline Reading, Book Management">
-<meta name="author" content="jokertalor-cpu">
-    <meta property="og:type" content="website">
-<meta property="og:url" content="https://jokertalor-cpu.github.io/wildrift-project/">
-<meta property="og:title" content="Smart Bookshelf - Your Personal Digital Library">
-<meta property="og:description" content="Organize your reading life. Explore a vast collection of books across multiple genres and enjoy seamless offline access.">
-<meta property="og:image" content="photo_2026-03-20_09-18-40.jpg">
+    <title>Smart Bookshelf - Search Authors</title>
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-         
         .authors-page-container { padding: 80px 15px 20px; max-width: 1000px; margin: 0 auto; }
         
         /* Search Section */
@@ -31,7 +21,9 @@
             border: 1px solid #ddd;
             font-size: 16px;
             outline: none;
+            transition: 0.3s;
         }
+        .author-search-input:focus { border-color: #2196F3; box-shadow: 0 0 8px rgba(33, 150, 243, 0.2); }
 
         /* Suggestion Box */
         .author-suggestions {
@@ -43,19 +35,22 @@
             border: 1px solid #ddd;
             border-top: none;
             border-radius: 0 0 8px 8px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             display: none;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .suggestion-item {
-            padding: 10px 15px;
+            padding: 12px 15px;
             cursor: pointer;
             border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            transition: 0.2s;
         }
         .suggestion-item:hover { background-color: #f0f7ff; color: #2196F3; }
 
-        /* Author's Books Container (Custom Style) */
+        /* Results Grid */
         .author-results-section {
             margin-top: 20px;
             background: #f9f9f9;
@@ -69,63 +64,59 @@
             gap: 20px;
             margin-top: 15px;
         }
-
-        /* mainscript.css နဲ့ ကိုက်ညီအောင် ပြန်ပြင်ခြင်း */
-        .author-books-grid .book-card {
+        .book-card {
             background: white;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             cursor: pointer;
+            animation: fadeIn 0.5s ease;
         }
-        .author-books-grid .book-card img {
-            width: 100%;
-            aspect-ratio: 2/3;
-            object-fit: cover;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .author-books-grid .book-info { padding: 8px; text-align: center; }
-        .author-books-grid .book-title { 
-            font-size: 13px; font-weight: bold; margin: 0; 
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-        }
-        
+        .book-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .book-info { padding: 8px; text-align: center; }
+        .book-title { font-size: 13px; font-weight: bold; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        /* Suggestion Box Scrollbar ကို ပိုလှအောင် လုပ်ခြင်း */
+.author-suggestions::-webkit-scrollbar {
+    width: 6px;
+}
+.author-suggestions::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.author-suggestions::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+.author-suggestions::-webkit-scrollbar-thumb:hover {
+    background: #2196F3;
+}
     </style>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2196F3">
 </head>
 <body>
-  <div class="menu-overlay" id="menu-overlay"></div>
+    <div class="menu-overlay" id="menu-overlay"></div>
     
     <nav class="navbar">
         <div class="nav-container">
             <button class="menu-toggle" id="mobile-menu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
+                <span class="bar"></span><span class="bar"></span><span class="bar"></span>
             </button>
             <div class="logo">
                 <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
             </div>
-
-            <div class="search-wrapper">
-    <div class="search-box" id="search-box">
-        <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." oninput="handleInput()" onkeydown="handleKeyDown(event)" autocomplete="off">
-        <div id="search-suggestions" class="suggestions-list"></div>
-    </div>
-   
-</div>
-
             <ul class="nav-menu" id="nav-menu">
                 <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
                 <li><a href="latest.html"><i class="fa-solid fa-book"></i> LATEST</a></li>
-                <li><a href="authors.html"><i class="fa-solid fa-pen-nib"?></i>AUTHORS</a></li>
-                 <li><a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
+                <li><a href="authors.html" class="active"><i class="fa-solid fa-pen-nib"></i> AUTHORS</a></li>
+                <li><a href="library.html"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="authors-page-container">
-        <div class="section-header" style="margin-bottom: 20px;">
+        <div class="section-header">
             <h2><i class="fa-solid fa-pen-nib"></i> စာရေးဆရာဖြင့် ရှာဖွေပါ</h2>
         </div>
 
@@ -151,44 +142,43 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
     <script src="mainscript.js"></script>
 
     <script>
-        let allBooksData = []; 
-        let uniqueAuthors = [];
+    // Variable အဟောင်းတွေနဲ့ initAuthorPage မလိုတော့ပါဘူး။
+    // User က Input ရိုက်လိုက်တာနဲ့ ဒီ function က အလုပ်လုပ်ပါမယ်။
 
-        // ၁။ စာအုပ်ဒေတာအားလုံးကို ကြိုတင်ဆွဲထားမယ်
-        async function initAuthorPage() {
-            try {
-                const { data, error } = await supabase.from('books').select('*');
-                if (error) throw error;
-                
-                allBooksData = data;
-                // Unique Author list လုပ်မယ်
-                const authorsRaw = data.map(b => b.author).filter(a => a);
-                uniqueAuthors = [...new Set(authorsRaw)].sort();
-            } catch (err) {
-                console.error("Error loading data:", err);
-            }
+    async function handleAuthorInput() {
+        const input = document.getElementById('author-search');
+        const suggestionBox = document.getElementById('author-suggestions');
+        const keyword = input.value.trim();
+
+        // ၁။ စာရိုက်ထားတာမရှိရင် Suggestion ပိတ်ထားမယ်
+        if (keyword === "") {
+            suggestionBox.style.display = 'none';
+            return;
         }
 
-        // ၂။ Input ရိုက်တဲ့အခါ Suggestion ပြပေးမယ်
-        function handleAuthorInput() {
-            const input = document.getElementById('author-search');
-            const suggestionBox = document.getElementById('author-suggestions');
-            const keyword = input.value.toLowerCase().trim();
+        try {
+            // ၂။ Database ဆီမှာ ရိုက်လိုက်တဲ့စာလုံးနဲ့တူတဲ့ Author တွေကိုပဲ လှမ်းတောင်းမယ်
+            // ilike သုံးထားလို့ အကြီးအသေး မှားရိုက်လည်း ရပါတယ်
+            const { data, error } = await supabase
+                .from('books')
+                .select('author')
+                .ilike('author', `%${keyword}%`)
+                .limit(40); // အများဆုံး ၄၀ ထိ ရှာခိုင်းမယ်
 
-            if (keyword === "") {
-                suggestionBox.style.display = 'none';
-                return;
-            }
+            if (error) throw error;
 
-            const matches = uniqueAuthors.filter(a => a.toLowerCase().includes(keyword));
+            // ၃။ ရလာတဲ့ Data ထဲက နာမည်တူတာတွေကို ဖယ်ထုတ်မယ် (Unique ဖြစ်အောင်လုပ်တာပါ)
+            const matches = [...new Set(data.map(item => item.author))].filter(a => a);
 
+            // ၄။ Suggestion Box ထဲမှာ ထည့်ပြမယ်
             if (matches.length > 0) {
                 suggestionBox.innerHTML = matches.map(name => `
                     <div class="suggestion-item" onclick="selectAuthor('${name.replace(/'/g, "\\\\'")}')">
+                        <i class="fas fa-user-edit" style="font-size: 12px; margin-right: 10px; color: #aaa;"></i>
                         ${name}
                     </div>
                 `).join('');
@@ -196,61 +186,75 @@
             } else {
                 suggestionBox.style.display = 'none';
             }
+        } catch (err) {
+            console.error("Search Error:", err.message);
         }
+    }
 
-        // ၃။ Suggestion ကို နှိပ်လိုက်တဲ့အခါ
-        function selectAuthor(name) {
-            document.getElementById('author-search').value = name;
-            document.getElementById('author-suggestions').style.display = 'none';
-            showBooksByAuthor(name);
-        }
+    // Suggestion တစ်ခုကို နှိပ်လိုက်တဲ့အခါ
+    function selectAuthor(name) {
+        document.getElementById('author-search').value = name;
+        document.getElementById('author-suggestions').style.display = 'none';
+        showBooksByAuthor(name);
+    }
 
-        // ၄။ Enter ခေါက်လိုက်တဲ့အခါ
-        function handleAuthorKeyDown(event) {
-            if (event.key === "Enter") {
-                const val = event.target.value.trim();
-                if (val !== "") {
-                    document.getElementById('author-suggestions').style.display = 'none';
-                    showBooksByAuthor(val);
-                }
+    // Enter ခေါက်လိုက်တဲ့အခါ
+    function handleAuthorKeyDown(event) {
+        if (event.key === "Enter") {
+            const val = event.target.value.trim();
+            if (val !== "") {
+                document.getElementById('author-suggestions').style.display = 'none';
+                showBooksByAuthor(val);
             }
         }
+    }
 
-        // ၅။ ရွေးချယ်ထားတဲ့ Author ရဲ့ စာအုပ်တွေကို Container ထဲမှာ ပြပေးမယ်
-        function showBooksByAuthor(authorName) {
-            const displayContainer = document.getElementById('author-books-display');
-            const resultTitle = document.getElementById('result-title');
-            
-            // Filter books
-            const filtered = allBooksData.filter(b => 
-                b.author && b.author.toLowerCase().includes(authorName.toLowerCase())
-            );
+    // Database ကနေ Author ရဲ့ စာအုပ်တွေကို ဆွဲထုတ်ပြတဲ့အပိုင်း
+    async function showBooksByAuthor(authorName) {
+        const displayContainer = document.getElementById('author-books-display');
+        const resultTitle = document.getElementById('result-title');
+        
+        displayContainer.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color: #2196F3;"></i>
+                <p style="margin-top: 10px;">စာအုပ်များ ရှာဖွေနေပါသည်...</p>
+            </div>`;
+
+        try {
+            const { data: filtered, error } = await supabase
+                .from('books')
+                .select('id, title, cover')
+                .ilike('author', `%${authorName}%`); 
+
+            if (error) throw error;
 
             resultTitle.innerText = `"${authorName}" ၏ စာအုပ်များ (${filtered.length})`;
 
             if (filtered.length === 0) {
-                displayContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center;">စာအုပ်ရှာမတွေ့ပါ။</p>`;
+                displayContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 50px;">စာအုပ်ရှာမတွေ့ပါ။</p>`;
                 return;
             }
 
             displayContainer.innerHTML = filtered.map(book => `
                 <div class="book-card" onclick="location.href='detail.html?id=${book.id}'">
-                    <img src="${book.cover}" onerror="this.src='https://via.placeholder.com/140x190'">
+                    <img src="${book.cover}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
                     <div class="book-info">
                         <p class="book-title">${book.title}</p>
                     </div>
                 </div>
             `).join('');
+        } catch (err) {
+            displayContainer.innerHTML = `<p style="color: red; grid-column: 1/-1; text-align: center;">အမှားအယွင်းရှိနေပါသည်။</p>`;
         }
+    }
 
-        document.addEventListener('DOMContentLoaded', initAuthorPage);
-
-        // အပြင်ဘက်ကို နှိပ်ရင် suggestion box ပိတ်မယ်
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-area')) {
-                document.getElementById('author-suggestions').style.display = 'none';
-            }
-        });
-    </script>
+    // Suggestion box ပြင်ပကို နှိပ်ရင် ပိတ်ပေးမယ်
+    document.addEventListener('click', (e) => {
+        const searchArea = document.querySelector('.search-area');
+        if (searchArea && !searchArea.contains(e.target)) {
+            document.getElementById('author-suggestions').style.display = 'none';
+        }
+    });
+</script>
 </body>
 </html>

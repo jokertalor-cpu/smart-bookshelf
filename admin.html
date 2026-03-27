@@ -4,118 +4,264 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Smart Bookshelf</title>
-    <link rel="stylesheet" href="style.css"> <style>
-        body { font-family: sans-serif; padding: 20px; }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --border: #e2e8f0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; }
         .hidden { display: none; }
-        .form-container { background: #f4f4f4; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #eee; }
-        .btn-main { background: #2196F3; color: white; border: none; padding: 10px 20px; cursor: pointer; }
-        .btn-edit { background: #4CAF50; color: white; border: none; padding: 5px 10px; cursor: pointer; }
-        .btn-delete { background: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+
+        /* Header Style */
+        header {
+            background: var(--card-bg);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Form Card */
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card-title { font-size: 1.25rem; font-weight: 700; margin-top: 0; margin-bottom: 1.5rem; color: var(--primary); }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-muted); }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            background: #fdfdfd;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea { resize: vertical; min-height: 100px; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            gap: 8px;
+        }
+
+        .btn-main { background: var(--primary); color: white; width: 100%; }
+        .btn-main:hover { background: var(--primary-hover); }
+
+        .btn-logout { background: #fee2e2; color: var(--danger); }
+        .btn-logout:hover { background: #fecaca; }
+
+        .btn-edit { background: #dcfce7; color: #166534; padding: 6px 12px; }
+        .btn-delete { background: #fee2e2; color: #991b1b; padding: 6px 12px; }
+
+        /* Table Style */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f1f5f9; padding: 1rem; text-align: left; font-size: 0.875rem; color: var(--text-muted); }
+        td { padding: 1rem; border-top: 1px solid var(--border); font-size: 0.95rem; }
+        tr:hover { background: #f8fafc; }
+
+        .book-cover-preview {
+            width: 45px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #eee;
+        }
+
+        /* Login Page Specific */
+        #login-section {
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            header { flex-direction: column; gap: 1rem; text-align: center; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="login-section">
-        <h2>Admin Login</h2>
+<div class="container">
+
+    <div id="login-section" class="card">
+        <i class="fa-solid fa-shield-halved" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+        <h2 style="margin-bottom: 1.5rem;">Admin Login</h2>
         <div class="form-group">
-            <input type="email" id="login-email" placeholder="Admin Email">
+            <input type="email" id="login-email" placeholder="Email Address">
         </div>
         <div class="form-group">
             <input type="password" id="login-pw" placeholder="Password">
         </div>
-        <button class="btn-main" onclick="handleLogin()">Login</button>
+        <button class="btn btn-main" onclick="handleLogin()">
+            <i class="fa-solid fa-right-to-bracket"></i> Login
+        </button>
     </div>
 
     <div id="admin-panel" class="hidden">
-        <header style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Admin Dashboard</h2>
-            <button onclick="handleLogout()">Logout</button>
+        <header>
+            <h2 style="margin:0;"><i class="fa-solid fa-gauge-high"></i> Admin Dashboard</h2>
+            <button class="btn btn-logout" onclick="handleLogout()">
+                <i class="fa-solid fa-power-off"></i> Logout
+            </button>
         </header>
 
-        <div class="form-container">
-            <h3 id="form-title">Add New Book</h3>
-            <input type="hidden" id="edit-book-id"> <div class="form-group">
-                <label>စာအုပ်အမည် (Title)</label>
-                <input type="text" id="title">
-            </div>
-            <div class="form-group">
-                <label>အမျိုးအစား (Category)</label>
-                <select id="category">
-                   <option value="xianxia">XIANXIA</option>
-                <option value="technical">TECHNICAL</option>
-                <option value="novel">NOVEL</option>
-                <option value="knowledge">KNOWLEDGE</option>
-                <option value="poem">POEM</option>
-                <option value="magazine">MAGAZINE</option>
-                <option value="history">HISTORY</option>
-                 <option value="action">ACTION</option>
-                 <option value="adventure">ADVENTURE</option>
-                 <option value="health">HEALTH</option>
-                 <option value="martial">MARTIAL</option>
-                 <option value="agriculture">AGRICULTURE</option>
-                 <option value="mystry">MYSTRY</option>
-                 <option value="rarebook">RAREBOOK</option>
-                 <option value="business">BUSINESS</option>
-                 <option value="comic">COMIC</option>
-                 <option value="horror">HORROR</option>
-                 <option value="drama">DRAMA</option>
+        <div class="card">
+            <h3 id="form-title" class="card-title"><i class="fa-solid fa-plus-circle"></i> Add New Book</h3>
+            <input type="hidden" id="edit-book-id">
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>စာအုပ်အမည် (Title)</label>
+                    <input type="text" id="title" placeholder="Enter book title">
+                </div>
+                <div class="form-group">
+                    <label>အမျိုးအစား (Category)</label>
+                    <select id="category">
+                        <option value="xianxia">XIANXIA</option>
+                        <option value="technical">TECHNICAL</option>
+                        <option value="novel">NOVEL</option>
+                        <option value="knowledge">KNOWLEDGE</option>
+                        <option value="poem">POEM</option>
+                        <option value="magazine">MAGAZINE</option>
+                        <option value="history">HISTORY</option>
+                        <option value="action">ACTION</option>
+                        <option value="adventure">ADVENTURE</option>
+                        <option value="health">HEALTH</option>
+                        <option value="martial">MARTIAL</option>
+                        <option value="agriculture">AGRICULTURE</option>
+                        <option value="mystry">MYSTRY</option>
+                        <option value="rarebook">RAREBOOK</option>
+                        <option value="business">BUSINESS</option>
+                        <option value="comic">COMIC</option>
+                        <option value="horror">HORROR</option>
+                        <option value="drama">DRAMA</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>စာရေးသူ (Author)</label>
+                    <input type="text" id="author" placeholder="Author name">
+                </div>
+                <div class="form-group">
+                    <label>File Size (e.g. 1.2 MB)</label>
+                    <input type="text" id="file-size" placeholder="1.2 MB">
+                </div>
                 
-                </select>
-            </div>
-            <div class="form-group">
-                <label>စာရေးသူ (Author)</label>
-                <input type="text" id="author">
-            </div>
-            <div class="form-group">
-                <label>မျက်နှာဖုံးပုံ (Cover Image File)</label>
-                <input type="file" id="cover-file" accept="image/*">
-                <input type="text" id="cover-url" placeholder="သို့မဟုတ် URL ထည့်ပါ">
-            </div>
-            <div class="form-group">
-                <label>စာအုပ်ဖိုင် (Book PDF File)</label>
-                <input type="file" id="pdf-file" accept=".pdf">
-                <input type="text" id="download-link" placeholder="သို့မဟုတ် Link ထည့်ပါ">
-            </div>
-            <div class="form-group">
-                <label>File Size (e.g. 1.2 MB)</label>
-                <input type="text" id="file-size">
-            </div>
-            <div class="form-group">
-                <label>ဖတ်ရန်လင့် (Read Link)</label>
-                <input type="text" id="read-link">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is-editor-choice"> Editor's Choice</label>
+                <div class="form-group full-width">
+                    <label>စာအုပ်အညွှန်း (Description)</label>
+                    <textarea id="description" placeholder="Write a short summary of the book..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>မျက်နှာဖုံးပုံ (Cover File)</label>
+                    <input type="file" id="cover-file" accept="image/*" style="padding: 5px;">
+                    <input type="text" id="cover-url" placeholder="သို့မဟုတ် URL ထည့်ပါ" style="margin-top: 10px;">
+                </div>
+                <div class="form-group">
+                    <label>စာအုပ်ဖိုင် (PDF File)</label>
+                    <input type="file" id="pdf-file" accept=".pdf" style="padding: 5px;">
+                    <input type="text" id="download-link" placeholder="သို့မဟုတ် Link ထည့်ပါ" style="margin-top: 10px;">
+                </div>
+                <div class="form-group">
+                    <label>ဖတ်ရန်လင့် (Read Link)</label>
+                    <input type="text" id="read-link" placeholder="Online reading URL">
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; padding-top: 30px;">
+                    <input type="checkbox" id="is-editor-choice" style="width: 20px; margin: 0;"> 
+                    <label style="margin: 0;">Editor's Choice</label>
+                </div>
             </div>
 
-            <button class="btn-main" id="save-btn" onclick="saveBook()">Save Book</button>
-            <button class="hidden" id="cancel-btn" onclick="resetForm()">Cancel</button>
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button class="btn btn-main" id="save-btn" onclick="saveBook()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Book Data
+                </button>
+                <button class="btn hidden" id="cancel-btn" onclick="resetForm()" style="background: #e2e8f0; color: #475569;">
+                    Cancel
+                </button>
+            </div>
         </div>
 
-        <h3>စာအုပ်စာရင်းများ</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cover</th>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Download Count</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="admin-book-list">
-                </tbody>
-        </table>
+        <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-list"></i> စာအုပ်စာရင်းများ</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cover</th>
+                        <th>Title & Author</th>
+                        <th>Category</th>
+                        <th>Stats</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-book-list">
+                    </tbody>
+            </table>
+        </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
-    <script src="adminscript.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+<script src="adminscript.js"></script>
 </body>
 </html>

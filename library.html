@@ -1,239 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Smart Bookshelf - Your Digital Library</title>
-<meta name="title" content="Smart Bookshelf - Your Digital Library">
-<meta name="description" content="Discover, search, and manage your favorite books with Smart Bookshelf. Access a wide range of categories including Xianxia, Technical, Novels, and more for offline reading.">
-<meta name="keywords" content="Smart Bookshelf, Digital Library, Free Books, Myanmar Bookshelf, PDF Reader, Offline Reading, Book Management">
-<meta name="author" content="jokertalor-cpu">
-    <link rel="stylesheet" href="home.css">
-    <link rel="stylesheet" href="main.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>My Library - SmartBookshelf</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+
     <style>
-        .library-container { padding: 80px 15px; max-width: 1000px; margin: 0 auto; }
+        :root { --primary: #313336; --danger: #ea4335; --heart: #e11d48; --bg: #f8f9fa; }
+        body { font-family: 'Pyidaungsu', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
         
-        /* Search & Filter Section */
-        .lib-controls { margin-bottom: 25px; }
-        .lib-search-wrapper { position: relative; margin-bottom: 15px; }
-        .lib-search-input {
-            width: 100%; padding: 12px 15px 12px 40px; border-radius: 25px;
-            border: 1px solid #ddd; font-size: 15px; outline: none; transition: 0.3s;
-        }
-        .lib-search-input:focus { border-color: #2196F3; box-shadow: 0 0 8px rgba(33,150,243,0.1); }
-        .lib-search-icon { position: absolute; left: 15px; top: 15px; color: #888; }
+        /* Navbar ပုံစံလေး အနည်းငယ်ထည့်ထားပါတယ် */
+        .nav-header { background: white; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .nav-container a { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 14px; }
 
-        /* Category Filter Chips */
-        .category-scroll {
-            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;
-            scrollbar-width: none; /* Firefox */
-        }
-        .category-scroll::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
-        .filter-chip {
-            padding: 6px 15px; border-radius: 20px; background: #eee;
-            font-size: 13px; cursor: pointer; white-space: nowrap; transition: 0.3s;
-            border: 1px solid transparent;
-        }
-        .filter-chip.active { background: #2196F3; color: white; border-color: #2196F3; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .section-title { font-size: 1.2rem; color: #202124; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--primary); padding-left: 10px; }
+        .section-title.fav { border-left-color: var(--heart); }
 
-        /* Grid */
-        .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .lib-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        .lib-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-        .lib-info { padding: 8px; text-align: center; flex-grow: 1; }
-        .lib-title { font-size: 13px; font-weight: bold; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .book-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 20px; 
+        }
+
+        .book-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .book-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .book-card img { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            border-radius: 8px; 
+            cursor: pointer;
+        }
+
+        .book-card h3 { 
+            font-size: 13px; 
+            margin: 10px 0; 
+            height: 38px; 
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            color: #3c4043;
+        }
+
+        .actions { display: flex; flex-direction: column; gap: 5px; }
         
-        .lib-actions { display: flex; border-top: 1px solid #eee; }
-        .lib-actions button { flex: 1; padding: 10px; border: none; cursor: pointer; background: white; }
-        .btn-read-lib { color: #2196F3; border-right: 1px solid #eee !important; }
-        .btn-delete-lib { color: #ff4757; }
-       .search-wrapper {
-    display: flex;
-    align-items: center;
-}
+        .btn { 
+            border: none; padding: 7px; border-radius: 6px; cursor: pointer; 
+            font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .btn-read { background: var(--primary); color: white; }
+        .btn-info { background: #f1f3f4; color: #5f6368; }
+        .btn-delete { background: #feeef3; color: var(--danger); }
 
-
+        .empty-state { text-align: center; padding: 40px; color: #70757a; grid-column: 1/-1; background: #fff; border-radius: 12px; }
+        
+        @media (max-width: 480px) {
+            .book-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .book-card img { height: 180px; }
+        }
     </style>
 </head>
 <body>
- 
-<div class="menu-overlay" id="menu-overlay"></div>
 
-<nav class="navbar">
-    <div class="nav-container">
-        <button class="menu-toggle" id="mobile-menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </button>
-
-        <div class="logo">
-            <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
+    <div class="nav-header">
+        <div class="nav-container">
+            <h2 style="margin:0; font-size: 1.2rem;"><i class="fas fa-book-bookmark"></i> MY LIBRARY</h2>
+            <a href="index.html"><i class="fa-solid fa-house"></i> ပင်မစာမျက်နှာ</a>
         </div>
-
-        <div class="search-wrapper">
-            <div class="search-box" id="search-box">
-                <input type="text" id="lib-search-input" placeholder="Library ထဲရှိစာအုပ်ရှာရန်..." oninput="applyFilters()" autocomplete="off">
-            </div>
-          
-        </div>
-
-        <ul class="nav-menu" id="nav-menu">
-            <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
-            <li><a href="latest.html"><i class="fa-solid fa-book"></i> LATEST</a></li>
-            <li><a href="authors.html"><i class="fa-solid fa-pen-nib"></i> AUTHORS</a></li>
-            <li><a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
-        </ul>
     </div>
-</nav>
-    <div class="library-container">
-        <div class="lib-controls">
-            <div class="lib-search-wrapper">
-                <i class="fa-solid fa-magnifying-glass lib-search-icon"></i>
-                <input type="text" id="lib-search-input" class="lib-search-input" placeholder="အမည်ဖြင့် ရှာရန်..." oninput="applyFilters()">
-            </div>
 
-            <div class="category-scroll" id="category-filter">
-                <div class="filter-chip active" onclick="filterByCategory('all', this)">ALL</div>
-                </div>
+    <div class="container">
+        <div class="section-title">
+            <i class="fas fa-cloud-arrow-down"></i> အော့ဖ်လိုင်းစာအုပ်များ
+        </div>
+        <div id="library-grid" class="book-grid">
+            <p>Loading offline books...</p>
         </div>
 
-        <div id="library-list" class="lib-grid">
-            </div>
+        <div class="section-title fav">
+            <i class="fas fa-heart" style="color: var(--heart);"></i> သင်ကြိုက်နှစ်သက်သောစာအုပ်များ
+        </div>
+        <div id="fav-view" class="book-grid">
+            <p>Loading favorites...</p>
+        </div>
     </div>
-      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
 
     <script>
-        const db = new Dexie("MmBookshelfDB");
-        db.version(1).stores({
-            downloaded_books: 'id, title, author, cover, category, fileBlob, lastPage'
-        });
+      
+        const SB_URL = "https://cmguamftohgcgwdggwde.supabase.co"; 
+        const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
 
-        let allLocalBooks = [];
-        let currentCategory = 'all';
+        const db = new Dexie("MyDigitalLibrary");
+        db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-        async function initLibrary() {
+        // ၂။ Window Load ဖြစ်ချိန်မှာ ခေါ်မည့် function များ
+        window.onload = () => {
+            renderLibrary();    // Offline books
+            loadMyFavorites();  // Liked books
+        };
+
+        // --- (က) Offline Library ပိုင်း ---
+        async function renderLibrary() {
+            const grid = document.getElementById('library-grid');
             try {
-                allLocalBooks = await db.downloaded_books.toArray();
-                
-                // ၁။ Category Chips များကို Dynamic ထုတ်ပေးခြင်း
-                setupCategoryChips();
-                // ၂။ စာအုပ်များကို ပြသခြင်း
-                applyFilters();
-            } catch (err) {
-                console.error(err);
-            }
+                const books = await db.savedBooks.toArray();
+                if (books.length === 0) {
+                    grid.innerHTML = `<div class="empty-state"><i class="fas fa-download fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+                    return;
+                }
+                grid.innerHTML = books.map(book => `
+                    <div class="book-card" id="card-${book.id}">
+                        <img src="${book.cover}" onclick="openReader('${book.id}')" onerror="this.src='https://via.placeholder.com/150x200?text=No+Cover'">
+                        <h3>${book.title}</h3>
+                        <div class="actions">
+                            <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
+                            <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) { console.error(err); }
         }
 
-        function setupCategoryChips() {
-            const container = document.getElementById('category-filter');
-            // Database ထဲမှာ တကယ်ရှိတဲ့ category တွေကိုပဲ ယူမယ်
-            const categories = [...new Set(allLocalBooks.map(b => b.category).filter(c => c))];
-            
-            categories.forEach(cat => {
-                const chip = document.createElement('div');
-                chip.className = 'filter-chip';
-                chip.innerText = cat.toUpperCase();
-                chip.onclick = () => filterByCategory(cat, chip);
-                container.appendChild(chip);
-            });
-        }
+        // --- (ခ) အသဲပေးထားသောစာအုပ်များ (Supabase) ---
+        async function loadMyFavorites() {
+            const likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
+            const favContainer = document.getElementById('fav-view');
 
-        function filterByCategory(category, element) {
-            currentCategory = category;
-            // UI Active class ပြောင်းခြင်း
-            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
-            applyFilters();
-        }
-
-        function applyFilters() {
-            const searchTxt = document.getElementById('lib-search-input').value.toLowerCase().trim();
-            
-            const filtered = allLocalBooks.filter(book => {
-                const matchesSearch = book.title.toLowerCase().includes(searchTxt) || 
-                                     (book.author && book.author.toLowerCase().includes(searchTxt));
-                const matchesCategory = (currentCategory === 'all') || (book.category === currentCategory);
-                
-                return matchesSearch && matchesCategory;
-            });
-
-            renderBooks(filtered);
-        }
-
-        function renderBooks(books) {
-            const container = document.getElementById('library-list');
-            if (books.length === 0) {
-                container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; margin-top: 30px; color: #888;'>စာအုပ်ရှာမတွေ့ပါ။</p>";
+            if (likedIds.length === 0) {
+                favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
                 return;
             }
 
-            container.innerHTML = books.map(book => `
-                <div class="lib-card">
-                    <img src="${book.cover}" onerror="this.src='https://via.placeholder.com/150x200'">
-                    <div class="lib-info">
-                        <div class="lib-title">${book.title}</div>
-                        <small style="color: #888;">${book.category || 'General'}</small>
-                    </div>
-                    <div class="lib-actions">
-                        <button class="btn-read-lib" onclick="location.href='reader.html?id=${book.id}&mode=offline'">
-                            <i class="fa-solid fa-book-open"></i> Read
-                        </button>
-                        <button class="btn-delete-lib" onclick="deleteBook('${book.id}')">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
+            try {
+                const numericIds = likedIds.map(id => parseInt(id));
+                const { data, error } = await sb.from('books').select('id, title, cover').in('id', numericIds);
 
-        async function deleteBook(id) {
-            if (confirm("ဤစာအုပ်ကို Library ထဲမှ ဖျက်လိုပါသလား?")) {
-                await db.downloaded_books.delete(id);
-                await db.downloaded_books.delete(Number(id));
-                allLocalBooks = await db.downloaded_books.toArray(); // List ကို update လုပ်မယ်
-                applyFilters();
+                if (error) throw error;
+
+                favContainer.innerHTML = data.map(item => `
+                    <div class="book-card" onclick="location.href='detail.html?id=${item.id}'" style="cursor:pointer;">
+                        <img src="${item.cover}" onerror="this.src='https://via.placeholder.com/150x200?text=No+Cover'">
+                        <h3>${item.title}</h3>
+                        <div class="actions">
+                            <button class="btn btn-info"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                favContainer.innerHTML = `<p style="color:red; text-align:center;">အင်တာနက်ချိတ်ဆက်မှု လိုအပ်ပါသည်။</p>`;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', initLibrary);
-    </script>
-    <script>
-    // --- Mobile Menu Logic ---
-const menuToggle = document.querySelector('#mobile-menu');
-const navMenu = document.querySelector('#nav-menu');
-const overlay = document.querySelector('#menu-overlay');
+        // --- (ဂ) Function ငယ်လေးများ ---
+        function openReader(id) { window.location.href = `reader.html?id=${id}&mode=offline`; }
 
-if (menuToggle) {
-    menuToggle.addEventListener('click', () => {
-        navMenu.classList.toggle('active');
-        overlay.classList.toggle('active');
-        menuToggle.classList.toggle('active'); // Hamburger ကို X ပြောင်းရန်
-    });
-}
-
-if (overlay) {
-    overlay.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        overlay.classList.remove('active');
-        menuToggle.classList.remove('active');
-    });
-}
-
-// --- Search Box Expand Logic (index.html အတိုင်း) ---
-const searchTrigger = document.getElementById('search-trigger');
-if (searchTrigger) {
-    searchTrigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        const wrapper = document.querySelector('.search-wrapper');
-        wrapper.classList.toggle('active');
-        if (wrapper.classList.contains('active')) {
-            document.getElementById('lib-search-input').focus();
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'ဖျက်မှာ သေချာလား?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ea4335',
+                confirmButtonText: 'ဖျက်မည်',
+                cancelButtonText: 'မဖျက်တော့ပါ'
+            }).then((result) => { if (result.isConfirmed) deleteBook(id); });
         }
-    });
-}
-</script>
+
+        async function deleteBook(id) {
+            await db.savedBooks.delete(id);
+            await db.savedBooks.delete(Number(id));
+            renderLibrary();
+            Swal.fire({ title: 'ဖျက်ပြီးပါပြီ', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        }
+    </script>
 </body>
 </html>

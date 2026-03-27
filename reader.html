@@ -1,173 +1,174 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
-    <title>Smart Reader Pro - MmBookshelf</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Smart Scroll Reader - SmartBookshelf</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        :root { --bg-color: #2c2c2c; --topbar-bg: #1a1a1a; --text-color: #eeeeee; }
-        body.dark-mode { --bg-color: #0f0f0f; --topbar-bg: #000000; }
-
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-color); font-family: sans-serif; overflow: hidden; }
-
-        .reader-header {
-            height: 55px; background: var(--topbar-bg); display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.5); box-sizing: border-box;
-        }
-
-        .nav-group { display: flex; align-items: center; gap: 8px; }
-        .btn-icon { padding: 10px; font-size: 1.2rem; cursor: pointer; color: var(--text-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .btn-icon:hover { background: rgba(255,255,255,0.1); }
-        .disabled { opacity: 0.3; pointer-events: none; }
-
-        /* Viewer Container */
-        #viewer-container {
-            margin-top: 55px; height: calc(100vh - 55px); overflow: auto;
-            display: flex; justify-content: center; align-items: flex-start;
-            padding: 20px 10px; box-sizing: border-box; gap: 10px; /* နှစ်မျက်နှာကြားကွာဝေးချက် */
-        }
-
-        canvas { background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 100%; height: auto !important; image-rendering: high-quality; }
-        body.dark-mode canvas { filter: invert(0.9) hue-rotate(180deg); }
-
-        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; text-align: center; }
+        :root { --bg-color: #1a1a1a; --topbar-bg: #000000; --text-color: #eeeeee; --primary: #1a73e8; }
+        body.dark-mode { --bg-color: #050505; --topbar-bg: #000000; }
         
-        @media (max-width: 600px) {
-            #book-title { max-width: 80px; font-size: 12px; }
-            .btn-icon { padding: 8px; font-size: 1.1rem; }
+        body, html { margin: 0; padding: 0; background: var(--bg-color); color: var(--text-color); font-family: 'Pyidaungsu', sans-serif; }
+        
+        /* Header Fix */
+        .reader-header { 
+            height: 55px; background: var(--topbar-bg); display: flex; align-items: center; 
+            justify-content: space-between; padding: 0 15px; position: fixed; top: 0; 
+            width: 100%; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.5); box-sizing: border-box; 
         }
+
+        .nav-group { display: flex; align-items: center; gap: 12px; }
+        .btn-icon { padding: 10px; font-size: 1.1rem; cursor: pointer; color: var(--text-color); border: none; background: none; }
+        
+        /* Scroll Container */
+        #scroll-viewer { 
+            margin-top: 55px; width: 100%; display: flex; flex-direction: column; 
+            align-items: center; padding: 10px 0; gap: 15px;
+        }
+
+        /* Page Wrapper */
+        .page-container { position: relative; margin-bottom: 10px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        body.dark-mode .page-container canvas { filter: invert(0.9) hue-rotate(180deg); }
+        
+        canvas { display: block; max-width: 100%; height: auto !important; }
+
+        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; display: none; }
+        .page-label { position: absolute; top: 5px; right: 10px; background: rgba(0,0,0,0.5); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
     </style>
 </head>
-<body>
+<body class="dark-mode">
 
     <header class="reader-header">
         <div class="nav-group">
-            <i class="fa-solid fa-arrow-left btn-icon" onclick="history.back()"></i>
-            <span id="book-title">Loading...</span>
+            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+            <span id="book-title" style="font-size:13px; max-width:120px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">စာအုပ်ဖတ်နေသည်...</span>
         </div>
-
         <div class="nav-group">
-            <i class="fa-solid fa-chevron-left btn-icon" id="prev-page"></i>
-            <span id="page-display">0 / 0</span>
-            <i class="fa-solid fa-chevron-right btn-icon" id="next-page"></i>
-            <i class="fa-solid fa-magnifying-glass-plus btn-icon" id="zoom-in"></i>
-            <i class="fa-solid fa-magnifying-glass-minus btn-icon" id="zoom-out"></i>
-            <i class="fa-solid fa-moon btn-icon" id="dark-mode-toggle"></i>
+            <span id="page-indicator" style="font-size: 14px; font-weight: bold;">Page: 1</span>
+            <button class="btn-icon" id="dark-mode-toggle"><i class="fa-solid fa-circle-half-stroke"></i></button>
         </div>
     </header>
 
-    <div id="loading"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+    <div id="loading"><i class="fa-solid fa-spinner fa-spin fa-3x" style="color:var(--primary)"></i></div>
     
-    <div id="viewer-container">
-        <canvas id="canvas-left"></canvas>
-        <canvas id="canvas-right"></canvas>
-    </div>
+    <div id="scroll-viewer">
+        </div>
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
-        const params = new URLSearchParams(window.location.search);
-        const bookId = params.get('id'), mode = params.get('mode');
-        const db = new Dexie("MmBookshelfDB");
-        db.version(1).stores({ downloaded_books: 'id, title, author, cover, fileBlob, lastPage' });
-
-        let pdfDoc = null, currentPage = 1, currentScale = 1.0, isRendering = false;
-        const canvasL = document.getElementById('canvas-left'), ctxL = canvasL.getContext('2d');
-        const canvasR = document.getElementById('canvas-right'), ctxR = canvasR.getContext('2d');
-
-        // ၁။ Smart Zoom & Layout
-        const getIsTwoPage = () => window.innerWidth > window.innerHeight && window.innerWidth > 800;
-
-        document.getElementById('zoom-in').onclick = () => { if(currentScale < 3.0) { currentScale += 0.2; renderAll(); } };
-        document.getElementById('zoom-out').onclick = () => { if(currentScale > 0.5) { currentScale -= 0.2; renderAll(); } };
         
-        document.getElementById('dark-mode-toggle').onclick = () => {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('reader-dark', document.body.classList.contains('dark-mode'));
-        };
+        const params = new URLSearchParams(window.location.search);
+        const bookId = params.get('id');
+        const db = new Dexie("MyDigitalLibrary");
+        db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
+        let pdfDoc = null, currentScale = 1.5, wakeLock = null;
+        const viewer = document.getElementById('scroll-viewer');
+
+        // ၁။ Screen မပိတ်အောင် တားဆီးခြင်း
+        async function requestWakeLock() {
+            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+        }
+
+        // ၂။ စာအုပ်စဖွင့်ခြင်း
         async function initReader() {
+            document.getElementById('loading').style.display = 'block';
+            await requestWakeLock();
+
             try {
-                let data;
-                if (mode === 'offline') {
-                    const book = await db.downloaded_books.get(bookId) || await db.downloaded_books.get(Number(bookId));
-                    data = await book.fileBlob.arrayBuffer();
-                    document.getElementById('book-title').innerText = book.title;
-                    currentPage = book.lastPage ? parseInt(book.lastPage) : 1;
-                } else {
-                    data = decodeURIComponent(params.get('url'));
+                const book = await db.savedBooks.get(bookId);
+                if (!book) return alert("စာအုပ်ရှာမတွေ့ပါ");
+                
+                document.getElementById('book-title').innerText = book.title;
+                const data = await book.fileData.arrayBuffer();
+                pdfDoc = await pdfjsLib.getDocument({data: data}).promise;
+
+                // စာမျက်နှာအားလုံးအတွက် နေရာလွတ် (Placeholders) များအရင်ဆောက်ထားမယ်
+                for (let i = 1; i <= pdfDoc.numPages; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'page-container';
+                    div.id = `page-box-${i}`;
+                    div.setAttribute('data-page-num', i);
+                    div.innerHTML = `<canvas id="canvas-${i}"></canvas><span class="page-label">${i}</span>`;
+                    viewer.appendChild(div);
                 }
-                pdfDoc = await pdfjsLib.getDocument(data).promise;
-                renderAll();
+
+                // Resume ဖတ်မလားမေးမယ်
+                if (book.lastPage && book.lastPage > 1) {
+                    const result = await Swal.fire({
+                        title: 'ဆက်ဖတ်မလား?',
+                        text: `စာမျက်နှာ ${book.lastPage} မှ ဆက်ဖတ်မလား?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'ဆက်ဖတ်မည်',
+                        cancelButtonText: 'အစကပြန်ဖတ်မည်'
+                    });
+                    if (result.isConfirmed) {
+                        scrollToPage(book.lastPage);
+                    }
+                }
+
+                setupIntersectionObserver();
+                document.getElementById('loading').style.display = 'none';
             } catch (e) { console.error(e); }
         }
 
-        async function renderPage(pageNum, canvas, ctx) {
-            if (pageNum > pdfDoc.numPages || pageNum < 1) {
-                canvas.style.display = 'none';
-                return;
-            }
-            canvas.style.display = 'block';
+        // ၃။ Scrolling စောင့်ကြည့်ပြီး လက်ရှိရောက်နေတဲ့ စာမျက်နှာကို Render လုပ်ခြင်း
+        function setupIntersectionObserver() {
+            const options = { root: null, threshold: 0.1 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const pageNum = parseInt(entry.target.getAttribute('data-page-num'));
+                        renderPage(pageNum);
+                        document.getElementById('page-indicator').innerText = `Page: ${pageNum}`;
+                        // Database မှာ lastPage သိမ်းမယ်
+                        db.savedBooks.update(bookId, { lastPage: pageNum });
+                    }
+                });
+            }, options);
+
+            document.querySelectorAll('.page-container').forEach(div => observer.observe(div));
+        }
+
+        async function renderPage(pageNum) {
+            const canvas = document.getElementById(`canvas-${pageNum}`);
+            if (canvas.getAttribute('rendered')) return; // Render လုပ်ပြီးသားဆို ထပ်မလုပ်တော့ဘူး
+
             const page = await pdfDoc.getPage(pageNum);
-            const dpr = window.devicePixelRatio || 1;
             const viewport = page.getViewport({ scale: currentScale });
-            
-            canvas.width = Math.floor(viewport.width * dpr);
-            canvas.height = Math.floor(viewport.height * dpr);
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+
+            canvas.width = viewport.width * dpr;
+            canvas.height = viewport.height * dpr;
             canvas.style.width = viewport.width + "px";
             canvas.style.height = viewport.height + "px";
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
             await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            canvas.setAttribute('rendered', 'true');
         }
 
-        async function renderAll() {
-            if (isRendering) return;
-            isRendering = true;
-            document.getElementById('loading').style.display = 'block';
-
-            const isTwoPage = getIsTwoPage();
-            
-            await renderPage(currentPage, canvasL, ctxL);
-            if (isTwoPage) {
-                await renderPage(currentPage + 1, canvasR, ctxR);
-                document.getElementById('page-display').innerText = `${currentPage}-${Math.min(currentPage+1, pdfDoc.numPages)} / ${pdfDoc.numPages}`;
-            } else {
-                canvasR.style.display = 'none';
-                document.getElementById('page-display').innerText = `${currentPage} / ${pdfDoc.numPages}`;
+        function scrollToPage(num) {
+            const target = document.getElementById(`page-box-${num}`);
+            if (target) {
+                window.scrollTo({ top: target.offsetTop - 60, behavior: 'smooth' });
             }
-
-            document.getElementById('loading').style.display = 'none';
-            isRendering = false;
-
-            if (mode === 'offline') db.downloaded_books.update(bookId, { lastPage: currentPage });
         }
 
-        document.getElementById('next-page').onclick = () => {
-            const step = getIsTwoPage() ? 2 : 1;
-            if (currentPage + step <= pdfDoc.numPages) {
-                currentPage += step;
-                renderAll();
-                document.getElementById('viewer-container').scrollTop = 0;
-            }
-        };
+        document.getElementById('dark-mode-toggle').onclick = () => document.body.classList.toggle('dark-mode');
 
-        document.getElementById('prev-page').onclick = () => {
-            const step = getIsTwoPage() ? 2 : 1;
-            if (currentPage - step >= 1) {
-                currentPage -= step;
-                renderAll();
-                document.getElementById('viewer-container').scrollTop = 0;
-            }
-        };
-
-        window.onresize = renderAll;
         window.onload = initReader;
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible') await requestWakeLock();
+        });
     </script>
 </body>
 </html>

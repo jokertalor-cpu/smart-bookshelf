@@ -3,30 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MmBookshelf - Home</title>
-    <link rel="stylesheet" href="home.css">
-    <link rel="stylesheet" href="main.css">
-   
+   <title>SMARTBOOKSHELF - မြန်မာ့အကြီးဆုံး ဒစ်ဂျစ်တယ်စာအုပ်စင်</title>
+<meta name="title" content="SMARTBOOKSHELF - မြန်မာ့အကြီးဆုံး ဒစ်ဂျစ်တယ်စာအုပ်စင်">
+<meta name="description" content="Xianxia, Novel, Technical နှင့် ဗဟုသုတဖြစ်ဖွယ် စာအုပ်ပေါင်းများစွာကို တစ်နေရာတည်းတွင် အခမဲ့ ဖတ်ရှုနိုင်ပါသည်။">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jokertalor-cpu.github.io/smart-bookshelf/">
+<meta property="og:title" content="SMARTBOOKSHELF - Explore Myanmar Digital Library">
+<meta property="og:description" content="သင့်အကြိုက်ဆုံး စာအုပ်တွေကို အွန်လိုင်းကော အော့ဖ်လိုင်းပါ ဖတ်ရှုနိုင်မယ့် အကောင်းဆုံး မြန်မာစာအုပ်စင်။">
+<meta property="og:image" content="https://jokertalor-cpu.github.io/smart-bookshelf/photo_2026-03-20_09-18-40.jpg"> <meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://jokertalor-cpu.github.io/smart-bookshelf/">
+<meta property="twitter:title" content="SMARTBOOKSHELF - Myanmar Digital Library">
+<meta property="twitter:description" content="ဒစ်ဂျစ်တယ်စာအုပ်ပေါင်းများစွာကို အခမဲ့ဖတ်ရှုနိုင်သောနေရာ။">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2196F3">
 <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-<style>.search-wrapper {
-    display: flex;
-    align-items: center;
-}
-
-.search-box {
-    width: 0;
-    overflow: hidden;
-    transition: width 0.3s ease;
-}
-
-.search-wrapper.active .search-box {
-    width: 200px; /* စိတ်ကြိုက် width ထားနိုင်သည် */
-    margin-right: 5px;
-}</style>
-</head>
+   <link rel="stylesheet" href="mainstyle.css">
+</head> 
 <body>
     <div class="menu-overlay" id="menu-overlay"></div>
     
@@ -44,7 +38,7 @@
             <div class="search-wrapper">
     <div class="search-box" id="search-box">
         <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." oninput="handleInput()" onkeydown="handleKeyDown(event)" autocomplete="off">
-        <div id="search-suggestions" class="suggestions-list"></div>
+        <div id="search-suggestions" class="search-suggestions"></div>
     </div>
     <button id="search-trigger" class="search-btn">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -63,7 +57,7 @@
     <div class="Editor-choice" id="book-display-section">
         <div class="header">
             <h2 id="section-title">EDITOR CHOICE</h2>
-            <button class="view-all" id="view-all-btn" onclick="filterBooks('all')">View All</button>
+            <button class="view-all-btn" id="view-all-btn" onclick="filterBooks('all')">View All</button>
         </div>
         <div class="scroll-wrapper" id="book-list-container">
             <p>Loading books...</p>
@@ -76,26 +70,26 @@
             <a href="javascript:void(0)"class="tag-box" onclick="filterBooks('xianxia')">XIANXIA</a>
             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('technical')">TECHNICAL</a>
             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('novel')">NOVEL</a>
-           <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('knowledge')">KNOWLEDGE</a>
-           <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('poem')">POEM</a>
-           <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('magazine')">MAGAZINE</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('knowledge')">KNOWLEDGE</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('poem')">POEM</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('magazine')">MAGAZINE</a>
             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('history')">HISTORY</a>
-           <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('action')">ACTION</a>
-          <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('adventure')">ADVENTURE</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('health')">HEALTH</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('martial')">MARIAL</a>
-                   <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('agriculture')">AGRICULTURE</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('mystery')">MYSTERY</a>
-                   <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('rarebook')">RARE BOOK</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('business')">BUSINESS</a>
-                   <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('comic')">COMIC</a>
-                   <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('horror')">HORROR</a>
-                  <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('drama')">DRAMA</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('action')">ACTION</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('adventure')">ADVENTURE</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('health')">HEALTH</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('martial')">MARIAL</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('agriculture')">AGRICULTURE</a>
+             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('mystery')">MYSTERY</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('rarebook')">RARE BOOK</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('business')">BUSINESS</a>
+             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('comic')">COMIC</a>
+             <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('horror')">HORROR</a>
+            <a href="javascript:void(0)" class="tag-box" onclick="filterBooks('drama')">DRAMA</a>
 
         </div>
     </div>
-    <a href="admin.html"></a>
-     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
-    <script src="mainscript.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+<script src="mainscript.js"></script>
+<script src="indexscript.js"></script>
 </body>
 </html>
