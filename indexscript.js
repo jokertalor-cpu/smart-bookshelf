@@ -146,10 +146,5 @@ function scrollToBooks() {
     const section = document.getElementById('book-display-section');
     if(section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-document.addEventListener('keydown', (e) => {
-    // Alt + Shift + A ကို နှိပ်မှ admin ကို သွားမယ်
-    if (e.altKey && e.shiftKey && e.code === 'KeyA') {
-        window.location.href = 'admin.html';
-    }
-});
+
 loadBooks();
