@@ -74,17 +74,56 @@
             .book-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .book-card img { height: 180px; }
         }
+        .auth-notice {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: none; /* Default အနေနဲ့ ဖျောက်ထားမယ် */
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.auth-notice .btn-login-sm {
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+#logout-btn {
+    display: none; /* စဖွင့်ချင်း ဖျောက်ထားမယ် */
+    background: #feeef3;
+    color: #e11d48;
+    border: 1px solid #fda4af;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
     </style>
 </head>
 <body>
 
     <div class="nav-header">
-        <div class="nav-container">
-            <h2 style="margin:0; font-size: 1.2rem;"><i class="fas fa-book-bookmark"></i> MY LIBRARY</h2>
-            <a href="index.html"><i class="fa-solid fa-house"></i> ပင်မစာမျက်နှာ</a>
-        </div>
+       <div class="nav-container">
+    <h2 style="margin:0; font-size: 1.2rem;"><i class="fas fa-book-bookmark"></i> MY LIBRARY</h2>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <button id="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> ထွက်မည်</button>
+        <a href="index.html"><i class="fa-solid fa-house"></i> ပင်မစာမျက်နှာ</a>
     </div>
-
+</div>
+<div id="login-reminder" class="auth-notice">
+    <div>
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>သင် Login မဝင်ထားပါ။ စက်ပြောင်းခြင်း သို့မဟုတ် Browser Cache ရှင်းလိုက်ပါက ဒေတာများ ပျောက်ဆုံးနိုင်ပါသည်။</span>
+    </div>
+    <a href="auth.html" class="btn-login-sm">Login ဝင်မည်</a>
+</div>
     <div class="container">
         <div class="section-title">
             <i class="fas fa-cloud-arrow-down"></i> အော့ဖ်လိုင်းစာအုပ်များ
@@ -100,8 +139,7 @@
             <p>Loading favorites...</p>
         </div>
     </div>
-
-  <script>
+<script>
    const SB_URL = "https://cmguamftohgcgwdggwde.supabase.co"; 
 const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9";
 const sb = supabase.createClient(SB_URL, SB_KEY);
