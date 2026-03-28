@@ -74,8 +74,7 @@
         flex: 1 1 100%; /* အသဲပေးတဲ့ခလုတ်ကို အောက်ကနေ အပြည့်ပြချင်ရင် ဒါကိုသုံးပါ */
         margin-top: 5px;
     }
-        .btn-read { background: var(--primary); color: white; }
-        .btn-dl { background: var(--success); color: white; }
+}
         #progress-ui { display: none; position: relative; width: 65px; height: 65px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 5; }
         .circle-bar { fill: none; stroke: var(--success); stroke-width: 5; stroke-dasharray: 126; stroke-dashoffset: 126; transition: 0.2s; transform: rotate(-90deg); transform-origin: center; }
@@ -196,64 +195,57 @@
 
     let activeBook = null;
 
-  async function loadPage() {
-    const id = new URLSearchParams(window.location.search).get('id');
-    if (!id) return;
+    async function loadPage() {
+        const id = new URLSearchParams(window.location.search).get('id');
+        if (!id) return;
 
-    const { data, error } = await sb.from('books')
-        .select('id, title, author, category, cover, file_size, read_link, download_link, download_count, description')
-        .eq('id', id)
-        .maybeSingle();
-    
-    if (error || !data) {
-        document.getElementById('main-content').innerHTML = "စာအုပ်ရှာမတွေ့ပါ။";
-        return;
-    }
+        const { data, error } = await sb.from('books')
+            .select('id, title, author, category, cover, file_size, read_link, download_link, download_count, description')
+            .eq('id', id)
+            .maybeSingle();
+        
+        if (error || !data) {
+            document.getElementById('main-content').innerHTML = "စာအုပ်ရှာမတွေ့ပါ။";
+            return;
+        }
 
-    activeBook = data;
-    
-    // HTML ထည့်သွင်းခြင်း
-    renderBookDetail(data);
-    
-    // အသဲပေးထားခြင်း ရှိမရှိ ချက်ချင်းစစ်
-    checkLikeStatus(); 
-    
-    // ဆက်စပ်စာအုပ်များ ခေါ်ခြင်း
-    loadMore(data.category, data.id);
-}
-
-function renderBookDetail(data) {
-    document.getElementById('main-content').innerHTML = `
-        <div class="book-hero">
-            <div class="cover-box"><img src="${data.cover}"></div>
-            <div class="book-info">
-                <h1>${data.title}</h1>
-                <div class="meta"><i class="fas fa-user-tie"></i> <span><b>စာရေးသူ:</b> ${data.author}</span></div>
-                <div class="meta"><i class="fas fa-list"></i> <span><b>အမျိုးအစား:</b> ${data.category}</span></div>
-                <div class="meta"><i class="fas fa-file-alt"></i> <span><b>ဖိုင်ဆိုဒ်:</b> ${data.file_size || 'N/A'}</span></div>
-                
-                <div class="actions">
-                    <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
-                    <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
-                    <button onclick="toggleLike()" id="like-btn" class="btn">
-                        <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
-                    </button>
-                    <div id="progress-ui">
-                        <svg width="60" height="60">
-                            <circle class="circle-bg" cx="30" cy="30" r="20"></circle>
-                            <circle id="progress-bar" class="circle-bar" cx="30" cy="30" r="20"></circle>
-                        </svg>
-                        <div id="pct-label" class="pct-val">0%</div>
+        activeBook = data;
+        document.getElementById('main-content').innerHTML = `
+            <div class="book-hero">
+                <div class="cover-box"><img src="${data.cover}"></div>
+                <div class="book-info">
+                    <h1>${data.title}</h1>
+                    <div class="meta"><i class="fas fa-user-tie"></i> <span><b>စာရေးသူ:</b> ${data.author}</span></div>
+                    <div class="meta"><i class="fas fa-list"></i> <span><b>အမျိုးအစား:</b> ${data.category}</span></div>
+                    <div class="meta"><i class="fas fa-file-alt"></i> <span><b>ဖိုင်ဆိုဒ်:</b> ${data.file_size || 'N/A'}</span></div>
+                    
+                    <div class="actions">
+                        <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
+                        <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
+                       <button onclick="toggleLike()" id="like-btn" class="btn">
+    <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
+</button>
+                        <div id="progress-ui">
+                            <svg width="60" height="60">
+                                <circle class="circle-bg" cx="30" cy="30" r="20"></circle>
+                                <circle id="progress-bar" class="circle-bar" cx="30" cy="30" r="20"></circle>
+                            </svg>
+                            <div id="pct-label" class="pct-val">0%</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="description-box">
-            <h3>စာအုပ်အညွှန်း</h3>
-            <div class="description-text">${data.description || 'ဤစာအုပ်အတွက် အညွှန်းမရှိသေးပါ။'}</div>
-        </div>
-    `;
-}
+
+            <div class="description-box">
+                <h3>စာအုပ်အညွှန်း</h3>
+                <div class="description-text">
+                    ${data.description ? data.description : 'ဤစာအုပ်အတွက် အညွှန်းမရှိသေးပါ။'}
+                </div>
+            </div>
+        `;
+        loadMore(data.category, data.id);
+    }
+
     async function incrementDownloadCount(bookId) {
         try {
             const { error } = await sb.rpc('increment_download', { row_id: bookId });
