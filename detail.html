@@ -183,7 +183,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 <script>
- const db = new Dexie("MyDigitalLibrary");
+   const db = new Dexie("MyDigitalLibrary");
 db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
 const _U = 'https://cmguamftohgcgwdggwde.supabase.co';
@@ -254,27 +254,23 @@ async function startDownload() {
         const blob = new Blob(chunks, { type: 'application/pdf' });
         await db.savedBooks.put({ id: activeBook.id.toString(), title: activeBook.title, author: activeBook.author, cover: activeBook.cover, fileData: blob });
         
+        // Cloud သို့ ဒေါင်းလုဒ်စာရင်းမှတ်ခြင်း
         await saveToCloudDownload(activeBook.id.toString());
+
         Swal.fire({ title: 'အောင်မြင်ပါသည်', text: 'Library ထဲသို့ ထည့်သွင်းပြီးပါပြီ။', icon: 'success' });
     } catch (err) { console.error(err); }
     finally { btn.style.display = 'flex'; ui.style.display = 'none'; }
 }
 
 async function saveToCloudDownload(bookId) {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-        await sb.from('user_downloads').upsert({ user_id: session.user.id, book_id: parseInt(bookId) });
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+        await sb.from('user_downloads').upsert({ user_id: user.id, book_id: parseInt(bookId) });
     }
 }
 
 async function toggleLike() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-        Swal.fire({ title: 'Login ဝင်ရန်လိုအပ်သည်', text: 'အသဲပေးရန်အတွက် အကောင့်ဝင်ပေးပါဦးဗျ။', icon: 'info' });
-        return;
-    }
-
-    const user = session.user;
+    const { data: { user } } = await sb.auth.getUser();
     let likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
     const bookId = activeBook.id.toString();
     const isLiked = likedBooks.includes(bookId);
@@ -282,16 +278,16 @@ async function toggleLike() {
     try {
         if (isLiked) {
             await sb.rpc('decrement_likes', { row_id: activeBook.id });
-            await sb.from('user_likes').delete().eq('user_id', user.id).eq('book_id', parseInt(bookId));
+            if (user) await sb.from('user_likes').delete().eq('user_id', user.id).eq('book_id', bookId);
             likedBooks = likedBooks.filter(id => id !== bookId);
         } else {
             await sb.rpc('increment_likes', { row_id: activeBook.id });
-            await sb.from('user_likes').upsert({ user_id: user.id, book_id: parseInt(bookId) });
+            if (user) await sb.from('user_likes').upsert({ user_id: user.id, book_id: bookId });
             likedBooks.push(bookId);
         }
         localStorage.setItem('my_likes', JSON.stringify(likedBooks));
         updateLikeUI(!isLiked);
-    } catch (err) { console.error("Like Error:", err); }
+    } catch (err) { console.error(err); }
 }
 
 function checkLikeStatus() {
@@ -301,24 +297,11 @@ function checkLikeStatus() {
 
 function updateLikeUI(isLiked) {
     const btn = document.getElementById('like-btn');
-    if(!btn) return;
     const icon = btn.querySelector('i');
     const label = document.getElementById('like-label');
     btn.style.color = isLiked ? '#e11d48' : '#64748b';
     icon.className = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
     label.innerText = isLiked ? 'အသဲပေးထားပြီး' : 'အသဲပေးမည်';
-}
-
-async function loadMore(category, currentId) {
-    const { data } = await sb.from('books').select('id, title, cover').eq('category', category).neq('id', currentId).limit(6);
-    if (data) {
-        document.getElementById('related-view').innerHTML = data.map(b => `
-            <div class="item-card" onclick="location.href='detail.html?id=${b.id}'">
-                <div class="item-img"><img src="${b.cover}"></div>
-                <p>${b.title}</p>
-            </div>
-        `).join('');
-    }
 }
 
 window.onload = loadPage;
