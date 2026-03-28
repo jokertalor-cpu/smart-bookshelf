@@ -4,8 +4,8 @@
  */
 
 // --- ၁။ Configuration & Initialization ---
-const supabaseUrl = 'https://cmguamftohgcgwdggwde.supabase.co';
-const supabaseKey = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9';
+const supabaseUrl = 'https://mituedqotwbmporkwbqf.supabase.co';
+const supabaseKey = 'sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // DOM Elements
