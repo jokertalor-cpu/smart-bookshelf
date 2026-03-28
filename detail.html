@@ -81,17 +81,25 @@
         gap: 10px;
     }
     
-    .btn {
-        padding: 14px 15px;
-        font-size: 14px;
-        flex: 1 1 45%; /* ဖုန်းမှာ တစ်တန်းကို ၂ ခုနှုန်း စီမယ် */
-    }
+  /* Like Button အသစ် */
+#like-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
-    /* အသဲပေးတဲ့ခလုတ်ကို ဖုန်းမှာ ပိုထင်ရှားစေဖို့ */
-    #like-btn {
-        flex: 1 1 100%; /* အသဲပေးတဲ့ခလုတ်ကို အောက်ကနေ အပြည့်ပြချင်ရင် ဒါကိုသုံးပါ */
-        margin-top: 5px;
-    }
+/* Like ပေးထားချိန်မှာ ပေါ်မယ့် Style */
+#like-btn.liked {
+    background: #fff1f2; /* နုအေးသော အနီရောင်နောက်ခံ */
+    border-color: #fda4af;
+    color: #e11d48; /* အနီရောင် */
+    transform: scale(1.05);
+}
+
+#like-btn.liked i {
+    filter: drop-shadow(0 0 5px rgba(225, 29, 72, 0.4));
+}
 }
         #progress-ui { display: none; position: relative; width: 65px; height: 65px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 5; }
@@ -363,49 +371,66 @@ checkLikeStatus(); // <--- ဒီ line လေး ထည့်ပေးပါ
             </div>
         `).join('');
     }
-// Page load တဲ့အခါ အရင်ပေးထားဖူးလား စစ်မယ်
-function checkLikeStatus() {
+// ၁။ Page load တဲ့အခါ status ကို စစ်ပြီး UI ပြောင်းမယ်
+async function checkLikeStatus() {
+    if (!activeBook) return;
     const likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
     const isLiked = likedBooks.includes(activeBook.id.toString());
     updateLikeUI(isLiked);
 }
 
+// ၂။ UI ကို အနီရောင်/မီးခိုးရောင် ပြောင်းပေးတဲ့ function
 function updateLikeUI(isLiked) {
     const btn = document.getElementById('like-btn');
     const icon = btn.querySelector('i');
     const label = document.getElementById('like-label');
     
     if (isLiked) {
-        btn.style.color = '#e11d48';
-        icon.className = 'fa-solid fa-heart';
+        btn.classList.add('liked');
+        icon.className = 'fa-solid fa-heart'; // အပြည့်ပုံစံ
         label.innerText = 'အသဲပေးထားပြီး';
     } else {
-        btn.style.color = '#64748b';
-        icon.className = 'fa-regular fa-heart';
+        btn.classList.remove('liked');
+        icon.className = 'fa-regular fa-heart'; // အလွတ်ပုံစံ
         label.innerText = 'အသဲပေးမည်';
     }
 }
 
+// ၃။ Like ပေးခြင်း/ဖြုတ်ခြင်း (Toggle Logic)
 async function toggleLike() {
+    if (!activeBook) return;
+    
     let likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
     const bookId = activeBook.id.toString();
     const isLiked = likedBooks.includes(bookId);
 
+    // ခလုတ်ကို ခေတ္တပိတ်ထားမယ် (Double click မဖြစ်အောင်)
+    const btn = document.getElementById('like-btn');
+    btn.style.pointerEvents = 'none';
+
     try {
         if (isLiked) {
-            // အသဲပြန်ဖြုတ်မယ်
+            // --- အသဲပြန်ဖြုတ်မည် ---
             await sb.rpc('decrement_likes', { row_id: activeBook.id });
             likedBooks = likedBooks.filter(id => id !== bookId);
             updateLikeUI(false);
+            
+            // Toast notification ပြမယ်
+            Swal.fire({ title: 'Library မှ ဖယ်ရှားလိုက်ပါပြီ', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
         } else {
-            // အသဲပေးမယ်
+            // --- အသဲပေးမည် ---
             await sb.rpc('increment_likes', { row_id: activeBook.id });
             likedBooks.push(bookId);
             updateLikeUI(true);
+            
+            Swal.fire({ title: 'အသဲပေးလိုက်ပါပြီ', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
         }
         localStorage.setItem('my_likes', JSON.stringify(likedBooks));
     } catch (err) {
         console.error("Like error:", err);
+        Swal.fire('Error', 'တစ်ခုခုမှားယွင်းနေပါသည်', 'error');
+    } finally {
+        btn.style.pointerEvents = 'auto';
     }
 }
     window.onload = loadPage;
