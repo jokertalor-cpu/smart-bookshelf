@@ -44,7 +44,25 @@
     flex: 1; /* ခလုတ်တွေကို အညီအမျှ ဖြစ်စေဖို့ */
     min-width: 140px; /* ခလုတ်တစ်ခုချင်းစီရဲ့ အနည်းဆုံး အကျယ် */
 }
+.btn-read { 
+    background: var(--primary); 
+    color: white; 
+    border: none;
+    display: flex; /* alignment ညီအောင် */
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; /* မျဉ်းတားပျောက်အောင် */
+    transition: all 0.3s ease;
+}
 
+.btn-read:hover {
+    background: #1557b0; /* hover အရောင် အနည်းငယ်ရင့်သွားမယ် */
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+}
+
+.btn-read:active {
+    transform: scale(0.98);
+}
 /* Like Button Design ကို ပိုလှအောင် ပြင်ခြင်း */
 #like-btn {
     background: #f8fafc;
@@ -211,6 +229,9 @@
 
         activeBook = data;
         document.getElementById('main-content').innerHTML = `
+        activeBook = data;
+// ... (တခြား code များ)
+checkLikeStatus(); // <--- ဒီ line လေး ထည့်ပေးပါ
             <div class="book-hero">
                 <div class="cover-box"><img src="${data.cover}"></div>
                 <div class="book-info">
