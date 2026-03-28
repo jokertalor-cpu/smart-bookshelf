@@ -20,8 +20,61 @@
         .book-info h1 { margin: 0 0 20px 0; font-size: 28px; color: #202124; }
         .meta { margin-bottom: 12px; font-size: 17px; display: flex; align-items: center; gap: 12px; }
         .meta i { color: var(--primary); width: 20px; }
-        .actions { display: flex; align-items: center; gap: 20px; margin-top: 35px; }
-        .btn { padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+       /* Actions Section ကို ဖုန်းအတွက် ပြင်ဆင်ခြင်း */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* ခလုတ်ကြား အကွာအဝေး */
+    margin-top: 35px;
+    flex-wrap: wrap; /* ဖုန်းမှာ နေရာမဆန့်ရင် အောက်ကြောင်းဆင်းပေးဖို့ */
+}
+
+.btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    flex: 1; /* ခလုတ်တွေကို အညီအမျှ ဖြစ်စေဖို့ */
+    min-width: 140px; /* ခလုတ်တစ်ခုချင်းစီရဲ့ အနည်းဆုံး အကျယ် */
+}
+
+/* Like Button Design ကို ပိုလှအောင် ပြင်ခြင်း */
+#like-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0 !important;
+    color: #64748b;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+#like-btn:active {
+    transform: scale(0.95); /* နှိပ်လိုက်ရင် တုန်သွားတဲ့ effect */
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .actions {
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 14px 15px;
+        font-size: 14px;
+        flex: 1 1 45%; /* ဖုန်းမှာ တစ်တန်းကို ၂ ခုနှုန်း စီမယ် */
+    }
+
+    /* အသဲပေးတဲ့ခလုတ်ကို ဖုန်းမှာ ပိုထင်ရှားစေဖို့ */
+    #like-btn {
+        flex: 1 1 100%; /* အသဲပေးတဲ့ခလုတ်ကို အောက်ကနေ အပြည့်ပြချင်ရင် ဒါကိုသုံးပါ */
+        margin-top: 5px;
+    }
+}flex; align-items: center; gap: 10px; transition: 0.3s; }
         .btn-read { background: var(--primary); color: white; }
         .btn-dl { background: var(--success); color: white; }
         #progress-ui { display: none; position: relative; width: 65px; height: 65px; }
@@ -171,7 +224,7 @@
                     <div class="actions">
                         <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
                         <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
-                       <button onclick="toggleLike()" id="like-btn" class="btn" style="background: #f1f5f9; color: #64748b;">
+                       <button onclick="toggleLike()" id="like-btn" class="btn">
     <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
 </button>
                         <div id="progress-ui">
