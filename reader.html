@@ -40,135 +40,242 @@
 
         #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; display: none; }
         .page-label { position: absolute; top: 5px; right: 10px; background: rgba(0,0,0,0.5); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        /* Slider အတွက် အလှဆင်ခြင်း */
+#zoom-slider {
+    -webkit-appearance: none;
+    height: 4px;
+    background: #444;
+    border-radius: 5px;
+    outline: none;
+}
+
+#zoom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* PC မှာဆိုရင် slider ကို ပိုရှည်ထားမယ် */
+@media (min-width: 768px) {
+    #zoom-slider { width: 150px; }
+}
     </style>
 </head>
 <body class="dark-mode">
 
-    <header class="reader-header">
-        <div class="nav-group">
-            <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
-            <span id="book-title" style="font-size:13px; max-width:120px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">စာအုပ်ဖတ်နေသည်...</span>
-        </div>
-        <div class="nav-group">
-            <span id="page-indicator" style="font-size: 14px; font-weight: bold;">Page: 1</span>
-            <button class="btn-icon" id="dark-mode-toggle"><i class="fa-solid fa-circle-half-stroke"></i></button>
-        </div>
-    </header>
+   <header class="reader-header">
+    <div class="nav-group">
+        <button class="btn-icon" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+        <span id="book-title" style="font-size:13px; max-width:100px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">...</span>
+    </div>
+    
+    <div class="nav-group" style="flex: 1; justify-content: center; gap: 8px;">
+        <i class="fa-solid fa-magnifying-glass-minus" style="font-size: 12px;"></i>
+        <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1.5" style="width: 80px; accent-color: var(--primary);">
+        <i class="fa-solid fa-magnifying-glass-plus" style="font-size: 12px;"></i>
+    </div>
+
+    <div class="nav-group">
+        <span id="page-indicator" style="font-size: 12px;">Page: 1</span>
+        <button class="btn-icon" id="dark-mode-toggle"><i class="fa-solid fa-circle-half-stroke"></i></button>
+    </div>
+</header>
 
     <div id="loading"><i class="fa-solid fa-spinner fa-spin fa-3x" style="color:var(--primary)"></i></div>
     
     <div id="scroll-viewer">
         </div>
 
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-        
-        const params = new URLSearchParams(window.location.search);
-        const bookId = params.get('id');
-        const db = new Dexie("MyDigitalLibrary");
-        db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
+   <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    
+    const params = new URLSearchParams(window.location.search);
+    const bookId = params.get('id');
+    const db = new Dexie("MyDigitalLibrary");
+    db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-        let pdfDoc = null, currentScale = 1.5, wakeLock = null;
-        const viewer = document.getElementById('scroll-viewer');
+    let pdfDoc = null;
+    let currentScale = window.innerWidth < 600 ? 1.2 : 1.8; // Mobile ဆိုရင် scale လျှော့မယ်
+    let wakeLock = null;
+    let renderedPages = new Set(); // Render ပြီးသားစာမျက်နှာများကို track လုပ်ရန်
+    const viewer = document.getElementById('scroll-viewer');
 
-        // ၁။ Screen မပိတ်အောင် တားဆီးခြင်း
-        async function requestWakeLock() {
-            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
-        }
+    // ၁။ Screen မပိတ်အောင် တားဆီးခြင်း
+    async function requestWakeLock() {
+        try { 
+            if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); 
+        } catch (err) { console.warn("WakeLock failed"); }
+    }
 
-        // ၂။ စာအုပ်စဖွင့်ခြင်း
-        async function initReader() {
-            document.getElementById('loading').style.display = 'block';
-            await requestWakeLock();
+    // ၂။ စာအုပ်စဖွင့်ခြင်း
+    async function initReader() {
+        const loading = document.getElementById('loading');
+        loading.style.display = 'block';
+        await requestWakeLock();
 
-            try {
-                const book = await db.savedBooks.get(bookId);
-                if (!book) return alert("စာအုပ်ရှာမတွေ့ပါ");
-                
-                document.getElementById('book-title').innerText = book.title;
-                const data = await book.fileData.arrayBuffer();
-                pdfDoc = await pdfjsLib.getDocument({data: data}).promise;
+        try {
+            const book = await db.savedBooks.get(bookId) || await db.savedBooks.get(Number(bookId));
+            if (!book) return Swal.fire("Error", "စာအုပ်ရှာမတွေ့ပါ", "error");
+            
+            document.getElementById('book-title').innerText = book.title;
+            const data = await book.fileData.arrayBuffer();
+            pdfDoc = await pdfjsLib.getDocument({data: data, cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/cmaps/', cMapPacked: true}).promise;
 
-                // စာမျက်နှာအားလုံးအတွက် နေရာလွတ် (Placeholders) များအရင်ဆောက်ထားမယ်
-                for (let i = 1; i <= pdfDoc.numPages; i++) {
-                    const div = document.createElement('div');
-                    div.className = 'page-container';
-                    div.id = `page-box-${i}`;
-                    div.setAttribute('data-page-num', i);
-                    div.innerHTML = `<canvas id="canvas-${i}"></canvas><span class="page-label">${i}</span>`;
-                    viewer.appendChild(div);
-                }
+            // Placeholders များဆောက်ခြင်း
+            const fragment = document.createDocumentFragment();
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                const div = document.createElement('div');
+                div.className = 'page-container';
+                div.id = `page-box-${i}`;
+                div.setAttribute('data-page-num', i);
+                div.style.minHeight = "500px"; // အကြမ်းဖျင်း height ထားခြင်း
+                div.innerHTML = `<canvas id="canvas-${i}"></canvas><span class="page-label">${i}</span>`;
+                fragment.appendChild(div);
+            }
+            viewer.appendChild(fragment);
 
-                // Resume ဖတ်မလားမေးမယ်
-                if (book.lastPage && book.lastPage > 1) {
-                    const result = await Swal.fire({
-                        title: 'ဆက်ဖတ်မလား?',
-                        text: `စာမျက်နှာ ${book.lastPage} မှ ဆက်ဖတ်မလား?`,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonText: 'ဆက်ဖတ်မည်',
-                        cancelButtonText: 'အစကပြန်ဖတ်မည်'
-                    });
-                    if (result.isConfirmed) {
-                        scrollToPage(book.lastPage);
-                    }
-                }
-
-                setupIntersectionObserver();
-                document.getElementById('loading').style.display = 'none';
-            } catch (e) { console.error(e); }
-        }
-
-        // ၃။ Scrolling စောင့်ကြည့်ပြီး လက်ရှိရောက်နေတဲ့ စာမျက်နှာကို Render လုပ်ခြင်း
-        function setupIntersectionObserver() {
-            const options = { root: null, threshold: 0.1 };
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const pageNum = parseInt(entry.target.getAttribute('data-page-num'));
-                        renderPage(pageNum);
-                        document.getElementById('page-indicator').innerText = `Page: ${pageNum}`;
-                        // Database မှာ lastPage သိမ်းမယ်
-                        db.savedBooks.update(bookId, { lastPage: pageNum });
-                    }
+            // Resume ဖတ်မလားမေးခြင်း
+            if (book.lastPage && book.lastPage > 1) {
+                loading.style.display = 'none';
+                const result = await Swal.fire({
+                    title: 'ဆက်ဖတ်မလား?',
+                    text: `စာမျက်နှာ ${book.lastPage} မှ ဆက်ဖတ်မလား?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'ဆက်ဖတ်မည်',
+                    cancelButtonText: 'အစကပြန်ဖတ်မည်'
                 });
-            }, options);
+                if (result.isConfirmed) scrollToPage(book.lastPage);
+            }
 
-            document.querySelectorAll('.page-container').forEach(div => observer.observe(div));
+            setupIntersectionObserver();
+            loading.style.display = 'none';
+        } catch (e) { 
+            console.error(e);
+            loading.style.display = 'none';
         }
+    }
 
-        async function renderPage(pageNum) {
-            const canvas = document.getElementById(`canvas-${pageNum}`);
-            if (canvas.getAttribute('rendered')) return; // Render လုပ်ပြီးသားဆို ထပ်မလုပ်တော့ဘူး
+    // ၃။ Rendering Logic (Memory Optimized)
+    async function renderPage(pageNum) {
+        const canvas = document.getElementById(`canvas-${pageNum}`);
+        if (!canvas || canvas.getAttribute('rendered')) return;
+        if (canvas.getAttribute('rendering')) return;
 
-            const page = await pdfDoc.getPage(pageNum);
-            const viewport = page.getViewport({ scale: currentScale });
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
+        canvas.setAttribute('rendering', 'true');
+        const page = await pdfDoc.getPage(pageNum);
+        
+        // စာမျက်နှာ ဇောက်ထိုးမဖြစ်အောင် rotation ကို ထည့်တွက်ခြင်း
+        const viewport = page.getViewport({ scale: currentScale, rotation: page.rotate });
+        const ctx = canvas.getContext('2d', { alpha: false }); // Performance ပိုကောင်းစေရန် alpha false ထား
+        const dpr = window.devicePixelRatio || 1;
 
-            canvas.width = viewport.width * dpr;
-            canvas.height = viewport.height * dpr;
-            canvas.style.width = viewport.width + "px";
-            canvas.style.height = viewport.height + "px";
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        canvas.width = viewport.width * dpr;
+        canvas.height = viewport.height * dpr;
+        canvas.style.width = "100%";
+        canvas.style.height = "auto";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-            canvas.setAttribute('rendered', 'true');
+        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+        
+        canvas.setAttribute('rendered', 'true');
+        canvas.removeAttribute('rendering');
+        renderedPages.add(pageNum);
+
+        // Memory Cleanup: လက်ရှိစာမျက်နှာနဲ့ အဝေးကြီးက canvas တွေကို ရှင်းထုတ်ခြင်း
+        cleanupMemory(pageNum);
+    }
+
+    function cleanupMemory(currentPage) {
+        renderedPages.forEach(num => {
+            if (Math.abs(num - currentPage) > 3) { // လက်ရှိစာမျက်နှာရဲ့ ရှေ့နောက် ၃ မျက်နှာပဲ သိမ်းမယ်
+                const canvas = document.getElementById(`canvas-${num}`);
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    canvas.removeAttribute('rendered');
+                    renderedPages.delete(num);
+                }
+            }
+        });
+    }
+// Slider element ကို ယူမယ်
+const zoomSlider = document.getElementById('zoom-slider');
+
+// Zoom Slider ပြောင်းလဲမှုကို နားထောင်ခြင်း
+zoomSlider.oninput = (e) => {
+    currentScale = parseFloat(e.target.value);
+    reRenderAllVisiblePages(); // Zoom ချဲ့ပြီးရင် မြင်နေရတဲ့စာမျက်နှာတွေကို ပြန် Render လုပ်မယ်
+};
+
+async function reRenderAllVisiblePages() {
+    // လက်ရှိ Render လုပ်ထားသမျှ Canvas တွေကို အကုန်ဖျက်မယ်
+    renderedPages.clear();
+    
+    // Canvas အားလုံးရဲ့ attribute တွေကို reset လုပ်မယ်
+    document.querySelectorAll('canvas').forEach(canvas => {
+        canvas.removeAttribute('rendered');
+        canvas.removeAttribute('rendering');
+        // လက်ရှိ Zoom အသစ်အရ Placeholder အမြင့်ကို ချိန်ညှိမယ် (Layout မပျက်အောင်)
+        const parent = canvas.parentElement;
+        parent.style.minHeight = (800 * currentScale) + "px"; 
+    });
+
+    // လက်ရှိ စခရင်ပေါ်မှာ မြင်နေရတဲ့ စာမျက်နှာတွေကိုပဲ ချက်ချင်း Render ပြန်လုပ်မယ်
+    const visiblePages = [];
+    document.querySelectorAll('.page-container').forEach(div => {
+        const rect = div.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            const pageNum = parseInt(div.getAttribute('data-page-num'));
+            renderPage(pageNum);
         }
+    });
+}
+    // ၄။ Scroll စောင့်ကြည့်ခြင်း
+    function setupIntersectionObserver() {
+        const options = { 
+            root: null, 
+            threshold: 0.4 // ၄၀% မြင်ရမှ စာမျက်နှာအဖြစ် သတ်မှတ်မည်
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const pageNum = parseInt(entry.target.getAttribute('data-page-num'));
+                    renderPage(pageNum);
+                    
+                    // အနီးနားက စာမျက်နှာတွေကို ကြိုတင် Render လုပ်ထားခြင်း (Pre-render)
+                    if (pageNum < pdfDoc.numPages) renderPage(pageNum + 1);
+                    
+                    document.getElementById('page-indicator').innerText = `Page: ${pageNum}`;
+                    db.savedBooks.update(bookId, { lastPage: pageNum });
+                    db.savedBooks.update(Number(bookId), { lastPage: pageNum });
+                }
+            });
+        }, options);
 
-        function scrollToPage(num) {
+        document.querySelectorAll('.page-container').forEach(div => observer.observe(div));
+    }
+
+    function scrollToPage(num) {
+        setTimeout(() => {
             const target = document.getElementById(`page-box-${num}`);
             if (target) {
-                window.scrollTo({ top: target.offsetTop - 60, behavior: 'smooth' });
+                window.scrollTo({ top: target.offsetTop - 60, behavior: 'instant' });
+                renderPage(num);
             }
-        }
+        }, 500);
+    }
 
-        document.getElementById('dark-mode-toggle').onclick = () => document.body.classList.toggle('dark-mode');
+    document.getElementById('dark-mode-toggle').onclick = () => document.body.classList.toggle('dark-mode');
 
-        window.onload = initReader;
-        document.addEventListener('visibilitychange', async () => {
-            if (document.visibilityState === 'visible') await requestWakeLock();
-        });
-    </script>
+    window.onload = initReader;
+    document.addEventListener('visibilitychange', async () => {
+        if (document.visibilityState === 'visible') await requestWakeLock();
+    });
+</script>
 </body>
 </html>
