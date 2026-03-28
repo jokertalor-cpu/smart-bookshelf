@@ -63,18 +63,31 @@
 .btn-read:active {
     transform: scale(0.98);
 }
-/* Like Button Design ကို ပိုလှအောင် ပြင်ခြင်း */
+/* Like Button (PC + Mobile အကုန်အလုပ်လုပ်စေမည့် Style) */
 #like-btn {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0 !important;
-    color: #64748b;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-#like-btn:active {
-    transform: scale(0.95); /* နှိပ်လိုက်ရင် တုန်သွားတဲ့ effect */
+#like-btn.liked {
+    background: #fff1f2 !important; /* နုအေးသော အနီရောင်နောက်ခံ */
+    border-color: #fda4af !important;
+    color: #e11d48 !important; /* စာသားနှင့် အသဲပုံကို အနီရောင်ပြောင်းရန် */
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(225, 29, 72, 0.15);
 }
 
+#like-btn.liked i {
+    filter: drop-shadow(0 0 3px rgba(225, 29, 72, 0.3));
+}
+
+/* Hover လုပ်ရင် (PC အတွက်) */
+#like-btn:hover {
+    background: #f1f5f9;
+}
+
+#like-btn.liked:hover {
+    background: #ffe4e6 !important;
+}
 /* Mobile Responsive */
 @media (max-width: 600px) {
     .actions {
@@ -87,18 +100,6 @@
     border: 1px solid #e2e8f0;
     color: #64748b;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Like ပေးထားချိန်မှာ ပေါ်မယ့် Style */
-#like-btn.liked {
-    background: #fff1f2; /* နုအေးသော အနီရောင်နောက်ခံ */
-    border-color: #fda4af;
-    color: #e11d48; /* အနီရောင် */
-    transform: scale(1.05);
-}
-
-#like-btn.liked i {
-    filter: drop-shadow(0 0 5px rgba(225, 29, 72, 0.4));
 }
 }
         #progress-ui { display: none; position: relative; width: 65px; height: 65px; }
@@ -221,7 +222,7 @@
 
     let activeBook = null;
 
-    async function loadPage() {
+ async function loadPage() {
         const id = new URLSearchParams(window.location.search).get('id');
         if (!id) return;
 
@@ -236,10 +237,9 @@
         }
 
         activeBook = data;
+        
+        // UI ကို render လုပ်မယ်
         document.getElementById('main-content').innerHTML = `
-        activeBook = data;
-// ... (တခြား code များ)
-checkLikeStatus(); // <--- ဒီ line လေး ထည့်ပေးပါ
             <div class="book-hero">
                 <div class="cover-box"><img src="${data.cover}"></div>
                 <div class="book-info">
@@ -251,9 +251,9 @@ checkLikeStatus(); // <--- ဒီ line လေး ထည့်ပေးပါ
                     <div class="actions">
                         <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
                         <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
-                       <button onclick="toggleLike()" id="like-btn" class="btn">
-    <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
-</button>
+                        <button onclick="toggleLike()" id="like-btn" class="btn">
+                            <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
+                        </button>
                         <div id="progress-ui">
                             <svg width="60" height="60">
                                 <circle class="circle-bg" cx="30" cy="30" r="20"></circle>
@@ -272,6 +272,8 @@ checkLikeStatus(); // <--- ဒီ line လေး ထည့်ပေးပါ
                 </div>
             </div>
         `;
+
+        checkLikeStatus(); // <--- စာမျက်နှာ Render ပြီးမှ ဒါကို ခေါ်ရပါမယ်
         loadMore(data.category, data.id);
     }
 
@@ -379,19 +381,18 @@ async function checkLikeStatus() {
     updateLikeUI(isLiked);
 }
 
-// ၂။ UI ကို အနီရောင်/မီးခိုးရောင် ပြောင်းပေးတဲ့ function
 function updateLikeUI(isLiked) {
     const btn = document.getElementById('like-btn');
     const icon = btn.querySelector('i');
     const label = document.getElementById('like-label');
     
     if (isLiked) {
-        btn.classList.add('liked');
-        icon.className = 'fa-solid fa-heart'; // အပြည့်ပုံစံ
+        btn.classList.add('liked'); // CSS class အသစ်ကို ထည့်လိုက်တာ
+        icon.className = 'fa-solid fa-heart'; // အသဲပုံ အပြည့်
         label.innerText = 'အသဲပေးထားပြီး';
     } else {
-        btn.classList.remove('liked');
-        icon.className = 'fa-regular fa-heart'; // အလွတ်ပုံစံ
+        btn.classList.remove('liked'); // CSS class ကို ပြန်ဖြုတ်တာ
+        icon.className = 'fa-regular fa-heart'; // အသဲပုံ အလွတ်
         label.innerText = 'အသဲပေးမည်';
     }
 }
