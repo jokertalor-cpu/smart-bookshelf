@@ -44,63 +44,36 @@
     flex: 1; /* ခလုတ်တွေကို အညီအမျှ ဖြစ်စေဖို့ */
     min-width: 140px; /* ခလုတ်တစ်ခုချင်းစီရဲ့ အနည်းဆုံး အကျယ် */
 }
-.btn-read { 
-    background: var(--primary); 
-    color: white; 
-    border: none;
-    display: flex; /* alignment ညီအောင် */
-    align-items: center;
-    justify-content: center;
-    text-decoration: none; /* မျဉ်းတားပျောက်အောင် */
-    transition: all 0.3s ease;
-}
 
-.btn-read:hover {
-    background: #1557b0; /* hover အရောင် အနည်းငယ်ရင့်သွားမယ် */
-    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
-}
-
-.btn-read:active {
-    transform: scale(0.98);
-}
-/* Like Button (PC + Mobile အကုန်အလုပ်လုပ်စေမည့် Style) */
+/* Like Button Design ကို ပိုလှအောင် ပြင်ခြင်း */
 #like-btn {
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0 !important;
+    color: #64748b;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-#like-btn.liked {
-    background: #fff1f2 !important; /* နုအေးသော အနီရောင်နောက်ခံ */
-    border-color: #fda4af !important;
-    color: #e11d48 !important; /* စာသားနှင့် အသဲပုံကို အနီရောင်ပြောင်းရန် */
-    transform: scale(1.05);
-    box-shadow: 0 4px 10px rgba(225, 29, 72, 0.15);
+#like-btn:active {
+    transform: scale(0.95); /* နှိပ်လိုက်ရင် တုန်သွားတဲ့ effect */
 }
 
-#like-btn.liked i {
-    filter: drop-shadow(0 0 3px rgba(225, 29, 72, 0.3));
-}
-
-/* Hover လုပ်ရင် (PC အတွက်) */
-#like-btn:hover {
-    background: #f1f5f9;
-}
-
-#like-btn.liked:hover {
-    background: #ffe4e6 !important;
-}
 /* Mobile Responsive */
 @media (max-width: 600px) {
     .actions {
         gap: 10px;
     }
     
-  /* Like Button အသစ် */
-#like-btn {
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    color: #64748b;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+    .btn {
+        padding: 14px 15px;
+        font-size: 14px;
+        flex: 1 1 45%; /* ဖုန်းမှာ တစ်တန်းကို ၂ ခုနှုန်း စီမယ် */
+    }
+
+    /* အသဲပေးတဲ့ခလုတ်ကို ဖုန်းမှာ ပိုထင်ရှားစေဖို့ */
+    #like-btn {
+        flex: 1 1 100%; /* အသဲပေးတဲ့ခလုတ်ကို အောက်ကနေ အပြည့်ပြချင်ရင် ဒါကိုသုံးပါ */
+        margin-top: 5px;
+    }
 }
         #progress-ui { display: none; position: relative; width: 65px; height: 65px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 5; }
@@ -209,232 +182,129 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+<script>
+   const db = new Dexie("MyDigitalLibrary");
+db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-    <script>
-    const db = new Dexie("MyDigitalLibrary");
-    db.version(2).stores({ 
-        savedBooks: "id, title, author, cover, fileData, lastPage" 
-    });
+const _U = 'https://cmguamftohgcgwdggwde.supabase.co';
+const _K = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9';
+const sb = window.supabase.createClient(_U, _K);
 
-    const _U = 'https://cmguamftohgcgwdggwde.supabase.co';
-    const _K = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9';
-    const sb = window.supabase.createClient(_U, _K);
+let activeBook = null;
 
-    let activeBook = null;
+async function loadPage() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) return;
 
- async function loadPage() {
-        const id = new URLSearchParams(window.location.search).get('id');
-        if (!id) return;
+    const { data, error } = await sb.from('books').select('*').eq('id', id).maybeSingle();
+    if (error || !data) return;
 
-        const { data, error } = await sb.from('books')
-            .select('id, title, author, category, cover, file_size, read_link, download_link, download_count, description')
-            .eq('id', id)
-            .maybeSingle();
-        
-        if (error || !data) {
-            document.getElementById('main-content').innerHTML = "စာအုပ်ရှာမတွေ့ပါ။";
-            return;
-        }
+    activeBook = data;
+    renderBookUI(data);
+    checkLikeStatus();
+    loadMore(data.category, data.id);
+}
 
-        activeBook = data;
-        
-        // UI ကို render လုပ်မယ်
-        document.getElementById('main-content').innerHTML = `
-            <div class="book-hero">
-                <div class="cover-box"><img src="${data.cover}"></div>
-                <div class="book-info">
-                    <h1>${data.title}</h1>
-                    <div class="meta"><i class="fas fa-user-tie"></i> <span><b>စာရေးသူ:</b> ${data.author}</span></div>
-                    <div class="meta"><i class="fas fa-list"></i> <span><b>အမျိုးအစား:</b> ${data.category}</span></div>
-                    <div class="meta"><i class="fas fa-file-alt"></i> <span><b>ဖိုင်ဆိုဒ်:</b> ${data.file_size || 'N/A'}</span></div>
-                    
-                    <div class="actions">
-                        <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
-                        <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
-                        <button onclick="toggleLike()" id="like-btn" class="btn">
-                            <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
-                        </button>
-                        <div id="progress-ui">
-                            <svg width="60" height="60">
-                                <circle class="circle-bg" cx="30" cy="30" r="20"></circle>
-                                <circle id="progress-bar" class="circle-bar" cx="30" cy="30" r="20"></circle>
-                            </svg>
-                            <div id="pct-label" class="pct-val">0%</div>
-                        </div>
-                    </div>
+function renderBookUI(data) {
+    document.getElementById('main-content').innerHTML = `
+        <div class="book-hero">
+            <div class="cover-box"><img src="${data.cover}"></div>
+            <div class="book-info">
+                <h1>${data.title}</h1>
+                <div class="meta"><i class="fas fa-user-tie"></i> <span><b>စာရေးသူ:</b> ${data.author}</span></div>
+                <div class="meta"><i class="fas fa-list"></i> <span><b>အမျိုးအစား:</b> ${data.category}</span></div>
+                <div class="actions">
+                    <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
+                    <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
+                    <button onclick="toggleLike()" id="like-btn" class="btn">
+                        <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
+                    </button>
+                    <div id="progress-ui"><svg width="60" height="60"><circle class="circle-bg" cx="30" cy="30" r="20"></circle><circle id="progress-bar" class="circle-bar" cx="30" cy="30" r="20"></circle></svg><div id="pct-label" class="pct-val">0%</div></div>
                 </div>
             </div>
+        </div>
+        <div class="description-box"><h3>စာအုပ်အညွှန်း</h3><div class="description-text">${data.description || 'အညွှန်းမရှိပါ။'}</div></div>
+    `;
+}
 
-            <div class="description-box">
-                <h3>စာအုပ်အညွှန်း</h3>
-                <div class="description-text">
-                    ${data.description ? data.description : 'ဤစာအုပ်အတွက် အညွှန်းမရှိသေးပါ။'}
-                </div>
-            </div>
-        `;
+async function startDownload() {
+    const btn = document.getElementById('dl-button');
+    const ui = document.getElementById('progress-ui');
+    btn.style.display = 'none'; ui.style.display = 'block';
 
-        checkLikeStatus(); // <--- စာမျက်နှာ Render ပြီးမှ ဒါကို ခေါ်ရပါမယ်
-        loadMore(data.category, data.id);
-    }
+    try {
+        await sb.rpc('increment_download', { row_id: activeBook.id });
+        const response = await fetch(activeBook.download_link);
+        const reader = response.body.getReader();
+        const total = +response.headers.get('Content-Length') || 0;
+        let received = 0, chunks = [];
 
-    async function incrementDownloadCount(bookId) {
-        try {
-            const { error } = await sb.rpc('increment_download', { row_id: bookId });
-            if (error) throw error;
-            console.log("Count updated via RPC");
-        } catch (err) {
-            console.error("RPC Error:", err.message);
-        }
-    }
-
-    async function startDownload() {
-        if(!activeBook.download_link) return Swal.fire('Error', 'Download link မရှိပါ', 'error');
-        
-        const btn = document.getElementById('dl-button');
-        const ui = document.getElementById('progress-ui');
-        const bar = document.getElementById('progress-bar');
-        const label = document.getElementById('pct-label');
-
-        btn.style.display = 'none';
-        ui.style.display = 'block';
-
-        try {
-            await incrementDownloadCount(activeBook.id);
-
-            const response = await fetch(activeBook.download_link);
-            if(!response.ok) throw new Error("File fetch failed");
-
-            const reader = response.body.getReader();
-            const total = +response.headers.get('Content-Length') || 0;
-
-            let received = 0;
-            let chunks = [];
-
-            while(true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-                chunks.push(value);
-                received += value.length;
-                
-                if (total > 0) {
-                    const pct = Math.round((received / total) * 100);
-                    label.innerText = pct + "%";
-                    bar.style.strokeDashoffset = 126 - (126 * pct) / 100;
-                }
+        while(true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.length;
+            if (total > 0) {
+                const pct = Math.round((received / total) * 100);
+                document.getElementById('pct-label').innerText = pct + "%";
+                document.getElementById('progress-bar').style.strokeDashoffset = 126 - (126 * pct) / 100;
             }
-
-            const blob = new Blob(chunks, { type: 'application/pdf' });
-            
-            await db.savedBooks.put({
-                id: activeBook.id.toString(),
-                title: activeBook.title,
-                author: activeBook.author,
-                cover: activeBook.cover,
-                fileData: blob
-            });
-
-            Swal.fire({
-                title: 'အောင်မြင်ပါသည်',
-                text: 'စာအုပ်ကို Library ထဲသို့ ထည့်သွင်းပြီးပါပြီ။',
-                icon: 'success'
-            });
-
-            const finalUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = finalUrl;
-            a.download = `${activeBook.title}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-        } catch (err) {
-            console.error(err);
-            Swal.fire({
-                title: 'သတိပြုရန်',
-                text: 'တိုက်ရိုက်ဒေါင်းလုဒ်လင့်ခ်ကို အသုံးပြုပါမည်။',
-                icon: 'info'
-            }).then(async () => {
-                await incrementDownloadCount(activeBook.id);
-                window.open(activeBook.download_link, '_blank');
-            });
-        } finally {
-            btn.style.display = 'flex';
-            ui.style.display = 'none';
         }
-    }
 
-    async function loadMore(cat, id) {
-        const { data } = await sb.from('books').select('id, title, cover').eq('category', cat).not('id', 'eq', id).limit(8);
-        if (!data) return;
-        document.getElementById('related-view').innerHTML = data.map(item => `
-            <div class="item-card" onclick="location.href='detail.html?id=${item.id}'">
-                <div class="item-img"><img src="${item.cover}"></div>
-                <p>${item.title}</p>
-            </div>
-        `).join('');
+        const blob = new Blob(chunks, { type: 'application/pdf' });
+        await db.savedBooks.put({ id: activeBook.id.toString(), title: activeBook.title, author: activeBook.author, cover: activeBook.cover, fileData: blob });
+        
+        // Cloud သို့ ဒေါင်းလုဒ်စာရင်းမှတ်ခြင်း
+        await saveToCloudDownload(activeBook.id.toString());
+
+        Swal.fire({ title: 'အောင်မြင်ပါသည်', text: 'Library ထဲသို့ ထည့်သွင်းပြီးပါပြီ။', icon: 'success' });
+    } catch (err) { console.error(err); }
+    finally { btn.style.display = 'flex'; ui.style.display = 'none'; }
+}
+
+async function saveToCloudDownload(bookId) {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+        await sb.from('user_downloads').upsert({ user_id: user.id, book_id: parseInt(bookId) });
     }
-// ၁။ Page load တဲ့အခါ status ကို စစ်ပြီး UI ပြောင်းမယ်
-async function checkLikeStatus() {
-    if (!activeBook) return;
+}
+
+async function toggleLike() {
+    const { data: { user } } = await sb.auth.getUser();
+    let likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
+    const bookId = activeBook.id.toString();
+    const isLiked = likedBooks.includes(bookId);
+
+    try {
+        if (isLiked) {
+            await sb.rpc('decrement_likes', { row_id: activeBook.id });
+            if (user) await sb.from('user_likes').delete().eq('user_id', user.id).eq('book_id', bookId);
+            likedBooks = likedBooks.filter(id => id !== bookId);
+        } else {
+            await sb.rpc('increment_likes', { row_id: activeBook.id });
+            if (user) await sb.from('user_likes').upsert({ user_id: user.id, book_id: bookId });
+            likedBooks.push(bookId);
+        }
+        localStorage.setItem('my_likes', JSON.stringify(likedBooks));
+        updateLikeUI(!isLiked);
+    } catch (err) { console.error(err); }
+}
+
+function checkLikeStatus() {
     const likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
-    const isLiked = likedBooks.includes(activeBook.id.toString());
-    updateLikeUI(isLiked);
+    updateLikeUI(likedBooks.includes(activeBook.id.toString()));
 }
 
 function updateLikeUI(isLiked) {
     const btn = document.getElementById('like-btn');
     const icon = btn.querySelector('i');
     const label = document.getElementById('like-label');
-    
-    if (isLiked) {
-        btn.classList.add('liked'); // CSS class အသစ်ကို ထည့်လိုက်တာ
-        icon.className = 'fa-solid fa-heart'; // အသဲပုံ အပြည့်
-        label.innerText = 'အသဲပေးထားပြီး';
-    } else {
-        btn.classList.remove('liked'); // CSS class ကို ပြန်ဖြုတ်တာ
-        icon.className = 'fa-regular fa-heart'; // အသဲပုံ အလွတ်
-        label.innerText = 'အသဲပေးမည်';
-    }
+    btn.style.color = isLiked ? '#e11d48' : '#64748b';
+    icon.className = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+    label.innerText = isLiked ? 'အသဲပေးထားပြီး' : 'အသဲပေးမည်';
 }
 
-// ၃။ Like ပေးခြင်း/ဖြုတ်ခြင်း (Toggle Logic)
-async function toggleLike() {
-    if (!activeBook) return;
-    
-    let likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
-    const bookId = activeBook.id.toString();
-    const isLiked = likedBooks.includes(bookId);
-
-    // ခလုတ်ကို ခေတ္တပိတ်ထားမယ် (Double click မဖြစ်အောင်)
-    const btn = document.getElementById('like-btn');
-    btn.style.pointerEvents = 'none';
-
-    try {
-        if (isLiked) {
-            // --- အသဲပြန်ဖြုတ်မည် ---
-            await sb.rpc('decrement_likes', { row_id: activeBook.id });
-            likedBooks = likedBooks.filter(id => id !== bookId);
-            updateLikeUI(false);
-            
-            // Toast notification ပြမယ်
-            Swal.fire({ title: 'Library မှ ဖယ်ရှားလိုက်ပါပြီ', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
-        } else {
-            // --- အသဲပေးမည် ---
-            await sb.rpc('increment_likes', { row_id: activeBook.id });
-            likedBooks.push(bookId);
-            updateLikeUI(true);
-            
-            Swal.fire({ title: 'အသဲပေးလိုက်ပါပြီ', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
-        }
-        localStorage.setItem('my_likes', JSON.stringify(likedBooks));
-    } catch (err) {
-        console.error("Like error:", err);
-        Swal.fire('Error', 'တစ်ခုခုမှားယွင်းနေပါသည်', 'error');
-    } finally {
-        btn.style.pointerEvents = 'auto';
-    }
-}
-    window.onload = loadPage;
+window.onload = loadPage;
 </script>
 </body>
 </html>
