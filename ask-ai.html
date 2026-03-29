@@ -39,8 +39,11 @@
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    const API_KEY = "AIzaSyAkQbFmDjIRAaOgQnOllYKuUE6-EjJJQ-E";// လုံခြုံရေးအတွက် နောက်ပိုင်းတွင် Backend သို့ ရွှေ့နိုင်သည်
-    const genAI = new GoogleGenerativeAI(AIzaSyAkQbFmDjIRAaOgQnOllYKuUE6-EjJJQ-E);
+    // ၁။ API Key ကို variable တစ်ခုထဲ ထည့်ထားပါ
+    const API_KEY = "AIzaSyAkQbFmDjIRAaOgQnOllYKuUE6-EjJJQ-E";
+    
+    // ၂။ genAI တည်ဆောက်တဲ့အခါ အပေါ်က variable ကို ပြန်သုံးပါ
+    const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     window.sendMessage = async function() {
@@ -68,9 +71,17 @@
             chatBox.innerHTML += `<div class="message ai-msg">${aiText}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
         } catch (error) {
+            console.error(error); // Error ကို စစ်ဆေးနိုင်ရန်
             chatBox.innerHTML += `<div class="message ai-msg">စိတ်မရှိပါနဲ့ဗျာ၊ တစ်ခုခု မှားယွင်းသွားလို့ပါ။</div>`;
         }
     }
+
+    // Enter ခေါက်ရင် ပို့ပေးမည့် လုပ်ဆောင်ချက်
+    document.getElementById('user-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
 </script>
 </body>
 </html>
