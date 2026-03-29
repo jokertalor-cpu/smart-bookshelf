@@ -43,8 +43,7 @@
     
     // ၂။ genAI တည်ဆောက်တဲ့အခါ အပေါ်က variable ကို ပြန်သုံးပါ
     const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+ const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     window.sendMessage = async function() {
         const input = document.getElementById('user-input');
         const chatBox = document.getElementById('chat-box');
