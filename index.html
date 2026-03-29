@@ -118,15 +118,25 @@ function toggleChat() {
 <script src="mainscript.js"></script>
 <script src="indexscript.js"></script>
 
-   <script type="module">
+   <script type="importmap">
+  {
+    "imports": {
+      "@google/generative-ai": "https://esm.run/@google/generative-ai"
+    }
+  }
+</script>
+
+<script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
+    // API Key ကို " " ထဲမှာ သေချာထည့်ပါ
     const API_KEY = "AIzaSyD-Bb85OB_tqN6RwUOfD7x-hpes5Bn8G_I"; 
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     window.toggleChat = function() {
         const win = document.getElementById('chat-window');
+        if (!win) return;
         win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'flex' : 'none';
     };
 
@@ -137,14 +147,18 @@ function toggleChat() {
 
         if (!msg) return;
 
-        // User Message
-        chatContent.innerHTML += `<div style="background: #1a73e8; color: white; padding: 10px 15px; border-radius: 15px 15px 2px 15px; align-self: flex-end; max-width: 85%; font-size: 14px; margin-left: auto; margin-bottom: 10px;">${msg}</div>`;
+        // User Message ပြခြင်း
+        const userDiv = document.createElement('div');
+        userDiv.style = "background: #1a73e8; color: white; padding: 10px 15px; border-radius: 15px 15px 2px 15px; align-self: flex-end; max-width: 85%; font-size: 14px; margin-left: auto; margin-bottom: 10px;";
+        userDiv.textContent = msg;
+        chatContent.appendChild(userDiv);
+        
         input.value = '';
         
-        // Loading Indicator
+        // Loading ပြခြင်း
         const loadingDiv = document.createElement('div');
         loadingDiv.id = 'temp-loading';
-        loadingDiv.style = "font-size: 12px; color: gray; margin-bottom: 10px;";
+        loadingDiv.style = "font-size: 12px; color: gray; margin-bottom: 10px; align-self: flex-start;";
         loadingDiv.textContent = "AI စဉ်းစားနေသည်...";
         chatContent.appendChild(loadingDiv);
         chatContent.scrollTop = chatContent.scrollHeight;
@@ -159,11 +173,19 @@ function toggleChat() {
 
             loadingDiv.remove(); // Loading ဖျက်ပါ
 
-            // AI Message
-            chatContent.innerHTML += `<div style="background: #f1f3f4; color: #333; padding: 10px 15px; border-radius: 15px 15px 15px 2px; align-self: flex-start; max-width: 85%; font-size: 14px; margin-bottom: 10px;">${aiText}</div>`;
+            // AI Message ပြခြင်း
+            const aiDiv = document.createElement('div');
+            aiDiv.style = "background: #f1f3f4; color: #333; padding: 10px 15px; border-radius: 15px 15px 15px 2px; align-self: flex-start; max-width: 85%; font-size: 14px; margin-bottom: 10px;";
+            aiDiv.textContent = aiText;
+            chatContent.appendChild(aiDiv);
+
         } catch (error) {
-            loadingDiv.remove();
-            chatContent.innerHTML += `<div style="background: #ffebee; color: #c62828; padding: 10px 15px; border-radius: 10px; font-size: 13px; margin-bottom: 10px;">အမှားတစ်ခုရှိနေပါသည်။ API Key သို့မဟုတ် Internet ကိုစစ်ဆေးပါ။</div>`;
+            console.error("AI Error:", error);
+            if (loadingDiv) loadingDiv.remove();
+            const errorDiv = document.createElement('div');
+            errorDiv.style = "background: #ffebee; color: #c62828; padding: 10px 15px; border-radius: 10px; font-size: 13px; margin-bottom: 10px;";
+            errorDiv.textContent = "အမှားတစ်ခုရှိနေပါသည်။ API Key သို့မဟုတ် Internet ကိုစစ်ဆေးပါ။";
+            chatContent.appendChild(errorDiv);
         } finally {
             chatContent.scrollTop = chatContent.scrollHeight;
         }
