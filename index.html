@@ -127,8 +127,7 @@ function toggleChat() {
 
     const API_KEY = "AIzaSyD-Bb85OB_tqN6RwUOfD7x-hpes5Bn8G_I";
     const genAI = new GoogleGenerativeAI(API_KEY);
- const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     window.toggleChat = function() {
         const win = document.getElementById('chat-window');
         win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'flex' : 'none';
