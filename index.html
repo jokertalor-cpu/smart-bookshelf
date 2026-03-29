@@ -125,8 +125,10 @@ function toggleChat() {
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    const API_KEY = "AIzaSyAkQbFmDjIRAaOgQnOllYKuUE6-EjJJQ-E"; 
-    const genAI = new GoogleGenerativeAI(AIzaSyAkQbFmDjIRAaOgQnOllYKuUE6-EjJJQ-E);
+     const API_KEY = "AIzaSyAkQbFmDjIRAaOgQnOllYKuUE6-EjJJQ-E";
+    
+    // ၂။ genAI တည်ဆောက်တဲ့အခါ အပေါ်က variable ကို ပြန်သုံးပါ
+    const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     window.toggleChat = function() {
