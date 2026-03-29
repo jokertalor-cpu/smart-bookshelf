@@ -98,10 +98,9 @@
             <span>Smart AI Assistant</span>
             <span onclick="toggleChat()" style="cursor: pointer;">&times;</span>
         </div>
-        <div id="chat-content" style="flex: 1; padding: 15px; overflow-y: auto; font-size: 14px; display: flex; flex-direction: column;">
-    <div style="background: #f1f3f4; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; align-self: flex-start;">မင်္ဂလာပါ! ဘာကူညီပေးရမလဲခင်ဗျာ။</div>
-</div>
-<div id="ai-loading" style="display: none; padding: 5px 15px; font-size: 12px; color: #666;"><i class="fas fa-spinner fa-spin"></i> AI စဉ်းစားနေသည်...</div>
+        <div id="chat-content" style="flex: 1; padding: 15px; overflow-y: auto; font-size: 14px;">
+            <div style="background: #f1f3f4; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; align-self: flex-start;">မင်္ဂလာပါ! ဘာကူညီပေးရမလဲခင်ဗျာ။</div>
+        </div>
         <div style="padding: 15px; border-top: 1px solid #eee; display: flex; gap: 5px;">
             <input type="text" id="ai-input" placeholder="မေးခွန်းရိုက်ပါ..." style="flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 20px;">
             <button onclick="sendToAI()" style="background: #1a73e8; color: white; border: none; padding: 8px 15px; border-radius: 20px;">ပို့မည်</button>
@@ -119,15 +118,13 @@ function toggleChat() {
 <script src="mainscript.js"></script>
 <script src="indexscript.js"></script>
 
-<script type="importmap">
-  { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
-</script>
-  <script type="module">
+   <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    const API_KEY = "AIzaSyD-Bb85OB_tqN6RwUOfD7x-hpes5Bn8G_I";
+    const API_KEY = "AIzaSyD-Bb85OB_tqN6RwUOfD7x-hpes5Bn8G_I"; 
     const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
     window.toggleChat = function() {
         const win = document.getElementById('chat-window');
         win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'flex' : 'none';
@@ -136,16 +133,20 @@ const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     window.sendToAI = async function() {
         const input = document.getElementById('ai-input');
         const chatContent = document.getElementById('chat-content');
-        const loading = document.getElementById('ai-loading');
         const msg = input.value.trim();
 
         if (!msg) return;
 
-        // User Message (ညာဘက်ကပ်ရန်)
-        chatContent.innerHTML += `<div style="background: #1a73e8; color: white; padding: 8px 12px; border-radius: 15px 15px 2px 15px; margin-bottom: 10px; align-self: flex-end; max-width: 80%;">${msg}</div>`;
-        
+        // User Message
+        chatContent.innerHTML += `<div style="background: #1a73e8; color: white; padding: 10px 15px; border-radius: 15px 15px 2px 15px; align-self: flex-end; max-width: 85%; font-size: 14px; margin-left: auto; margin-bottom: 10px;">${msg}</div>`;
         input.value = '';
-        if(loading) loading.style.display = 'block';
+        
+        // Loading Indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'temp-loading';
+        loadingDiv.style = "font-size: 12px; color: gray; margin-bottom: 10px;";
+        loadingDiv.textContent = "AI စဉ်းစားနေသည်...";
+        chatContent.appendChild(loadingDiv);
         chatContent.scrollTop = chatContent.scrollHeight;
 
         try {
@@ -156,17 +157,19 @@ const model = genAI.getGenerativeModel({ model: "gemini-pro" });
             const response = await result.response;
             const aiText = response.text();
 
-            // AI Message (ဘယ်ဘက်ကပ်ရန်)
-            chatContent.innerHTML += `<div style="background: #f1f3f4; padding: 8px 12px; border-radius: 15px 15px 15px 2px; margin-bottom: 10px; align-self: flex-start; max-width: 80%;">${aiText}</div>`;
+            loadingDiv.remove(); // Loading ဖျက်ပါ
+
+            // AI Message
+            chatContent.innerHTML += `<div style="background: #f1f3f4; color: #333; padding: 10px 15px; border-radius: 15px 15px 15px 2px; align-self: flex-start; max-width: 85%; font-size: 14px; margin-bottom: 10px;">${aiText}</div>`;
         } catch (error) {
-            console.error(error);
-            chatContent.innerHTML += `<div style="background: #ffebee; color: #c62828; padding: 8px 12px; border-radius: 10px; margin-bottom: 10px; align-self: flex-start;">အခုလောလောဆယ် AI အလုပ်မလုပ်သေးပါဘူးခင်ဗျာ။</div>`;
+            loadingDiv.remove();
+            chatContent.innerHTML += `<div style="background: #ffebee; color: #c62828; padding: 10px 15px; border-radius: 10px; font-size: 13px; margin-bottom: 10px;">အမှားတစ်ခုရှိနေပါသည်။ API Key သို့မဟုတ် Internet ကိုစစ်ဆေးပါ။</div>`;
         } finally {
-            if(loading) loading.style.display = 'none';
             chatContent.scrollTop = chatContent.scrollHeight;
         }
     };
 
+    // Enter Key Support
     document.getElementById('ai-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') sendToAI();
     });

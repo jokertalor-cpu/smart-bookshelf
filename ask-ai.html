@@ -11,9 +11,10 @@
         .chat-container { max-width: 600px; margin: 50px auto; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 80vh; }
         .chat-header { background: var(--primary); color: white; padding: 20px; text-align: center; font-size: 1.2rem; }
         #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 10px 15px; border-radius: 18px; max-width: 80%; line-height: 1.5; }
-        .user-msg { background: var(--primary); color: white; align-self: flex-end; }
-        .ai-msg { background: #e9ecef; color: #333; align-self: flex-start; }
+        .message { padding: 10px 15px; border-radius: 18px; max-width: 80%; line-height: 1.5; font-size: 14px; }
+        .user-msg { background: var(--primary); color: white; align-self: flex-end; border-radius: 18px 18px 2px 18px; }
+        .ai-msg { background: #e9ecef; color: #333; align-self: flex-start; border-radius: 18px 18px 18px 2px; }
+        .loading { color: #666; font-size: 12px; font-style: italic; display: none; }
         .input-area { padding: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
         input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
         button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; }
@@ -22,12 +23,13 @@
 <body>
 
 <div class="chat-container">
-    <div class="chat-header"><i class="fas fa-robot"></i> Ask AI Assistant</div>
+    <div class="chat-header"><i class="fas fa-robot"></i> Smart AI Assistant</div>
     <div id="chat-box">
         <div class="message ai-msg">မင်္ဂလာပါ! ကျွန်တော်က Smart Bookshelf ရဲ့ AI ဖြစ်ပါတယ်။ စာအုပ်တွေအကြောင်း ဘာများမေးချင်ပါသလဲ?</div>
+        <div id="ai-loading" class="loading">AI စဉ်းစားနေသည်...</div>
     </div>
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="ဒီမှာ မေးခွန်းရိုက်ပါ...">
+        <input type="text" id="user-input" placeholder="ဒီမှာ မေးခွန်းရိုက်ပါ..." onkeypress="if(event.key==='Enter') sendMessage()">
         <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
@@ -35,25 +37,31 @@
 <script type="importmap">
   { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
 </script>
+
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-           // ၁။ API Key ကို variable တစ်ခုထဲ ထည့်ထားပါ
-    const API_KEY = "AIzaSyD-Bb85OB_tqN6RwUOfD7x-hpes5Bn8G_I";
-    
-    // ၂။ genAI တည်ဆောက်တဲ့အခါ အပေါ်က variable ကို ပြန်သုံးပါ
+    // သင်အသစ်ထုတ်ထားတဲ့ API Key ကို Quotes "" ထဲမှာ သေချာထည့်ပါ
+    const API_KEY = "AIzaSyD-Bb85OB_tqN6RwUOfD7x-hpes5Bn8G_I"; 
     const genAI = new GoogleGenerativeAI(API_KEY);
- const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
     window.sendMessage = async function() {
         const input = document.getElementById('user-input');
         const chatBox = document.getElementById('chat-box');
+        const loading = document.getElementById('ai-loading');
         const message = input.value.trim();
 
         if (!message) return;
 
         // User Message ပြခြင်း
-        chatBox.innerHTML += `<div class="message user-msg">${message}</div>`;
+        const userDiv = document.createElement('div');
+        userDiv.className = 'message user-msg';
+        userDiv.textContent = message;
+        chatBox.insertBefore(userDiv, loading);
+        
         input.value = '';
+        loading.style.display = 'block';
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
@@ -66,20 +74,22 @@
             const aiText = response.text();
 
             // AI Message ပြခြင်း
-            chatBox.innerHTML += `<div class="message ai-msg">${aiText}</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'message ai-msg';
+            aiDiv.textContent = aiText;
+            chatBox.insertBefore(aiDiv, loading);
         } catch (error) {
-            console.error(error); // Error ကို စစ်ဆေးနိုင်ရန်
-            chatBox.innerHTML += `<div class="message ai-msg">စိတ်မရှိပါနဲ့ဗျာ၊ တစ်ခုခု မှားယွင်းသွားလို့ပါ။</div>`;
+            console.error(error);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message ai-msg';
+            errorDiv.style.color = 'red';
+            errorDiv.textContent = "စိတ်မရှိပါနဲ့ဗျာ၊ တစ်ခုခု မှားယွင်းသွားလို့ပါ။";
+            chatBox.insertBefore(errorDiv, loading);
+        } finally {
+            loading.style.display = 'none';
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
-
-    // Enter ခေါက်ရင် ပို့ပေးမည့် လုပ်ဆောင်ချက်
-    document.getElementById('user-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
 </script>
 </body>
 </html>
