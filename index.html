@@ -119,15 +119,15 @@ function toggleChat() {
 <script src="mainscript.js"></script>
 <script src="indexscript.js"></script>
 
-    <script type="importmap">
-  { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+   <script type="importmap">
+  { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai@0.11.0" } }
 </script>
   <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
     const API_KEY = "AIzaSyAkQbFmDjIRAaOgQnOllYKuUE6-EjJJQ-E";
     const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
     window.toggleChat = function() {
         const win = document.getElementById('chat-window');
