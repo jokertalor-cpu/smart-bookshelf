@@ -33,9 +33,8 @@
 </div>
 
 <script type="importmap">
-  { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai@0.11.0" } }
+  { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
 </script>
-
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -44,7 +43,7 @@
     
     // ၂။ genAI တည်ဆောက်တဲ့အခါ အပေါ်က variable ကို ပြန်သုံးပါ
     const genAI = new GoogleGenerativeAI(API_KEY);
-   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     window.sendMessage = async function() {
         const input = document.getElementById('user-input');
