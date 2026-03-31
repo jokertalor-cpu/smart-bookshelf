@@ -139,42 +139,36 @@
             <p>Loading favorites...</p>
         </div>
     </div>
-<script>
-   const SB_URL = "https://cmguamftohgcgwdggwde.supabase.co"; 
+        <script>
+const SB_URL = "https://cmguamftohgcgwdggwde.supabase.co"; 
 const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9";
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
 const db = new Dexie("MyDigitalLibrary");
 db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-// စာမျက်နှာစဖွင့်ချိန်တွင် အားလုံးကို စစ်ဆေးခြင်း
 window.onload = () => {
     setupAuthListener(); 
     renderLibrary();    
     loadMyFavorites();  
 };
 
-// Login Status ကို အမြဲနားထောင်နေမည့် Function
 function setupAuthListener() {
     const reminder = document.getElementById('login-reminder');
     const logoutBtn = document.getElementById('logout-btn');
 
     sb.auth.onAuthStateChange(async (event, session) => {
         if (session && session.user) {
-            reminder.style.display = 'none';
+            if(reminder) reminder.style.display = 'none';
             if(logoutBtn) logoutBtn.style.display = 'block';
-
-            // Cloud နှင့် Sync လုပ်ခြင်း
             syncLikesToCloud(session.user.id);
-            console.log("Syncing activity for:", session.user.email);
         } else {
-            reminder.style.display = 'flex';
+            if(reminder) reminder.style.display = 'flex';
             if(logoutBtn) logoutBtn.style.display = 'none';
         }
     });
 }
 
-// Local Likes များကို Cloud ပေါ်သို့ တင်ပေးခြင်း
 async function syncLikesToCloud(userId) {
     const localLikes = JSON.parse(localStorage.getItem('my_likes') || '[]');
     if (localLikes.length > 0) {
@@ -183,61 +177,47 @@ async function syncLikesToCloud(userId) {
     }
 }
 
-// Logout လုပ်ဆောင်ချက်
 async function handleLogout() {
-    const { error } = await sb.auth.signOut();
-    if (!error) {
-        Swal.fire({ title: 'Logout လုပ်ပြီးပါပြီ', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-    }
+    await sb.auth.signOut();
+    location.reload();
 }
 
-// Offline (Dexie) Library ကို ပြသခြင်း
 async function renderLibrary() {
     const grid = document.getElementById('library-grid');
-    try {
-        const books = await db.savedBooks.toArray();
-        if (books.length === 0) {
-            grid.innerHTML = `<div class="empty-state"><i class="fas fa-download fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
-            return;
-        }
-        grid.innerHTML = books.map(book => `
-            <div class="book-card" id="card-${book.id}">
-                <img src="${book.cover}" onclick="openReader('${book.id}')">
-                <h3>${book.title}</h3>
-                <div class="actions">
-                    <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
-                    <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
-                </div>
+    const books = await db.savedBooks.toArray();
+    if (books.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><i class="fas fa-download fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+        return;
+    }
+    grid.innerHTML = books.map(book => `
+        <div class="book-card" id="card-${book.id}">
+            <img src="${book.cover}" onclick="openReader('${book.id}')">
+            <h3>${book.title}</h3>
+            <div class="actions">
+                <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
+                <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
             </div>
-        `).join('');
-    } catch (err) { console.error(err); }
+        </div>
+    `).join('');
 }
 
-// အသဲပေးထားသော စာရင်းကို Supabase မှ ဆွဲယူပြသခြင်း
 async function loadMyFavorites() {
     const likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
     const favContainer = document.getElementById('fav-view');
-
     if (likedIds.length === 0) {
         favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
         return;
     }
-
-    try {
-        const numericIds = likedIds.map(id => parseInt(id));
-        const { data, error } = await sb.from('books').select('id, title, cover').in('id', numericIds);
-        if (error) throw error;
-
+    const { data } = await sb.from('books').select('id, title, cover').in('id', likedIds.map(id => parseInt(id)));
+    if (data) {
         favContainer.innerHTML = data.map(item => `
             <div class="book-card" onclick="location.href='detail.html?id=${item.id}'" style="cursor:pointer;">
                 <img src="${item.cover}">
                 <h3>${item.title}</h3>
-                <div class="actions">
-                    <button class="btn btn-info"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
-                </div>
+                <div class="actions"><button class="btn btn-info"><i class="fas fa-info-circle"></i> အသေးစိတ်</button></div>
             </div>
         `).join('');
-    } catch (err) { console.error(err); }
+    }
 }
 
 function openReader(id) { window.location.href = `reader.html?id=${id}&mode=offline`; }
@@ -247,26 +227,21 @@ function confirmDelete(id) {
         title: 'ဖျက်မှာ သေချာလား?',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#ea4335',
-        confirmButtonText: 'ဖျက်မည်',
-        cancelButtonText: 'မဖျက်တော့ပါ'
+        confirmButtonText: 'ဖျက်မည်'
     }).then((result) => { if (result.isConfirmed) deleteBook(id); });
 }
 
-// Local ရော Cloud ပါ ဖျက်မည့် Function
 async function deleteBook(id) {
     await db.savedBooks.delete(id);
     await db.savedBooks.delete(Number(id));
-
-    const { data: { user } } = await sb.auth.getUser();
-    if (user) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
         await Promise.all([
-            sb.from('user_downloads').delete().eq('user_id', user.id).eq('book_id', id),
-            sb.from('user_likes').delete().eq('user_id', user.id).eq('book_id', id)
+            sb.from('user_downloads').delete().eq('user_id', session.user.id).eq('book_id', parseInt(id)),
+            sb.from('user_likes').delete().eq('user_id', session.user.id).eq('book_id', parseInt(id))
         ]);
     }
     renderLibrary();
-    Swal.fire({ title: 'ဖယ်ရှားပြီးပါပြီ', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-}</script>
+}</scriipt>
 </body>
 </html>
