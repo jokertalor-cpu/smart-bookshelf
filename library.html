@@ -84,78 +84,81 @@
 
 <script>
 // --- Supabase Configuration ---
+// --- Supabase Setup ---
 const SB_URL = "https://cmguamftohgcgwdggwde.supabase.co"; 
-const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9"; // သင်အသုံးပြုနေသော Key
+const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9";
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
-// --- Dexie Local Database Setup ---
 const db = new Dexie("MyDigitalLibrary");
-db.version(2).stores({ 
-    savedBooks: "id, title, author, cover, fileData, lastPage" 
-});
+db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-// စာမျက်နှာစဖွင့်ချိန်တွင် အလုပ်လုပ်မည့် Function
+// စာမျက်နှာစဖွင့်ချိန်တွင် တိကျစွာ စစ်ဆေးခြင်း
 window.onload = async () => {
-    await setupAuthStatus(); // Auth အခြေအနေကို အရင်စစ်ဆေးမည်
-    renderLibrary();    // Local စာအုပ်များပြမည်
-    loadMyFavorites();  // Favorite များပြမည်
+    console.log("Library Page Loaded. Checking Session...");
+    
+    // ၁။ အရင်ဆုံး လက်ရှိ Login ရှိမရှိကို တိုက်ရိုက်ဆွဲယူစစ်ဆေးမယ်
+    const { data: { session }, error } = await sb.auth.getSession();
+    
+    if (session) {
+        console.log("Logged in as:", session.user.email);
+        updateUI(true);
+        // Login ဝင်ထားရင် Cloud က ဒေတာတွေနဲ့ Local ကို အစားထိုးမယ်
+        await syncAndReplaceWithCloud(session.user.id);
+    } else {
+        console.log("No session found.");
+        updateUI(false);
+    }
+
+    // ၂။ Auth အခြေအနေပြောင်းလဲမှု (Login/Logout) ကိုလည်း ဆက်နားထောင်မယ်
+    sb.auth.onAuthStateChange(async (event, currentSession) => {
+        console.log("Auth Event Triggered:", event);
+        if (event === 'SIGNED_IN' && currentSession) {
+            updateUI(true);
+            await syncAndReplaceWithCloud(currentSession.user.id);
+        } else if (event === 'SIGNED_OUT') {
+            updateUI(false);
+            await db.savedBooks.clear(); // Logout ထွက်ရင် Local data ရှင်းမယ်
+            renderLibrary();
+        }
+    });
+
+    renderLibrary();
+    loadMyFavorites();
 };
 
-/**
- * ၁။ Login Status ကို စစ်ဆေးပြီး UI ကို Update လုပ်ပေးခြင်း
- */
-async function setupAuthStatus() {
+// UI ပြောင်းလဲမှုများကို တိကျစွာ လုပ်ဆောင်ပေးသည့် Function
+function updateUI(isLoggedIn) {
     const reminder = document.getElementById('login-reminder');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // လက်ရှိ Session ရှိမရှိ အရင်စစ်ဆေးသည်
-    const { data: { session } } = await sb.auth.getSession();
-    
-    const updateUI = (currentSession) => {
-        if (currentSession && currentSession.user) {
-            reminder.style.display = 'none';   // သတိပေးစာဖျောက်
-            logoutBtn.style.display = 'block'; // Logout ခလုတ်ပြ
-        } else {
-            reminder.style.display = 'flex';   // သတိပေးစာပြ
-            logoutBtn.style.display = 'none';  // Logout ခလုတ်ဖျောက်
-        }
-    };
-
-    updateUI(session);
-
-    // Auth ပြောင်းလဲမှုတိုင်းကို နားထောင်မည်
-    sb.auth.onAuthStateChange(async (event, currentSession) => {
-        console.log("Auth Event:", event);
-        updateUI(currentSession);
-        
-        if (event === 'SIGNED_IN' && currentSession) {
-            // Login ဝင်လိုက်သည်နှင့် Cloud Data ဖြင့် အစားထိုးမည်
-            await syncAndReplaceWithCloud(currentSession.user.id);
-        }
-    });
+    if (isLoggedIn) {
+        if (reminder) reminder.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+    } else {
+        if (reminder) reminder.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    }
 }
 
-/**
- * ၂။ Local Data များကို ဖျက်ထုတ်ပြီး Cloud မှ Data များဖြင့် အစားထိုးခြင်း (Main Logic)
- */
+// Cloud က ဒေတာတွေကို ဆွဲပြီး Local Dexie ထဲ အစားထိုးထည့်ခြင်း
 async function syncAndReplaceWithCloud(userId) {
     try {
+        // Loading ပြပေးထားမယ်
         Swal.fire({
-            title: 'Syncing Data...',
-            text: 'သင့်အကောင့်ရှိ စာအုပ်များကို ရယူနေပါသည်',
+            title: 'စာရင်းများ ပြန်ယူနေသည်',
+            text: 'ခဏစောင့်ပေးပါ...',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
 
-        // (က) Cloud က Like လုပ်ထားသော စာရင်းကိုယူပြီး LocalStorage တွင် အစားထိုးခြင်း
+        // ၁။ Cloud က Likes တွေကိုယူပြီး LocalStorage မှာ အစားထိုးမယ်
         const { data: cloudLikes } = await sb.from('user_likes').select('book_id').eq('user_id', userId);
         if (cloudLikes) {
             const likeIds = cloudLikes.map(item => item.book_id.toString());
             localStorage.setItem('my_likes', JSON.stringify(likeIds));
         }
 
-        // (ခ) Cloud က ဒေါင်းလုဒ်စာရင်းကိုယူပြီး Dexie (Local DB) တွင် အစားထိုးခြင်း
-        // books table နှင့် Join တွဲယူမှ Title နှင့် Cover များ ပါလာမည်ဖြစ်သည်
+        // ၂။ Cloud က Downloads (Books) တွေကိုယူပြီး Dexie မှာ အစားထိုးမယ်
         const { data: cloudBooks, error } = await sb
             .from('user_downloads')
             .select(`book_id, books(id, title, author, cover)`)
@@ -163,72 +166,77 @@ async function syncAndReplaceWithCloud(userId) {
 
         if (error) throw error;
 
+        // အကယ်၍ Cloud မှာ ဒေတာရှိရင် Local ကဟာတွေကို ဖျက်ပြီး အသစ်လဲမယ်
         if (cloudBooks && cloudBooks.length > 0) {
-            // လက်ရှိ Local DB ထဲမှ ဒေတာအဟောင်းများကို အကုန်ရှင်းထုတ်မည်
-            await db.savedBooks.clear();
+            await db.savedBooks.clear(); // အဟောင်းတွေဖျက်
 
-            // Cloud မှရလာသော အချက်အလက်သစ်များကို ထည့်သွင်းမည်
             const newEntries = cloudBooks.map(item => ({
                 id: item.books.id.toString(),
                 title: item.books.title,
                 author: item.books.author,
                 cover: item.books.cover,
-                fileData: null, // PDF File ကို လိုအပ်မှ ပြန်ဒေါင်းရန် null ထားသည်
-                isFromCloud: true
+                fileData: null,
+                isSynced: true
             }));
 
             await db.savedBooks.bulkAdd(newEntries);
         }
 
         Swal.close();
-        renderLibrary();   // UI ပြန်ဆွဲမည်
-        loadMyFavorites(); // UI ပြန်ဆွဲမည်
+        renderLibrary();
+        loadMyFavorites();
 
     } catch (err) {
         console.error("Sync Error:", err);
-        Swal.fire('Error', 'ဒေတာများ Sync လုပ်ရာတွင် အမှားရှိနေပါသည်', 'error');
+        Swal.close();
     }
 }
 
-/**
- * ၃။ Offline (Dexie) စာအုပ်များ ပြသခြင်း
- */
-async function renderLibrary() {
-    const grid = document.getElementById('library-grid');
-    try {
-        const books = await db.savedBooks.toArray();
-        if (books.length === 0) {
-            grid.innerHTML = `<div class="empty-state"><i class="fas fa-download fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
-            return;
-        }
-        grid.innerHTML = books.map(book => `
-            <div class="book-card" id="card-${book.id}">
-                <img src="${book.cover}" onclick="openReader('${book.id}')">
-                <h3>${book.title}</h3>
-                <div class="actions">
-                    <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
-                    <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
-                </div>
-            </div>
-        `).join('');
-    } catch (err) { console.error(err); }
+// Logout လုပ်ဆောင်ချက်
+async function handleLogout() {
+    const { error } = await sb.auth.signOut();
+    if (!error) {
+        localStorage.removeItem('my_likes');
+        await db.savedBooks.clear();
+        location.reload();
+    }
 }
 
-/**
- * ၄။ Favorite စာအုပ်များ ပြသခြင်း
- */
+// စာအုပ်များ ပြသခြင်း (Render)
+async function renderLibrary() {
+    const grid = document.getElementById('library-grid');
+    if (!grid) return;
+    
+    const books = await db.savedBooks.toArray();
+    if (books.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><i class="fas fa-download fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+        return;
+    }
+    grid.innerHTML = books.map(book => `
+        <div class="book-card" id="card-${book.id}">
+            <img src="${book.cover}" onclick="openReader('${book.id}')">
+            <h3>${book.title}</h3>
+            <div class="actions">
+                <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
+                <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Favorite များ ပြသခြင်း
 async function loadMyFavorites() {
     const favContainer = document.getElementById('fav-view');
-    const likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
+    if (!favContainer) return;
 
+    const likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
     if (likedIds.length === 0) {
         favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
         return;
     }
 
     try {
-        const numericIds = likedIds.map(id => parseInt(id));
-        const { data, error } = await sb.from('books').select('id, title, cover').in('id', numericIds);
+        const { data, error } = await sb.from('books').select('id, title, cover').in('id', likedIds.map(id => parseInt(id)));
         if (error) throw error;
 
         favContainer.innerHTML = data.map(item => `
@@ -243,43 +251,14 @@ async function loadMyFavorites() {
     } catch (err) { console.error(err); }
 }
 
-// Reader ဖွင့်ခြင်း
-function openReader(id) { 
-    window.location.href = `reader.html?id=${id}&mode=offline`; 
-}
+function openReader(id) { window.location.href = `reader.html?id=${id}&mode=offline`; }
 
-// Logout လုပ်ခြင်း
-async function handleLogout() {
-    const { error } = await sb.auth.signOut();
-    if (!error) {
-        Swal.fire({ title: 'Logout လုပ်ပြီးပါပြီ', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-        setTimeout(() => location.reload(), 1500);
-    }
-}
-
-// ဖျက်ရန် အတည်ပြုခြင်း
-function confirmDelete(id) {
-    Swal.fire({
-        title: 'ဖျက်မှာ သေချာလား?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ea4335',
-        confirmButtonText: 'ဖျက်မည်',
-        cancelButtonText: 'မဖျက်တော့ပါ'
-    }).then((result) => { if (result.isConfirmed) deleteBook(id); });
-}
-
-// စာအုပ်ဖျက်ခြင်း
 async function deleteBook(id) {
     await db.savedBooks.delete(id);
     await db.savedBooks.delete(Number(id));
-
     const { data: { user } } = await sb.auth.getUser();
     if (user) {
-        await Promise.all([
-            sb.from('user_downloads').delete().eq('user_id', user.id).eq('book_id', id),
-            sb.from('user_likes').delete().eq('user_id', user.id).eq('book_id', id)
-        ]);
+        await sb.from('user_downloads').delete().eq('user_id', user.id).eq('book_id', id);
     }
     renderLibrary();
 }
