@@ -83,63 +83,72 @@
     </div>
 
 <script>
-// Supabase Configuration
+// --- Supabase Setup ---
 const SB_URL = "https://cmguamftohgcgwdggwde.supabase.co"; 
-const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9"; // ဒီ Key မှန်မမှန် ပြန်စစ်ပါ (ပုံမှန်အားဖြင့် eyJ... နဲ့ စလေ့ရှိပါတယ်)
+const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9";
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
-// Dexie DB
 const db = new Dexie("MyDigitalLibrary");
 db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
+// စာမျက်နှာ စဖွင့်ချင်း run မည့် အပိုင်း
 window.onload = async () => {
-    await setupAuthStatus(); 
-    renderLibrary();    
-    loadMyFavorites();  
-};
-
-// Login Status စစ်ဆေးခြင်း
-async function setupAuthStatus() {
-    const reminder = document.getElementById('login-reminder');
-    const logoutBtn = document.getElementById('logout-btn');
-
-    // လက်ရှိ Session ကို အရင်စစ်မယ်
+    // 1. အရင်ဆုံး လက်ရှိ session ရှိမရှိ စစ်မယ်
     const { data: { session } } = await sb.auth.getSession();
     updateUI(session);
 
-    // Auth Change ဖြစ်တိုင်း UI Update လုပ်မယ်
-    sb.auth.onAuthStateChange((event, session) => {
-        updateUI(session);
+    // 2. Auth အခြေအနေ ပြောင်းလဲမှုကို နားထောင်မယ်
+    sb.auth.onAuthStateChange((event, currentSession) => {
+        console.log("Auth Event:", event);
+        updateUI(currentSession);
+        
         if (event === 'SIGNED_IN') {
-            syncLikesToCloud(session.user.id);
-            loadMyFavorites(); // Login ဝင်လိုက်ရင် Favorite ပြန်ဆွဲမယ်
+            syncDataFromCloud(currentSession.user.id);
         }
     });
 
-    function updateUI(session) {
-        if (session) {
-            reminder.style.display = 'none';
-            logoutBtn.style.display = 'block';
-        } else {
-            reminder.style.display = 'flex';
-            logoutBtn.style.display = 'none';
-        }
+    renderLibrary();
+    loadMyFavorites();
+};
+
+// UI အစိတ်အပိုင်းများကို Login အပေါ်မူတည်ပြီး ပြောင်းလဲပေးသည့် Function
+function updateUI(session) {
+    const reminder = document.getElementById('login-reminder');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (session && session.user) {
+        reminder.style.display = 'none';   // သတိပေးစာ ဖျောက်မယ်
+        logoutBtn.style.display = 'block'; // Logout ခလုတ် ပြမယ်
+    } else {
+        reminder.style.display = 'flex';   // သတိပေးစာ ပြမယ်
+        logoutBtn.style.display = 'none';  // Logout ခလုတ် ဖျောက်မယ်
     }
 }
 
-async function syncLikesToCloud(userId) {
-    const localLikes = JSON.parse(localStorage.getItem('my_likes') || '[]');
-    if (localLikes.length > 0) {
-        const syncData = localLikes.map(id => ({ user_id: userId, book_id: parseInt(id) }));
-        await sb.from('user_likes').upsert(syncData, { onConflict: 'user_id,book_id' });
+// Device အသစ်မှာ Login ဝင်ရင် Cloud က စာအုပ်စာရင်းတွေ ပြန်ဆွဲထုတ်မည့် Function
+async function syncDataFromCloud(userId) {
+    try {
+        // Cloud က Like လုပ်ထားတဲ့ ID တွေကို ဆွဲထုတ်ပြီး LocalStorage မှာ သိမ်းမယ်
+        const { data: cloudLikes } = await sb.from('user_likes').select('book_id').eq('user_id', userId);
+        if (cloudLikes) {
+            const ids = cloudLikes.map(item => item.book_id.toString());
+            localStorage.setItem('my_likes', JSON.stringify(ids));
+            loadMyFavorites(); // UI ကို Refresh လုပ်မယ်
+        }
+        
+        // မှတ်ချက် - Download ထားတဲ့ PDF File တွေကိုတော့ device တိုင်းမှာ 
+        // အလိုအလျောက် Download ဆွဲခိုင်းဖို့ bandwidth အခြေအနေအရ manually လုပ်တာ ပိုကောင်းပါတယ်
+    } catch (err) {
+        console.error("Sync Error:", err);
     }
 }
 
 async function handleLogout() {
     const { error } = await sb.auth.signOut();
     if (!error) {
-        Swal.fire({ title: 'Logout လုပ်ပြီးပါပြီ', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-        setTimeout(() => location.reload(), 1500); // UI Refresh လုပ်ရန်
+        Swal.fire({ title: 'Logout လုပ်ပြီးပါပြီ', icon: 'success', timer: 1500 });
+        // Logout လုပ်ပြီးရင် UI ချက်ချင်း update ဖြစ်အောင် force reload လုပ်တာ ပိုသေချာပါတယ်
+        setTimeout(() => location.reload(), 1500);
     }
 }
 
