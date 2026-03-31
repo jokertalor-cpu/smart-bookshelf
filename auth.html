@@ -19,26 +19,43 @@
         <button onclick="handleLogin()">Login / Sign Up</button>
         <p id="msg" style="font-size: 12px; color: gray;"></p>
     </div>
+      <script>
+    const SB_URL = "https://cmguamftohgcgwdggwde.supabase.co"; 
+    const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9";
+    const sb = supabase.createClient(SB_URL, SB_KEY);
 
-    <script>
-        const sb = supabase.createClient("https://mituedqotwbmporkwbqf.supabase.co", "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc");
+    async function handleLogin() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('msg');
 
-        async function handleLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Login ဝင်ရန် ကြိုးစားကြည့်မည်
-            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        // Login အရင် စမ်းဝင်မည်
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
-            if (error) {
-                // အကောင့်မရှိသေးရင် Sign Up လုပ်ပေးမည်
-                const { error: signUpErr } = await sb.auth.signUp({ email, password });
-                if (signUpErr) alert(signUpErr.message);
-                else alert("Check your email for confirmation!");
+        if (error) {
+            // Password မှားခြင်း သို့မဟုတ် အကောင့်မရှိခြင်းကို ခွဲခြားပြသမည်
+            if (error.message.includes("Invalid login credentials")) {
+                msg.innerText = "Email သို့မဟုတ် Password မှားယွင်းနေပါသည်။";
+                msg.style.color = "red";
             } else {
-                window.location.href = 'library.html';
+                // အကောင့် လုံးဝမရှိသေးပါက Sign Up လုပ်ရန် အကြံပြုမည်
+                msg.innerHTML = `အကောင့်မရှိသေးပါက <a href="#" onclick="handleSignUp()">ဒီမှာနှိပ်၍ အကောင့်ဖွင့်ပါ</a>`;
+                msg.style.color = "blue";
             }
+        } else {
+            // အောင်မြင်ပါက Library သို့ တိုက်ရိုက်သွားမည်
+            window.location.href = 'library.html';
         }
-    </script>
+    }
+
+    async function handleSignUp() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        const { data, error } = await sb.auth.signUp({ email, password });
+        if (error) alert(error.message);
+        else alert("အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ Email ကို စစ်ဆေးပေးပါ။");
+    }
+</script>
 </body>
 </html>
