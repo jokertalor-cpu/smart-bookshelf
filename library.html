@@ -35,10 +35,11 @@
 
         .empty-state { text-align: center; padding: 40px; color: #70757a; grid-column: 1/-1; background: #fff; border-radius: 12px; }
         
-        .auth-notice { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; gap: 10px; }
-        .auth-notice .btn-login-sm { background: var(--primary); color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px; white-space: nowrap; }
+        /* CSS ID တိကျအောင် ပြန်ပြင်ထားသည် */
+        #login-reminder { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; gap: 10px; }
+        .btn-login-sm { background: var(--primary); color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px; white-space: nowrap; }
         
-        #logout-btn { display: none; background: #feeef3; color: #e11d48; border: 1px solid #fda4af; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        #logout-btn { display: none; background: #feeef3; color: #e11d48; border: 1px solid #fda4af; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
         @media (max-width: 480px) {
             .book-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -83,8 +84,6 @@
     </div>
 
 <script>
-// --- Supabase Configuration ---
-// --- Supabase Setup ---
 const SB_URL = "https://cmguamftohgcgwdggwde.supabase.co"; 
 const SB_KEY = "sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9";
 const sb = supabase.createClient(SB_URL, SB_KEY);
@@ -92,33 +91,27 @@ const sb = supabase.createClient(SB_URL, SB_KEY);
 const db = new Dexie("MyDigitalLibrary");
 db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-// စာမျက်နှာစဖွင့်ချိန်တွင် တိကျစွာ စစ်ဆေးခြင်း
 window.onload = async () => {
-    console.log("Library Page Loaded. Checking Session...");
-    
-    // ၁။ အရင်ဆုံး လက်ရှိ Login ရှိမရှိကို တိုက်ရိုက်ဆွဲယူစစ်ဆေးမယ်
-    const { data: { session }, error } = await sb.auth.getSession();
+    // ၁။ အရင်ဆုံး Session ရှိမရှိ အသေအချာစစ်မည်
+    const { data: { session } } = await sb.auth.getSession();
     
     if (session) {
-        console.log("Logged in as:", session.user.email);
         updateUI(true);
-        // Login ဝင်ထားရင် Cloud က ဒေတာတွေနဲ့ Local ကို အစားထိုးမယ်
         await syncAndReplaceWithCloud(session.user.id);
     } else {
-        console.log("No session found.");
         updateUI(false);
     }
 
-    // ၂။ Auth အခြေအနေပြောင်းလဲမှု (Login/Logout) ကိုလည်း ဆက်နားထောင်မယ်
+    // ၂။ Auth အခြေအနေပြောင်းလဲမှုကို နားထောင်မည်
     sb.auth.onAuthStateChange(async (event, currentSession) => {
-        console.log("Auth Event Triggered:", event);
         if (event === 'SIGNED_IN' && currentSession) {
             updateUI(true);
             await syncAndReplaceWithCloud(currentSession.user.id);
         } else if (event === 'SIGNED_OUT') {
             updateUI(false);
-            await db.savedBooks.clear(); // Logout ထွက်ရင် Local data ရှင်းမယ်
+            await db.savedBooks.clear();
             renderLibrary();
+            loadMyFavorites();
         }
     });
 
@@ -126,7 +119,6 @@ window.onload = async () => {
     loadMyFavorites();
 };
 
-// UI ပြောင်းလဲမှုများကို တိကျစွာ လုပ်ဆောင်ပေးသည့် Function
 function updateUI(isLoggedIn) {
     const reminder = document.getElementById('login-reminder');
     const logoutBtn = document.getElementById('logout-btn');
@@ -140,10 +132,8 @@ function updateUI(isLoggedIn) {
     }
 }
 
-// Cloud က ဒေတာတွေကို ဆွဲပြီး Local Dexie ထဲ အစားထိုးထည့်ခြင်း
 async function syncAndReplaceWithCloud(userId) {
     try {
-        // Loading ပြပေးထားမယ်
         Swal.fire({
             title: 'စာရင်းများ ပြန်ယူနေသည်',
             text: 'ခဏစောင့်ပေးပါ...',
@@ -151,14 +141,14 @@ async function syncAndReplaceWithCloud(userId) {
             didOpen: () => { Swal.showLoading(); }
         });
 
-        // ၁။ Cloud က Likes တွေကိုယူပြီး LocalStorage မှာ အစားထိုးမယ်
+        // Likes Sync
         const { data: cloudLikes } = await sb.from('user_likes').select('book_id').eq('user_id', userId);
         if (cloudLikes) {
             const likeIds = cloudLikes.map(item => item.book_id.toString());
             localStorage.setItem('my_likes', JSON.stringify(likeIds));
         }
 
-        // ၂။ Cloud က Downloads (Books) တွေကိုယူပြီး Dexie မှာ အစားထိုးမယ်
+        // Downloads Sync (Local ကို အရင်ရှင်းပြီး Cloud ကဟာ အစားထိုးမည်)
         const { data: cloudBooks, error } = await sb
             .from('user_downloads')
             .select(`book_id, books(id, title, author, cover)`)
@@ -166,10 +156,8 @@ async function syncAndReplaceWithCloud(userId) {
 
         if (error) throw error;
 
-        // အကယ်၍ Cloud မှာ ဒေတာရှိရင် Local ကဟာတွေကို ဖျက်ပြီး အသစ်လဲမယ်
         if (cloudBooks && cloudBooks.length > 0) {
-            await db.savedBooks.clear(); // အဟောင်းတွေဖျက်
-
+            await db.savedBooks.clear(); 
             const newEntries = cloudBooks.map(item => ({
                 id: item.books.id.toString(),
                 title: item.books.title,
@@ -178,21 +166,18 @@ async function syncAndReplaceWithCloud(userId) {
                 fileData: null,
                 isSynced: true
             }));
-
             await db.savedBooks.bulkAdd(newEntries);
         }
 
         Swal.close();
         renderLibrary();
         loadMyFavorites();
-
     } catch (err) {
         console.error("Sync Error:", err);
         Swal.close();
     }
 }
 
-// Logout လုပ်ဆောင်ချက်
 async function handleLogout() {
     const { error } = await sb.auth.signOut();
     if (!error) {
@@ -202,11 +187,8 @@ async function handleLogout() {
     }
 }
 
-// စာအုပ်များ ပြသခြင်း (Render)
 async function renderLibrary() {
     const grid = document.getElementById('library-grid');
-    if (!grid) return;
-    
     const books = await db.savedBooks.toArray();
     if (books.length === 0) {
         grid.innerHTML = `<div class="empty-state"><i class="fas fa-download fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
@@ -224,11 +206,8 @@ async function renderLibrary() {
     `).join('');
 }
 
-// Favorite များ ပြသခြင်း
 async function loadMyFavorites() {
     const favContainer = document.getElementById('fav-view');
-    if (!favContainer) return;
-
     const likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
     if (likedIds.length === 0) {
         favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
