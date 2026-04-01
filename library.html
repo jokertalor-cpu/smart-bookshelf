@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Library - SmartBookshelf</title>
+    <title>SmartBookshelf - My Library</title>
     <style>
         * {
             margin: 0;
@@ -11,32 +11,54 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --secondary: #ff6b6b;
+            --background: #f8f9fa;
+            --surface: #ffffff;
+            --text: #333333;
+            --text-light: #999999;
+            --border: #e0e0e0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: var(--text);
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
 
-        header {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        /* Navigation */
+        nav {
+            background: var(--surface);
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
-        header h1 {
-            color: #667eea;
+        nav h1 {
             font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
         .nav-links {
@@ -46,161 +68,222 @@
 
         .nav-links a {
             text-decoration: none;
-            color: #667eea;
+            color: var(--primary);
             font-weight: 500;
             transition: color 0.3s;
         }
 
         .nav-links a:hover {
-            color: #764ba2;
+            color: var(--primary-dark);
         }
 
-        .login-btn {
-            background: #667eea;
-            color: white;
-            border: none;
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .btn {
             padding: 10px 20px;
-            border-radius: 5px;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            font-size: 14px;
         }
 
-        .login-btn:hover {
-            background: #764ba2;
+        .btn-primary {
+            background: var(--primary);
+            color: white;
         }
 
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ee5a52;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Section */
         .section {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: var(--surface);
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-icon {
+            font-size: 32px;
         }
 
         .section-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
             font-size: 24px;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
+            color: var(--text);
         }
 
-        .section-title .icon {
-            font-size: 28px;
-        }
-
+        /* Books Grid */
         .books-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            gap: 24px;
         }
 
         .book-card {
-            background: #f8f9fa;
-            border-radius: 10px;
+            background: var(--background);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            border: 1px solid var(--border);
         }
 
         .book-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         }
 
         .book-cover {
             width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 240px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 60px;
+            font-size: 64px;
             color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .book-cover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
         }
 
         .book-info {
-            padding: 15px;
+            padding: 16px;
         }
 
         .book-title {
             font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            white-space: nowrap;
+            color: var(--text);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .book-author {
             font-size: 12px;
-            color: #999;
-            margin-bottom: 10px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .book-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .btn {
+        .book-actions .btn {
             flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 8px 12px;
             font-size: 12px;
-            font-weight: 500;
-            transition: background 0.3s;
         }
 
-        .btn-read {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-read:hover {
-            background: #764ba2;
-        }
-
-        .btn-delete {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #ee5a52;
-        }
-
+        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 40px;
         }
 
         .empty-icon {
             font-size: 80px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            opacity: 0.7;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
         }
 
         .empty-text {
-            color: #999;
-            font-size: 16px;
+            color: var(--text-light);
+            font-size: 14px;
         }
 
+        /* Loading */
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 60px 40px;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 4px solid var(--background);
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
@@ -210,84 +293,143 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error {
-            background: #ffe0e0;
-            color: #d32f2f;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        .loading-text {
+            color: var(--text-light);
+            font-size: 14px;
         }
 
+        /* Error */
+        .error {
+            background: #ffe0e0;
+            color: var(--secondary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            header {
+            nav {
                 flex-direction: column;
-                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: space-between;
             }
 
             .books-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 16px;
             }
+
+            .section {
+                padding: 20px;
+            }
+
+            .section-title {
+                font-size: 20px;
+            }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--text);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: #4caf50;
+        }
+
+        .toast.error {
+            background: var(--secondary);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <header>
-            <h1>📚 SmartBookshelf - My Library</h1>
-            <div class="nav-links">
-                <a href="index.html">ပင်မစာမျက်နှာ</a>
-                <a href="library.html">My Library</a>
-                <button class="login-btn" id="authBtn">Login ဝင်မည်</button>
+        <!-- Navigation -->
+        <nav>
+            <h1>📚 SmartBookshelf</h1>
+            <div class="nav-right">
+                <div class="nav-links">
+                    <a href="index.html">ပင်မစာမျက်နှာ</a>
+                    <a href="library.html">My Library</a>
+                </div>
+                <div class="auth-section">
+                    <span class="user-info" id="userInfo"></span>
+                    <button class="btn btn-primary" id="authBtn">Login ဝင်မည်</button>
+                </div>
             </div>
-        </header>
+        </nav>
 
-        <!-- Downloaded Books Section -->
+        <!-- Offline Books Section -->
         <div class="section">
-            <div class="section-title">
-                <span class="icon">⬇️</span>
-                <span>ဆွဲယူထားသောစာအုပ်များ</span>
+            <div class="section-header">
+                <span class="section-icon">⬇️</span>
+                <h2 class="section-title">ဆွဲယူထားသောစာအုပ်များ</h2>
             </div>
-            <div id="downloadedBooksContainer">
+            <div id="offlineContainer">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>အချက်အလက်များ ဆွဲယူနေသည်...</p>
+                    <p class="loading-text">အချက်အလက်များ ဆွဲယူနေသည်...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Favorite Books Section -->
+        <!-- Cloud Books Section -->
         <div class="section">
-            <div class="section-title">
-                <span class="icon">❤️</span>
-                <span>အ즐ုက်ခြင်းအုပ်စုများ</span>
+            <div class="section-header">
+                <span class="section-icon">☁️</span>
+                <h2 class="section-title">အ즐ုက်ခြင်းအုပ်စုများ</h2>
             </div>
-            <div id="favoriteBooksContainer">
+            <div id="cloudContainer">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>အချက်အလက်များ ဆွဲယူနေသည်...</p>
+                    <p class="loading-text">အချက်အလက်များ ဆွဲယူနေသည်...</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Supabase Configuration
+        // Configuration
         const SUPABASE_URL = 'https://mituedqotwbmporkwbqf.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc';
+        const DB_NAME = 'SmartBookshelfDB';
+        const STORE_NAME = 'books';
 
-        // Initialize Dexie for offline storage
-        class SmartBookshelfDB {
+        // IndexedDB Manager
+        class DatabaseManager {
             constructor() {
-                this.dbName = 'SmartBookshelfDB';
-                this.storeName = 'books';
                 this.db = null;
-                this.init();
             }
 
             async init() {
                 return new Promise((resolve, reject) => {
-                    const request = indexedDB.open(this.dbName, 1);
+                    const request = indexedDB.open(DB_NAME, 1);
 
                     request.onerror = () => reject(request.error);
                     request.onsuccess = () => {
@@ -297,8 +439,8 @@
 
                     request.onupgradeneeded = (event) => {
                         const db = event.target.result;
-                        if (!db.objectStoreNames.contains(this.storeName)) {
-                            db.createObjectStore(this.storeName, { keyPath: 'id' });
+                        if (!db.objectStoreNames.contains(STORE_NAME)) {
+                            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
                         }
                     };
                 });
@@ -306,8 +448,8 @@
 
             async getAll() {
                 return new Promise((resolve, reject) => {
-                    const transaction = this.db.transaction([this.storeName], 'readonly');
-                    const store = transaction.objectStore(this.storeName);
+                    const transaction = this.db.transaction([STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
                     const request = store.getAll();
 
                     request.onerror = () => reject(request.error);
@@ -317,8 +459,8 @@
 
             async delete(id) {
                 return new Promise((resolve, reject) => {
-                    const transaction = this.db.transaction([this.storeName], 'readwrite');
-                    const store = transaction.objectStore(this.storeName);
+                    const transaction = this.db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
                     const request = store.delete(id);
 
                     request.onerror = () => reject(request.error);
@@ -327,11 +469,99 @@
             }
         }
 
-        // Initialize database
-        const localDB = new SmartBookshelfDB();
+        // Initialize
+        const db = new DatabaseManager();
+        let isLoading = false;
 
-        // Fetch data from Supabase
-        async function fetchBooksFromSupabase() {
+        // Toast Notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Render Books
+        function renderBooks(books, containerId) {
+            const container = document.getElementById(containerId);
+
+            if (!books || books.length === 0) {
+                const emptyIcon = containerId === 'offlineContainer' ? '📚' : '❤️';
+                const emptyText = containerId === 'offlineContainer' 
+                    ? 'ဆွဲယူထားသောစာအုပ်မရှိပါ' 
+                    : 'အ즐ုက်ခြင်းအုပ်စုမရှိပါ';
+
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">${emptyIcon}</div>
+                        <p class="empty-title">${emptyText}</p>
+                        <p class="empty-text">စာအုပ်များ ထည့်သွင်းရန် ခြင်းခြင်း စောင့်ဆိုင်းနေသည်</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const booksHTML = books.map(book => `
+                <div class="book-card">
+                    <div class="book-cover">${book.cover || '📖'}</div>
+                    <div class="book-info">
+                        <div class="book-title">${book.title || 'အမည်မသိ'}</div>
+                        <div class="book-author">${book.author || 'အရေးသားသူမသိ'}</div>
+                        <div class="book-actions">
+                            <button class="btn btn-primary" onclick="readBook('${book.id}')">ဖတ်မည်</button>
+                            <button class="btn btn-danger" onclick="deleteBook('${book.id}', '${containerId}')">ဖျက်မည်</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="books-grid">${booksHTML}</div>`;
+        }
+
+        // Read Book
+        function readBook(bookId) {
+            showToast(`စာအုပ် ${bookId} ကို ဖတ်မည်`);
+            // window.location.href = `/reader?id=${bookId}`;
+        }
+
+        // Delete Book
+        async function deleteBook(bookId, containerId) {
+            if (!confirm('ဤစာအုပ်ကိုဖျက်မည်သည်မှန်ပါသလား?')) return;
+
+            try {
+                if (containerId === 'offlineContainer') {
+                    await db.delete(bookId);
+                } else {
+                    // Delete from Supabase
+                    const response = await fetch(
+                        `${SUPABASE_URL}/rest/v1/books?id=eq.${bookId}`,
+                        {
+                            method: 'DELETE',
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+
+                    if (!response.ok) throw new Error('Delete failed');
+                }
+
+                showToast('စာအုပ်ဖျက်ခြင်းအောင်မြင်ပါပြီ', 'success');
+                await loadAllBooks();
+            } catch (error) {
+                console.error('Error deleting book:', error);
+                showToast('စာအုပ်ဖျက်မှုမအောင်မြင်ခြင်း', 'error');
+            }
+        }
+
+        // Fetch Books from Supabase
+        async function fetchSupabaseBooks() {
             try {
                 const response = await fetch(
                     `${SUPABASE_URL}/rest/v1/books?select=*&limit=100`,
@@ -356,98 +586,47 @@
             }
         }
 
-        // Render books
-        function renderBooks(books, containerId) {
-            const container = document.getElementById(containerId);
-
-            if (!books || books.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">${containerId === 'downloadedBooksContainer' ? '📚' : '❤️'}</div>
-                        <p class="empty-text">${containerId === 'downloadedBooksContainer' ? 'ဆွဲယူထားသောစာအုပ်မရှိပါ' : 'အ즐ုက်ခြင်းအုပ်စုမရှိပါ'}</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const booksHTML = books.map(book => `
-                <div class="book-card">
-                    <div class="book-cover">${book.cover || '📖'}</div>
-                    <div class="book-info">
-                        <div class="book-title">${book.title || 'အမည်မသိ'}</div>
-                        <div class="book-author">${book.author || ''}</div>
-                        <div class="book-actions">
-                            <button class="btn btn-read" onclick="readBook('${book.id}')">ဖတ်မည်</button>
-                            <button class="btn btn-delete" onclick="deleteBook('${book.id}', '${containerId}')">ဖျက်မည်</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            container.innerHTML = `<div class="books-grid">${booksHTML}</div>`;
-        }
-
-        // Read book
-        function readBook(bookId) {
-            alert(`စာအုပ် ${bookId} ကို ဖတ်မည်`);
-        }
-
-        // Delete book
-        async function deleteBook(bookId, containerId) {
-            if (!confirm('ဤစာအုပ်ကိုဖျက်မည်သည်မှန်ပါသလား?')) return;
-
-            try {
-                if (containerId === 'downloadedBooksContainer') {
-                    await localDB.delete(bookId);
-                } else {
-                    // Delete from Supabase
-                    await fetch(
-                        `${SUPABASE_URL}/rest/v1/books?id=eq.${bookId}`,
-                        {
-                            method: 'DELETE',
-                            headers: {
-                                'apikey': SUPABASE_KEY,
-                                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                                'Content-Type': 'application/json'
-                            }
-                        }
-                    );
-                }
-
-                // Reload data
-                loadAllBooks();
-                alert('စာအုပ်ဖျက်ခြင်းအောင်မြင်ပါပြီ');
-            } catch (error) {
-                console.error('Error deleting book:', error);
-                alert('စာအုပ်ဖျက်မှုမအောင်မြင်ခြင်း');
-            }
-        }
-
-        // Load all books
+        // Load All Books
         async function loadAllBooks() {
-            try {
-                // Load downloaded books from local storage
-                const downloadedBooks = await localDB.getAll();
-                renderBooks(downloadedBooks, 'downloadedBooksContainer');
+            if (isLoading) return;
+            isLoading = true;
 
-                // Load favorite books from Supabase
-                const favoriteBooks = await fetchBooksFromSupabase();
-                renderBooks(favoriteBooks, 'favoriteBooksContainer');
+            try {
+                // Load offline books
+                const offlineBooks = await db.getAll();
+                renderBooks(offlineBooks, 'offlineContainer');
+
+                // Load cloud books
+                const cloudBooks = await fetchSupabaseBooks();
+                renderBooks(cloudBooks, 'cloudContainer');
             } catch (error) {
                 console.error('Error loading books:', error);
-                document.getElementById('downloadedBooksContainer').innerHTML = `
+                document.getElementById('offlineContainer').innerHTML = `
                     <div class="error">အချက်အလက်များ ဆွဲယူမှုမအောင်မြင်ခြင်း</div>
                 `;
+            } finally {
+                isLoading = false;
             }
         }
 
-        // Auth button handler
+        // Auth Button Handler
         document.getElementById('authBtn').addEventListener('click', () => {
-            alert('Login functionality would be implemented here');
+            showToast('Login functionality would be implemented here');
         });
 
-        // Load books on page load
-        window.addEventListener('load', loadAllBooks);
+        // Initialize
+        window.addEventListener('load', async () => {
+            try {
+                await db.init();
+                await loadAllBooks();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('စနစ်စတင်မှုမအောင်မြင်ခြင်း', 'error');
+            }
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadAllBooks, 30000);
     </script>
 </body>
 </html>
