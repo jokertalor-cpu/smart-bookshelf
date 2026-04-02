@@ -78,51 +78,118 @@
 
 <script>
     // --- Configuration ---
-    const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
-    const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
-    const sb = supabase.createClient(SB_URL, SB_KEY);
+const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
+const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
+const sb = supabase.createClient(SB_URL, SB_KEY);
 
-    const db = new Dexie("MyDigitalLibrary");
-    db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
+const db = new Dexie("MyDigitalLibrary");
+db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-    window.onload = () => {
-        setupAuthListener();
-        renderLibrary(); // Offline books
-        loadMyFavorites(); // Liked books
-    };
+window.onload = () => {
+    setupAuthListener();
+    renderLibrary(); 
+    loadMyFavorites(); 
+};
 
-    // --- Authentication & Sync Logic ---
-    function setupAuthListener() {
-        const reminder = document.getElementById('login-reminder');
-        const logoutBtn = document.getElementById('logout-btn');
+// --- Authentication & Sync Logic ---
+function setupAuthListener() {
+    const reminder = document.getElementById('login-reminder');
+    const logoutBtn = document.getElementById('logout-btn');
 
-        sb.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                reminder.style.display = 'none';
-                logoutBtn.style.display = 'block';
-                syncLikesToCloud(session.user.id);
-            } else {
-                reminder.style.display = 'flex';
-                logoutBtn.style.display = 'none';
+    sb.auth.onAuthStateChange(async (event, session) => {
+        if (session) {
+            reminder.style.display = 'none';
+            logoutBtn.style.display = 'block';
+
+            // ၁။ Local က Like လုပ်ထားတာတွေကို Cloud ပို့မယ်
+            await syncLikesToCloud(session.user.id);
+            // ၂။ Cloud က Like တွေကို Local ထဲ ပြန်ဆွဲမယ်
+            await fetchLikesFromCloud(session.user.id);
+            // ၃။ အရင်ဒေါင်းထားဖူးတဲ့ စာအုပ်တွေကို Auto Background Sync လုပ်မယ်
+            await autoSyncDownloads(session.user.id);
+
+            // UI ကို Update လုပ်မယ်
+            renderLibrary();
+            loadMyFavorites();
+        } else {
+            reminder.style.display = 'flex';
+            logoutBtn.style.display = 'none';
+            // Logout လုပ်ရင် Local data ရှင်းချင်ရင် ဒီမှာ ရှင်းနိုင်ပါတယ်
+        }
+    });
+}
+
+// --- Background Auto Download Logic ---
+async function autoSyncDownloads(userId) {
+    try {
+        // Cloud ကနေ အသုံးပြုသူ ဒေါင်းလုပ်ဆွဲဖူးတဲ့ စာရင်းကို ယူမယ်
+        const { data: cloudHistory, error } = await sb
+            .from('user_downloads')
+            .select('book_id, books(*)'); // Table Join သုံးထားလို့ စာအုပ်အချက်အလက်ပါ ပါလာမယ်
+
+        if (error || !cloudHistory) return;
+
+        for (const item of cloudHistory) {
+            const book = item.books;
+            if (!book) continue;
+
+            // Local DB မှာ ရှိပြီးသားလား အရင်စစ်မယ်
+            const localBook = await db.savedBooks.get(book.id.toString());
+
+            if (!localBook) {
+                console.log(`Syncing: ${book.title}...`);
+                // Background မှာ ဖိုင်ကို ဒေါင်းလုပ်ဆွဲမယ်
+                try {
+                    const response = await fetch(book.download_link);
+                    const blob = await response.blob();
+
+                    // Dexie (Local DB) ထဲ သိမ်းမယ်
+                    await db.savedBooks.put({
+                        id: book.id.toString(),
+                        title: book.title,
+                        author: book.author,
+                        cover: book.cover,
+                        fileData: blob
+                    });
+                    
+                    // တစ်အုပ်ပြီးတိုင်း Library Grid ကို Update လုပ်ပေးမယ်
+                    renderLibrary();
+                } catch (fetchErr) {
+                    console.error(`Download failed for ${book.title}:`, fetchErr);
+                }
             }
-        });
+        }
+    } catch (err) {
+        console.error("Auto Sync Error:", err);
     }
+}
 
-    async function syncLikesToCloud(userId) {
-        const localLikes = JSON.parse(localStorage.getItem('my_likes') || '[]');
-        if (localLikes.length === 0) return;
-
-        try {
-            const syncData = localLikes.map(id => ({ user_id: userId, book_id: parseInt(id) }));
-            await sb.from('user_likes').upsert(syncData, { onConflict: 'user_id, book_id' });
-        } catch (err) { console.error("Sync error:", err); }
+// Cloud က Like တွေကို Local ထဲ ထည့်ပေးတဲ့ Function
+async function fetchLikesFromCloud(userId) {
+    const { data, error } = await sb.from('user_likes').select('book_id').eq('user_id', userId);
+    if (data) {
+        const ids = data.map(i => i.book_id.toString());
+        localStorage.setItem('my_likes', JSON.stringify(ids));
     }
+}
+// Local က Like တွေကို Cloud (Supabase) ထဲသို့ ပို့ပေးမည့် Function
+async function syncLikesToCloud(userId) {
+    const localLikes = JSON.parse(localStorage.getItem('my_likes') || '[]');
+    if (localLikes.length === 0) return;
 
-    async function handleLogout() {
-        await sb.auth.signOut();
-        location.reload();
+    try {
+        const syncData = localLikes.map(id => ({ 
+            user_id: userId, 
+            book_id: parseInt(id) 
+        }));
+        
+        // user_likes table ထဲသို့ အသစ်ထည့်မည် (ရှိပြီးသားဆိုလျှင် ထပ်မထည့်ရန် upsert သုံးသည်)
+        await sb.from('user_likes').upsert(syncData, { onConflict: 'user_id, book_id' });
+        console.log("Local likes synced to cloud.");
+    } catch (err) { 
+        console.error("Sync error:", err); 
     }
-
+}
     // --- (၁) အော့ဖ်လိုင်းစာအုပ်များ ပြသခြင်း (Local Data) ---
     async function renderLibrary() {
         const grid = document.getElementById('library-grid');
@@ -151,6 +218,10 @@
             });
             grid.appendChild(fragment);
         } catch (err) { console.error(err); }
+    }
+    async function handleLogout() {
+        await sb.auth.signOut();
+        location.reload();
     }
 
     // --- (၂) အသဲပေးစာရင်း ပြသခြင်း (Cloud/Local Sync) ---

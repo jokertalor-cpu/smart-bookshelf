@@ -4,91 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SmartBookshelf</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        :root { --primary: #1a73e8; --bg: #f0f2f5; }
-        body { font-family: 'Pyidaungsu', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--bg); margin: 0; }
-        .auth-box { background: white; padding: 40px 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
-        h3 { margin-bottom: 25px; color: #333; font-size: 1.5rem; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,0.2); }
-        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; margin-top: 15px; transition: 0.3s; }
-        button:hover { background: #1557b0; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .footer-link { margin-top: 20px; font-size: 13px; color: #666; }
-        .footer-link a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        :root { --primary: #1a73e8; --primary-hover: #1557b0; --google-bg: #ffffff; --text-main: #3c4043; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); margin: 0; padding: 20px; }
+        
+        .auth-card { background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+        .logo-area i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
+        h2 { margin: 10px 0 5px; color: #202124; font-size: 1.6rem; }
+        p.subtitle { color: #5f6368; margin-bottom: 30px; font-size: 14px; }
+
+        /* Social Buttons */
+        .social-btn { width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 8px; background: white; color: var(--text-main); font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: 20px; }
+        .social-btn:hover { background: #f8f9fa; border-color: #d2d4d7; box-shadow: 0 1px 3px rgba(60,64,67,0.3); }
+        .social-btn img { width: 20px; }
+
+        /* Divider */
+        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: #70757a; font-size: 13px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #e8eaed; }
+        .divider span { padding: 0 10px; }
+
+        /* Form Styling */
+        .input-group { text-align: left; margin-bottom: 15px; }
+        label { display: block; font-size: 13px; margin-bottom: 5px; color: #5f6368; font-weight: 500; }
+        input { width: 100%; padding: 12px 15px; border: 1px solid #dadce0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
+
+        .btn-main { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        .btn-main:hover { background: var(--primary-hover); }
+        .btn-main:disabled { background: #ccc; cursor: not-allowed; }
+
+        .footer-text { margin-top: 25px; font-size: 13px; color: #5f6368; }
+        .footer-text a { color: var(--primary); text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <div class="auth-box">
-        <h3>Smart Bookshelf</h3>
-        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">အကောင့်ဝင်ပါ သို့မဟုတ် အသစ်ဖွင့်ပါ</p>
-        
-        <input type="email" id="email" placeholder="Email (ဥပမာ- user@gmail.com)">
-        <input type="password" id="password" placeholder="Password (အနည်းဆုံး ၆ လုံး)">
-        
-        <button id="auth-btn" onclick="handleAuth()">LOGIN / SIGN UP</button>
-        
-        <div class="footer-link">
-            ပြန်သွားရန် - <a href="index.html">ပင်မစာမျက်နှာ</a>
+    <div class="auth-card">
+        <div class="logo-area">
+            <i class="fas fa-book-reader"></i>
+            <h2>Smart Bookshelf</h2>
+            <p class="subtitle">သင်၏ စာကြည့်တိုက်သို့ ဝင်ရောက်ပါ</p>
         </div>
+
+        <button class="social-btn" onclick="signInWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Continue with Google
+        </button>
+
+        <div class="divider"><span>သို့မဟုတ် Email ဖြင့်ဝင်မည်</span></div>
+
+        <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="example@gmail.com">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <button id="auth-btn" class="btn-main" onclick="handleAuth()">LOGIN / SIGN UP</button>
+
+        <p class="footer-text">
+            အကောင့်မရှိသေးပါက အပေါ်တွင် ဖြည့်ပြီး <br>တန်းရိုက်ထည့်ရုံဖြင့် Sign Up လုပ်နိုင်ပါသည်။
+        </p>
     </div>
 
     <script>
-        // --- ၁။ Configuration (သင့်ရဲ့ Supabase URL နဲ့ Key ကို ဒီမှာ ထည့်ပါ) ---
+        // Supabase Configuration
         const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
         const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
         const sb = supabase.createClient(SB_URL, SB_KEY);
 
+        // ၁။ Google Login Function
+        async function signInWithGoogle() {
+            try {
+                const { error } = await sb.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + window.location.pathname.replace('auth.html', 'library.html')
+                    }
+                });
+                if (error) throw error;
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
+        }
+
+        // ၂။ Email/Password Auth Function
         async function handleAuth() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             const btn = document.getElementById('auth-btn');
 
             if (!email || !password) {
-                Swal.fire('သတိပေးချက်', 'Email နဲ့ Password ဖြည့်ပါ', 'warning');
+                Swal.fire('ဖြည့်စွက်ရန်', 'Email နှင့် Password ဖြည့်ပါ', 'warning');
                 return;
             }
 
             btn.disabled = true;
-            btn.innerText = "ခဏစောင့်ပါ...";
+            btn.innerText = "လုပ်ဆောင်နေပါသည်...";
 
             try {
-                // --- ၂။ Login အရင်ကြိုးစားကြည့်မည် ---
+                // Login အရင်စမ်းမယ်
                 const { data, error: loginError } = await sb.auth.signInWithPassword({ email, password });
 
                 if (loginError) {
-                    // Login မှားရင် အကောင့်မရှိတာလားဆိုပြီး Sign Up (အကောင့်သစ်ဖွင့်ခြင်း) ကြိုးစားမည်
-                    if (loginError.message === "Invalid login credentials") {
+                    if (loginError.message.includes("Invalid login credentials")) {
+                        // အကောင့်မရှိရင် Sign Up လုပ်ပေးမယ်
                         const { error: signUpError } = await sb.auth.signUp({ email, password });
-                        
                         if (signUpError) throw signUpError;
-
-                        Swal.fire({
-                            title: 'အကောင့်သစ်ဖွင့်ပြီးပါပြီ',
-                            text: 'Email ထဲသို့ အတည်ပြုလွှာ ပို့ထားနိုင်ပါသည်။ Confirm လုပ်ပြီးမှ Login ပြန်ဝင်ပါ (သို့မဟုတ် Dashboard တွင် Confirm Email ပိတ်ထားပါ)။',
-                            icon: 'success'
-                        });
+                        Swal.fire('အောင်မြင်ပါသည်', 'အကောင့်သစ် ဖွင့်လိုက်ပါပြီ။ Email Confirm လုပ်ရန် လိုအပ်နိုင်ပါသည်။', 'success');
                     } else {
                         throw loginError;
                     }
                 } else {
-                    // --- ၃။ Login အောင်မြင်ပါက Library သို့ လွှတ်မည် ---
-                    Swal.fire({
-                        title: 'အောင်မြင်ပါသည်',
-                        text: 'စာကြည့်တိုက်သို့ ခေါ်ဆောင်သွားနေသည်...',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = 'library.html';
-                    });
+                    // Login အောင်မြင်ရင် ခေါ်သွားမယ်
+                    window.location.href = 'library.html';
                 }
             } catch (err) {
-                console.error("Auth Error:", err);
                 Swal.fire('မှားယွင်းမှု', err.message, 'error');
             } finally {
                 btn.disabled = false;
@@ -96,7 +133,7 @@
             }
         }
 
-        // Login ဝင်ထားပြီးသားဆိုရင် Library ကို တန်းလွှတ်မယ်
+        // Login ဝင်ပြီးသားဆိုရင် Library ကို တန်းပို့မယ်
         async function checkSession() {
             const { data } = await sb.auth.getSession();
             if (data.session) {
