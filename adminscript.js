@@ -7,7 +7,8 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 const ADMIN_LIST = [
     "jokertalor@gmail.com",
     "khaingzinoo171224@gmail.com",
-    "mthiri897@gmail.com"
+    "mthiri897@gmail.com",
+    "akemijk1997@gmail.com"
 ];
 
 // Global state for books to enable searching
