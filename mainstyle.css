@@ -17,7 +17,7 @@ body {
     margin: 0;
     padding-top: 60px; /* Navbar height နဲ့ ကိုက်ညီရန် */
     font-family: 'Pyidaungsu', sans-serif;
-   background: rgba(31, 81, 255, 0.3);
+   background-color: var(--bg-light);
     color: var(--text-dark);
 }
 
