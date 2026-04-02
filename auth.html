@@ -78,21 +78,20 @@
         const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
         const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
         const sb = supabase.createClient(SB_URL, SB_KEY);
-
-        // ၁။ Google Login Function
-        async function signInWithGoogle() {
-            try {
-                const { error } = await sb.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                        redirectTo: window.location.origin + window.location.pathname.replace('auth.html', 'library.html')
-                    }
-                });
-                if (error) throw error;
-            } catch (err) {
-                Swal.fire('Error', err.message, 'error');
+async function signInWithGoogle() {
+    try {
+        const { error } = await sb.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                // အောက်ပါအတိုင်း တိုက်ရိုက် ရေးကြည့်ပါ
+                redirectTo: 'https://jokertalor-cpu.github.io/smart-bookshelf/library.html'
             }
-        }
+        });
+        if (error) throw error;
+    } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+    }
+}
 
         // ၂။ Email/Password Auth Function
         async function handleAuth() {
