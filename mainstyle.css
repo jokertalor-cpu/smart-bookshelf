@@ -17,7 +17,7 @@ body {
     margin: 0;
     padding-top: 60px; /* Navbar height နဲ့ ကိုက်ညီရန် */
     font-family: 'Pyidaungsu', sans-serif;
-    background-color: var(--bg-light);
+   background: rgba(31, 81, 255, 0.3);
     color: var(--text-dark);
 }
 
@@ -31,7 +31,7 @@ body {
     z-index: 1000;
     display: flex;
     align-items: center;
-   background: rgba(31, 81, 255, 0.3);
+  background-color: var(--primary-blue);
     padding: 0 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
