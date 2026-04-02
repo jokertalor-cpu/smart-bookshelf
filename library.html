@@ -174,15 +174,27 @@ function setupAuthListener() {
     });
 }
 
-// Local Likes များကို Cloud ပေါ်သို့ တင်ပေးခြင်း
+// --- Cloud နှင့် Sync လုပ်ခြင်းကို ပိုမိုကောင်းမွန်အောင် ပြင်ဆင်ထားသည် ---
 async function syncLikesToCloud(userId) {
     const localLikes = JSON.parse(localStorage.getItem('my_likes') || '[]');
-    if (localLikes.length > 0) {
-        const syncData = localLikes.map(id => ({ user_id: userId, book_id: parseInt(id) }));
-        await sb.from('user_likes').upsert(syncData);
+    if (localLikes.length === 0) return;
+
+    try {
+        // ID တွေကို Integer အဖြစ်သေချာပြောင်းလဲခြင်း (Database Error ကာကွယ်ရန်)
+        const syncData = localLikes.map(id => ({ 
+            user_id: userId, 
+            book_id: parseInt(id) 
+        }));
+
+        // upsert သုံးထားသဖြင့် data ထပ်နေပါက error မတက်ဘဲ update လုပ်သွားမည်
+        const { error } = await sb.from('user_likes').upsert(syncData, { onConflict: 'user_id, book_id' });
+        
+        if (error) throw error;
+        console.log("Cloud synchronization successful.");
+    } catch (err) {
+        console.error("Sync Error:", err.message);
     }
 }
-
 // Logout လုပ်ဆောင်ချက်
 async function handleLogout() {
     const { error } = await sb.auth.signOut();
@@ -190,8 +202,6 @@ async function handleLogout() {
         Swal.fire({ title: 'Logout လုပ်ပြီးပါပြီ', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
     }
 }
-
-// Offline (Dexie) Library ကို ပြသခြင်း
 async function renderLibrary() {
     const grid = document.getElementById('library-grid');
     try {
@@ -200,20 +210,31 @@ async function renderLibrary() {
             grid.innerHTML = `<div class="empty-state"><i class="fas fa-download fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
             return;
         }
-        grid.innerHTML = books.map(book => `
-            <div class="book-card" id="card-${book.id}">
-                <img src="${book.cover}" onclick="openReader('${book.id}')">
+
+        // Memory RAM အသုံးပြုမှု သက်သာစေရန် DocumentFragment သုံးခြင်း
+        const fragment = document.createDocumentFragment();
+        grid.innerHTML = ''; // အဟောင်းတွေကို ရှင်းထုတ်ခြင်း
+
+        books.forEach(book => {
+            const card = document.createElement('div');
+            card.className = 'book-card';
+            card.id = `card-${book.id}`;
+            card.innerHTML = `
+                <img src="${book.cover}" loading="lazy" onclick="openReader('${book.id}')">
                 <h3>${book.title}</h3>
                 <div class="actions">
                     <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
                     <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
                 </div>
-            </div>
-        `).join('');
-    } catch (err) { console.error(err); }
-}
+            `;
+            fragment.appendChild(card);
+        });
 
-// အသဲပေးထားသော စာရင်းကို Supabase မှ ဆွဲယူပြသခြင်း
+        grid.appendChild(fragment);
+    } catch (err) { 
+        console.error("Library Rendering Error:", err); 
+    }
+}
 async function loadMyFavorites() {
     const likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
     const favContainer = document.getElementById('fav-view');
@@ -225,19 +246,25 @@ async function loadMyFavorites() {
 
     try {
         const numericIds = likedIds.map(id => parseInt(id));
-        const { data, error } = await sb.from('books').select('id, title, cover').in('id', numericIds);
+        // Database ကနေ လိုအပ်တဲ့ column ၃ ခုကိုပဲ ဆွဲထုတ်ပြီး RAM သက်သာစေခြင်း
+        const { data, error } = await sb.from('books')
+            .select('id, title, cover')
+            .in('id', numericIds);
+
         if (error) throw error;
 
         favContainer.innerHTML = data.map(item => `
             <div class="book-card" onclick="location.href='detail.html?id=${item.id}'" style="cursor:pointer;">
-                <img src="${item.cover}">
+                <img src="${item.cover}" loading="lazy">
                 <h3>${item.title}</h3>
                 <div class="actions">
                     <button class="btn btn-info"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
                 </div>
             </div>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error("Favorites Loading Error:", err); 
+    }
 }
 
 function openReader(id) { window.location.href = `reader.html?id=${id}&mode=offline`; }
