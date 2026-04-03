@@ -269,8 +269,8 @@ body {
 
 .tag-box {
     padding: 8px 16px;
-    background-color: #f0f4f8;
-    color: #3182ce;
+    background-color: var(--primary-blue);
+    color:var(--bg-light);
     text-decoration: none;
     font-size: 13px;
     font-weight: bold;
@@ -279,7 +279,7 @@ body {
 }
 
 .tag-box:hover {
-    background-color: #3182ce;
+    background-color:var(--hover-blue);
     color: var(--white);
     transform: translateY(-2px);
 }
