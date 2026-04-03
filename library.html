@@ -223,39 +223,51 @@ async function syncLikesToCloud(userId) {
         await sb.auth.signOut();
         location.reload();
     }
+   async function loadMyFavorites() {
+    const favContainer = document.getElementById('fav-view');
+    // ၁။ LocalStorage ကနေ Like လုပ်ထားတဲ့ ID List ကို ယူမယ်
+    let likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
 
-    // --- (၂) အသဲပေးစာရင်း ပြသခြင်း (Cloud/Local Sync) ---
-    async function loadMyFavorites() {
-        const favContainer = document.getElementById('fav-view');
-        let likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
+    if (likedIds.length === 0) {
+        favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+        return;
+    }
 
-        if (likedIds.length === 0) {
-            favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
-            return;
-        }
+    try {
+        // ၂။ ID တွေကို String ကနေ Number ပြောင်းမယ် (Supabase ID က Number ဖြစ်လို့ပါ)
+        const numericIds = likedIds.map(id => parseInt(id));
 
-        try {
-            const numericIds = likedIds.map(id => parseInt(id));
-            const { data, error } = await sb.from('books').select('id, title, cover').in('id', numericIds);
+        // ၃။ အရေးကြီးဆုံးအချက် - .in() ကိုသုံးပြီး ID အားလုံးကို တစ်ခါတည်း ဆွဲထုတ်မယ် (ဒါက အမြန်ဆုံးပါ)
+        const { data, error } = await sb
+            .from('books')
+            .select('id, title, cover')
+            .in('id', numericIds);
 
-            if (error) throw error;
+        if (error) throw error;
 
+        if (data && data.length > 0) {
             favContainer.innerHTML = data.map(item => `
                 <div class="book-card">
-                    <img src="${item.cover}" loading="lazy" onclick="location.href='detail.html?id=${item.id}'">
+                    <img src="${item.cover}" alt="${item.title}" loading="lazy" onclick="location.href='detail.html?id=${item.id}'">
                     <h3>${item.title}</h3>
                     <div class="actions">
-                        <button class="btn btn-info" onclick="location.href='detail.html?id=${item.id}'"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
-                        <button class="btn btn-delete" onclick="confirmDelete('${item.id}', 'like')"><i class="fas fa-heart-crack"></i> Unlike</button>
+                        <button class="btn btn-info" onclick="location.href='detail.html?id=${item.id}'">
+                            <i class="fas fa-info-circle"></i> အသေးစိတ်
+                        </button>
+                        <button class="btn btn-delete" onclick="confirmDelete('${item.id}', 'like')">
+                            <i class="fas fa-heart-crack"></i> Unlike
+                        </button>
                     </div>
                 </div>
             `).join('');
-        } catch (err) {
-            console.error(err);
-            favContainer.innerHTML = `<p style="text-align:center; color:#888;">Offline ဖြစ်နေ၍ မပြနိုင်ပါ။</p>`;
+        } else {
+            favContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#888;">စာအုပ်အချက်အလက်များ ရှာမတွေ့ပါ။</p>`;
         }
+    } catch (err) {
+        console.error("Fetch Favorites Error:", err);
+        favContainer.innerHTML = `<p style="text-align:center; color:#888;">အင်တာနက်လိုင်း စစ်ဆေးပေးပါ။</p>`;
     }
-
+}
     // --- (၃) စီမံခန့်ခွဲမှုဆိုင်ရာ Function များ ---
     function openReader(id) { window.location.href = `reader.html?id=${id}&mode=offline`; }
 
