@@ -20,6 +20,7 @@ body {
     font-family: 'Pyidaungsu', sans-serif;
     background-color: var(--bg-light);
     color: var(--text-dark);
+    
 }
 
 /* --- ၂။ Navigation Bar --- */
@@ -269,17 +270,16 @@ body {
 
 .tag-box {
     padding: 8px 16px;
-    background-color: var(--primary-blue);
-    color:var(--bg-light);
+    background-color: var(--dark-blue);
+    color: #eff0f3;
     text-decoration: none;
     font-size: 13px;
     font-weight: bold;
     border-radius: 6px;
     transition: 0.3s;
 }
-
 .tag-box:hover {
-    background-color:var(--hover-blue);
+    background-color:var(--primary-blue);
     color: var(--white);
     transform: translateY(-2px);
 }
