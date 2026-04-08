@@ -221,9 +221,10 @@ async function loadPage() {
     activeBook = data;
     renderBookUI(data);
     checkLikeStatus();
+    
+    // ပြင်ဆင်ရန်- category ရော author ရော id ရော ၃ ခုလုံး ပို့ပေးရပါမယ်
     loadMoreRelatedBooks(data.category, data.author, data.id);
 }
-
 function renderBookUI(data) {
     document.getElementById('main-content').innerHTML = `
         <div class="book-hero">
