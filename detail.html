@@ -222,6 +222,8 @@ async function loadPage() {
     renderBookUI(data);
     checkLikeStatus();
     loadMore(data.category, data.id);
+    // သင့် code ထဲမှာ ဒီလိုမျိုး parameter ၃ ခု တိတိကျကျ ပေးထားရပါမယ်
+loadMoreRelatedBooks(data.category, data.author, data.id);
 }
 
 function renderBookUI(data) {
@@ -322,8 +324,68 @@ function updateLikeUI(isLiked) {
     icon.className = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
     label.innerText = isLiked ? 'အသဲပေးထားပြီး' : 'အသဲပေးမည်';
 }
+// --- ဆက်စပ်စာအုပ်များ ရှာဖွေခြင်း (Author Same > Category Same) ---
+async function loadMoreRelatedBooks(currentCategory, currentAuthor, currentBookId) {
+    const relatedViewElement = document.getElementById('related-view');
+    if (!relatedViewElement) return;
+
+    try {
+        // ၁။ စာရေးဆရာတူတဲ့ စာအုပ်တွေကို အရင်ရှာမယ် (ဦးစားပေး - ၁)
+        const { data: authorMatches, error: authorError } = await supabase
+            .from('books')
+            .select('id, title, cover, author, category')
+            .eq('author', currentAuthor)
+            .neq('id', currentBookId) // လက်ရှိစာအုပ်ကို ဖယ်မယ်
+            .limit(10);
+
+        if (authorError) throw authorError;
+
+        let finalRelatedBooks = [...authorMatches];
+
+        // ၂။ စာရေးဆရာတူတာ ၁၀ အုပ်မပြည့်သေးရင် အမျိုးအစားတူတာ ထပ်ရှာမယ် (ဦးစားပေး - ၂)
+        if (finalRelatedBooks.length < 10) {
+            const remainingNeeded = 10 - finalRelatedBooks.length;
+            
+            // ရှာပြီးသား ID တွေကို စုစည်းမယ် (လက်ရှိစာအုပ် + အာသာတူစာအုပ်များ)
+            const excludedIds = finalRelatedBooks.map(book => book.id);
+            excludedIds.push(currentBookId);
+
+            const { data: categoryMatches, error: categoryError } = await supabase
+                .from('books')
+                .select('id, title, cover, author, category')
+                .eq('category', currentCategory)
+                .not('id', 'in', `(${excludedIds.join(',')})`) // ရှာပြီးသားတွေကို ထပ်မယူတော့ဘူး
+                .limit(remainingNeeded);
+
+            if (!categoryError && categoryMatches) {
+                finalRelatedBooks = [...finalRelatedBooks, ...categoryMatches];
+            }
+        }
+
+        // ၃။ UI မှာ Render လုပ်ခြင်း
+        if (finalRelatedBooks.length === 0) {
+            relatedViewElement.innerHTML = `<p style="padding:20px; color:#888; text-align:center;">ဆက်စပ်စာအုပ် မရှိသေးပါ။</p>`;
+            return;
+        }
+
+        // HTML ပြသခြင်း (CSS ကို မပြင်ဘဲ Script သာ ပြင်ထားပါသည်)
+        relatedViewElement.innerHTML = finalRelatedBooks.map(item => `
+            <div class="item-card" onclick="window.location.href='detail.html?id=${item.id}'">
+                <div class="item-img">
+                    <img src="${item.cover}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x220?text=No+Cover'">
+                </div>
+                <p title="${item.title}">${item.title}</p>
+                <div style="font-size: 11px; color: #1a73e8; margin-top: -8px;">${item.author}</div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error("Related books loading error:", error);
+    }
+}
 
 window.onload = loadPage;
+
 </script>
 </body>
 </html>
