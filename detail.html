@@ -221,9 +221,7 @@ async function loadPage() {
     activeBook = data;
     renderBookUI(data);
     checkLikeStatus();
-    loadMore(data.category, data.id);
-    // သင့် code ထဲမှာ ဒီလိုမျိုး parameter ၃ ခု တိတိကျကျ ပေးထားရပါမယ်
-loadMoreRelatedBooks(data.category, data.author, data.id);
+    loadMoreRelatedBooks(data.category, data.author, data.id);
 }
 
 function renderBookUI(data) {
