@@ -20,162 +20,29 @@
         .book-info h1 { margin: 0 0 20px 0; font-size: 28px; color: #202124; }
         .meta { margin-bottom: 12px; font-size: 17px; display: flex; align-items: center; gap: 12px; }
         .meta i { color: var(--primary); width: 20px; }
-       /* Actions Section ကို ဖုန်းအတွက် ပြင်ဆင်ခြင်း */
-.actions {
-    display: flex;
-    align-items: center;
-    gap: 12px; /* ခလုတ်ကြား အကွာအဝေး */
-    margin-top: 35px;
-    flex-wrap: wrap; /* ဖုန်းမှာ နေရာမဆန့်ရင် အောက်ကြောင်းဆင်းပေးဖို့ */
-}
-
-.btn {
-    padding: 12px 20px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    flex: 1; /* ခလုတ်တွေကို အညီအမျှ ဖြစ်စေဖို့ */
-    min-width: 140px; /* ခလုတ်တစ်ခုချင်းစီရဲ့ အနည်းဆုံး အကျယ် */
-}
-        .btn-read { 
-    background: var(--primary); 
-    color: white; 
-    border: none;
-    display: flex; /* alignment ညီအောင် */
-    align-items: center;
-    justify-content: center;
-    text-decoration: none; /* မျဉ်းတားပျောက်အောင် */
-    transition: all 0.3s ease;
-}
-
-.btn-read:hover {
-    background: #1557b0; /* hover အရောင် အနည်းငယ်ရင့်သွားမယ် */
-    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
-}
-
-.btn-read:active {
-    transform: scale(0.98);
-}
-
-/* Like Button Design ကို ပိုလှအောင် ပြင်ခြင်း */
-#like-btn {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0 !important;
-    color: #64748b;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-#like-btn:active {
-    transform: scale(0.95); /* နှိပ်လိုက်ရင် တုန်သွားတဲ့ effect */
-}
-
-/* Mobile Responsive */
-@media (max-width: 600px) {
-    .actions {
-        gap: 10px;
-    }
-    
-    .btn {
-        padding: 14px 15px;
-        font-size: 14px;
-        flex: 1 1 45%; /* ဖုန်းမှာ တစ်တန်းကို ၂ ခုနှုန်း စီမယ် */
-    }
-
-    /* အသဲပေးတဲ့ခလုတ်ကို ဖုန်းမှာ ပိုထင်ရှားစေဖို့ */
-    #like-btn {
-        flex: 1 1 100%; /* အသဲပေးတဲ့ခလုတ်ကို အောက်ကနေ အပြည့်ပြချင်ရင် ဒါကိုသုံးပါ */
-        margin-top: 5px;
-    }
-}
+        .actions { display: flex; align-items: center; gap: 12px; margin-top: 35px; flex-wrap: wrap; }
+        .btn { padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; flex: 1; min-width: 140px; }
+        .btn-read { background: var(--primary); color: white; text-decoration: none; }
+        .btn-read:hover { background: #1557b0; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2); }
+        #like-btn { background: #f8fafc; border: 1px solid #e2e8f0 !important; color: #64748b; }
         #progress-ui { display: none; position: relative; width: 65px; height: 65px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 5; }
         .circle-bar { fill: none; stroke: var(--success); stroke-width: 5; stroke-dasharray: 126; stroke-dashoffset: 126; transition: 0.2s; transform: rotate(-90deg); transform-origin: center; }
         .pct-val { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 13px; font-weight: bold; color: var(--success); }
-        /* Related Section Styling */
-.related-box {
-    margin-top: 50px;
-    padding-bottom: 20px;
-}
-
-.related-grid {
-    display: flex;
-    gap: 20px;
-    overflow-x: auto;
-    padding: 15px 5px; /* shadow မပြတ်သွားအောင် padding ထည့်ထားတာပါ */
-    scroll-behavior: smooth;
-    scrollbar-width: thin; /* Firefox အတွက် scrollbar သေးသေးလေး */
-}
-
-/* Card တစ်ခုချင်းစီရဲ့ Style */
-.item-card {
-    flex: 0 0 150px;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); /* Smooth transition */
-    position: relative;
-}
-
-.item-img {
-    width: 150px;
-    height: 220px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #eee;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-}
-
-.item-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.item-card p {
-    margin-top: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #3c4043;
-    line-height: 1.4;
-    height: 40px;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    transition: color 0.3s ease;
-}
-
-
-.item-card:hover .item-img {
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15); /* အရိပ် ပိုထင်လာမယ် */
-}
-
-.item-card:hover img {
-    transform: scale(1.1); /* ပုံလေးက အနည်းငယ် ကြီးလာမယ် (Zoom effect) */
-}
-
-.item-card:hover p {
-    color: var(--primary); /* စာသားအရောင် ပြောင်းသွားမယ် */
-}
-
-/* Scrollbar ကို ပိုလှအောင် ပြင်တာ (Optional) */
-.related-grid::-webkit-scrollbar {
-    height: 6px;
-}
-.related-grid::-webkit-scrollbar-thumb {
-    background: #e0e0e0;
-    border-radius: 10px;
-}
+        .related-box { margin-top: 50px; padding-bottom: 20px; }
+        .related-grid { display: flex; gap: 20px; overflow-x: auto; padding: 15px 5px; scroll-behavior: smooth; }
+        .item-card { flex: 0 0 150px; cursor: pointer; transition: all 0.4s ease; }
+        .item-img { width: 150px; height: 220px; border-radius: 12px; overflow: hidden; background: #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .item-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .item-card p { margin-top: 10px; font-size: 14px; font-weight: 600; color: #3c4043; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .item-card:hover img { transform: scale(1.1); }
         .description-box { margin-top: 30px; padding-top: 25px; border-top: 1px solid #eee; }
-        .description-box h3 { font-size: 20px; color: #202124; margin-bottom: 15px; }
         .description-text { font-size: 16px; line-height: 1.8; color: #5f6368; white-space: pre-line; }
+
+        @media (max-width: 600px) {
+            .btn { flex: 1 1 45%; }
+            #like-btn { flex: 1 1 100%; }
+        }
     </style>
 </head>
 <body>
@@ -202,189 +69,192 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 <script>
-   const db = new Dexie("MyDigitalLibrary");
-db.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
+    // --- ၁။ Configuration (နာမည်အရှည်များဖြင့် စနစ်တကျရေးသားခြင်း) ---
+    const supabaseProjectUrl = 'https://cmguamftohgcgwdggwde.supabase.co';
+    const supabaseAnonPublicKey = 'sb_publishable_xiWtoACTDkbfjmz9RMxWdw_R5W1UtZ9';
+    const supabase = window.supabase.createClient(supabaseProjectUrl, supabaseAnonPublicKey);
 
-const _U = 'https://mituedqotwbmporkwbqf.supabase.co';
-const _K = 'sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc';
-const sb = window.supabase.createClient(_U, _K);
+    const localDb = new Dexie("MyDigitalLibrary");
+    localDb.version(2).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-let activeBook = null;
+    let activeBookData = null;
 
-async function loadPage() {
-    const id = new URLSearchParams(window.location.search).get('id');
-    if (!id) return;
+    // --- ၂။ စာမျက်နှာ Loading လုပ်ဆောင်ချက် ---
+    async function loadPage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('id');
+        if (!bookId) return;
 
-    const { data, error } = await sb.from('books').select('*').eq('id', id).maybeSingle();
-    if (error || !data) return;
+        try {
+            const { data, error } = await supabase.from('books').select('*').eq('id', bookId).maybeSingle();
+            if (error || !data) throw error;
 
-    activeBook = data;
-    renderBookUI(data);
-    checkLikeStatus();
-    
-    // ပြင်ဆင်ရန်- category ရော author ရော id ရော ၃ ခုလုံး ပို့ပေးရပါမယ်
-    loadMoreRelatedBooks(data.category, data.author, data.id);
-}
-function renderBookUI(data) {
-    document.getElementById('main-content').innerHTML = `
-        <div class="book-hero">
-            <div class="cover-box"><img src="${data.cover}"></div>
-            <div class="book-info">
-                <h1>${data.title}</h1>
-                <div class="meta"><i class="fas fa-user-tie"></i> <span><b>စာရေးသူ:</b> ${data.author}</span></div>
-                <div class="meta"><i class="fas fa-list"></i> <span><b>အမျိုးအစား:</b> ${data.category}</span></div>
-                <div class="actions">
-                    <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
-                    <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
-                    <button onclick="toggleLike()" id="like-btn" class="btn">
-                        <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
-                    </button>
-                    <div id="progress-ui"><svg width="60" height="60"><circle class="circle-bg" cx="30" cy="30" r="20"></circle><circle id="progress-bar" class="circle-bar" cx="30" cy="30" r="20"></circle></svg><div id="pct-label" class="pct-val">0%</div></div>
-                </div>
-            </div>
-        </div>
-        <div class="description-box"><h3>စာအုပ်အညွှန်း</h3><div class="description-text">${data.description || 'အညွှန်းမရှိပါ။'}</div></div>
-    `;
-}
-
-async function startDownload() {
-    const btn = document.getElementById('dl-button');
-    const ui = document.getElementById('progress-ui');
-    btn.style.display = 'none'; ui.style.display = 'block';
-
-    try {
-        await sb.rpc('increment_download', { row_id: activeBook.id });
-        const response = await fetch(activeBook.download_link);
-        const reader = response.body.getReader();
-        const total = +response.headers.get('Content-Length') || 0;
-        let received = 0, chunks = [];
-
-        while(true) {
-            const {done, value} = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            received += value.length;
-            if (total > 0) {
-                const pct = Math.round((received / total) * 100);
-                document.getElementById('pct-label').innerText = pct + "%";
-                document.getElementById('progress-bar').style.strokeDashoffset = 126 - (126 * pct) / 100;
-            }
-        }
-
-        const blob = new Blob(chunks, { type: 'application/pdf' });
-        await db.savedBooks.put({ id: activeBook.id.toString(), title: activeBook.title, author: activeBook.author, cover: activeBook.cover, fileData: blob });
-        
-        // Cloud သို့ ဒေါင်းလုဒ်စာရင်းမှတ်ခြင်း
-        await saveToCloudDownload(activeBook.id.toString());
-
-        Swal.fire({ title: 'အောင်မြင်ပါသည်', text: 'Library ထဲသို့ ထည့်သွင်းပြီးပါပြီ။', icon: 'success' });
-    } catch (err) { console.error(err); }
-    finally { btn.style.display = 'flex'; ui.style.display = 'none'; }
-}
-
-async function saveToCloudDownload(bookId) {
-    const { data: { user } } = await sb.auth.getUser();
-    if (user) {
-        await sb.from('user_downloads').upsert({ user_id: user.id, book_id: parseInt(bookId) });
-    }
-}
-
-async function toggleLike() {
-    const { data: { user } } = await sb.auth.getUser();
-    let likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
-    const bookId = activeBook.id.toString();
-    const isLiked = likedBooks.includes(bookId);
-
-    try {
-        if (isLiked) {
-            await sb.rpc('decrement_likes', { row_id: activeBook.id });
-            if (user) await sb.from('user_likes').delete().eq('user_id', user.id).eq('book_id', bookId);
-            likedBooks = likedBooks.filter(id => id !== bookId);
-        } else {
-            await sb.rpc('increment_likes', { row_id: activeBook.id });
-            if (user) await sb.from('user_likes').upsert({ user_id: user.id, book_id: bookId });
-            likedBooks.push(bookId);
-        }
-        localStorage.setItem('my_likes', JSON.stringify(likedBooks));
-        updateLikeUI(!isLiked);
-    } catch (err) { console.error(err); }
-}
-
-function checkLikeStatus() {
-    const likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
-    updateLikeUI(likedBooks.includes(activeBook.id.toString()));
-}
-
-function updateLikeUI(isLiked) {
-    const btn = document.getElementById('like-btn');
-    const icon = btn.querySelector('i');
-    const label = document.getElementById('like-label');
-    btn.style.color = isLiked ? '#e11d48' : '#64748b';
-    icon.className = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-    label.innerText = isLiked ? 'အသဲပေးထားပြီး' : 'အသဲပေးမည်';
-}
-// --- ဆက်စပ်စာအုပ်များ ရှာဖွေခြင်း (Author Same > Category Same) ---
-async function loadMoreRelatedBooks(currentCategory, currentAuthor, currentBookId) {
-    const relatedViewElement = document.getElementById('related-view');
-    if (!relatedViewElement) return;
-
-    try {
-        // ၁။ စာရေးဆရာတူတဲ့ စာအုပ်တွေကို အရင်ရှာမယ် (ဦးစားပေး - ၁)
-        const { data: authorMatches, error: authorError } = await supabase
-            .from('books')
-            .select('id, title, cover, author, category')
-            .eq('author', currentAuthor)
-            .neq('id', currentBookId) // လက်ရှိစာအုပ်ကို ဖယ်မယ်
-            .limit(10);
-
-        if (authorError) throw authorError;
-
-        let finalRelatedBooks = [...authorMatches];
-
-        // ၂။ စာရေးဆရာတူတာ ၁၀ အုပ်မပြည့်သေးရင် အမျိုးအစားတူတာ ထပ်ရှာမယ် (ဦးစားပေး - ၂)
-        if (finalRelatedBooks.length < 10) {
-            const remainingNeeded = 10 - finalRelatedBooks.length;
+            activeBookData = data;
+            renderBookUI(data);
+            checkLikeStatus();
             
-            // ရှာပြီးသား ID တွေကို စုစည်းမယ် (လက်ရှိစာအုပ် + အာသာတူစာအုပ်များ)
-            const excludedIds = finalRelatedBooks.map(book => book.id);
-            excludedIds.push(currentBookId);
-
-            const { data: categoryMatches, error: categoryError } = await supabase
-                .from('books')
-                .select('id, title, cover, author, category')
-                .eq('category', currentCategory)
-                .not('id', 'in', `(${excludedIds.join(',')})`) // ရှာပြီးသားတွေကို ထပ်မယူတော့ဘူး
-                .limit(remainingNeeded);
-
-            if (!categoryError && categoryMatches) {
-                finalRelatedBooks = [...finalRelatedBooks, ...categoryMatches];
-            }
+            // ဆက်စပ်စာအုပ်ရှာရန် ခေါ်ယူခြင်း (Category, Author, ID)
+            loadMoreRelatedBooks(data.category, data.author, data.id);
+        } catch (err) {
+            console.error("Load Page Error:", err);
         }
-
-        // ၃။ UI မှာ Render လုပ်ခြင်း
-        if (finalRelatedBooks.length === 0) {
-            relatedViewElement.innerHTML = `<p style="padding:20px; color:#888; text-align:center;">ဆက်စပ်စာအုပ် မရှိသေးပါ။</p>`;
-            return;
-        }
-
-        // HTML ပြသခြင်း (CSS ကို မပြင်ဘဲ Script သာ ပြင်ထားပါသည်)
-        relatedViewElement.innerHTML = finalRelatedBooks.map(item => `
-            <div class="item-card" onclick="window.location.href='detail.html?id=${item.id}'">
-                <div class="item-img">
-                    <img src="${item.cover}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x220?text=No+Cover'">
-                </div>
-                <p title="${item.title}">${item.title}</p>
-                <div style="font-size: 11px; color: #1a73e8; margin-top: -8px;">${item.author}</div>
-            </div>
-        `).join('');
-
-    } catch (error) {
-        console.error("Related books loading error:", error);
     }
-}
 
-window.onload = loadPage;
+    function renderBookUI(data) {
+        document.getElementById('main-content').innerHTML = `
+            <div class="book-hero">
+                <div class="cover-box"><img src="${data.cover}"></div>
+                <div class="book-info">
+                    <h1>${data.title}</h1>
+                    <div class="meta"><i class="fas fa-user-tie"></i> <span><b>စာရေးသူ:</b> ${data.author}</span></div>
+                    <div class="meta"><i class="fas fa-list"></i> <span><b>အမျိုးအစား:</b> ${data.category}</span></div>
+                    <div class="actions">
+                        <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
+                        <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
+                        <button onclick="toggleLike()" id="like-btn" class="btn">
+                            <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
+                        </button>
+                        <div id="progress-ui">
+                            <svg width="60" height="60">
+                                <circle class="circle-bg" cx="30" cy="30" r="20"></circle>
+                                <circle id="progress-bar" class="circle-bar" cx="30" cy="30" r="20"></circle>
+                            </svg>
+                            <div id="pct-label" class="pct-val">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="description-box"><h3>စာအုပ်အညွှန်း</h3><div class="description-text">${data.description || 'အညွှန်းမရှိပါ။'}</div></div>
+        `;
+    }
 
+    // --- ၃။ ဒေါင်းလုဒ် နှင့် Like လုပ်ဆောင်ချက်များ (မူရင်းအတိုင်း) ---
+    async function startDownload() {
+        if(!activeBookData) return;
+        const btn = document.getElementById('dl-button');
+        const ui = document.getElementById('progress-ui');
+        btn.style.display = 'none'; ui.style.display = 'block';
+
+        try {
+            await supabase.rpc('increment_download', { row_id: activeBookData.id });
+            const response = await fetch(activeBookData.download_link);
+            const reader = response.body.getReader();
+            const total = +response.headers.get('Content-Length') || 0;
+            let received = 0, chunks = [];
+
+            while(true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                received += value.length;
+                if (total > 0) {
+                    const pct = Math.round((received / total) * 100);
+                    document.getElementById('pct-label').innerText = pct + "%";
+                    document.getElementById('progress-bar').style.strokeDashoffset = 126 - (126 * pct) / 100;
+                }
+            }
+
+            const blob = new Blob(chunks, { type: 'application/pdf' });
+            await localDb.savedBooks.put({ 
+                id: activeBookData.id.toString(), 
+                title: activeBookData.title, 
+                author: activeBookData.author, 
+                cover: activeBookData.cover, 
+                fileData: blob 
+            });
+
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) await supabase.from('user_downloads').upsert({ user_id: user.id, book_id: activeBookData.id });
+
+            Swal.fire({ title: 'အောင်မြင်ပါသည်', text: 'Library ထဲသို့ ထည့်သွင်းပြီးပါပြီ။', icon: 'success' });
+        } catch (err) { console.error(err); }
+        finally { btn.style.display = 'flex'; ui.style.display = 'none'; }
+    }
+
+    async function toggleLike() {
+        const { data: { user } } = await supabase.auth.getUser();
+        let likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
+        const bookId = activeBookData.id.toString();
+        const isLiked = likedBooks.includes(bookId);
+
+        try {
+            if (isLiked) {
+                await supabase.rpc('decrement_likes', { row_id: activeBookData.id });
+                if (user) await supabase.from('user_likes').delete().eq('user_id', user.id).eq('book_id', activeBookData.id);
+                likedBooks = likedBooks.filter(id => id !== bookId);
+            } else {
+                await supabase.rpc('increment_likes', { row_id: activeBookData.id });
+                if (user) await supabase.from('user_likes').upsert({ user_id: user.id, book_id: activeBookData.id });
+                likedBooks.push(bookId);
+            }
+            localStorage.setItem('my_likes', JSON.stringify(likedBooks));
+            updateLikeUI(!isLiked);
+        } catch (err) { console.error(err); }
+    }
+
+    function checkLikeStatus() {
+        const likedBooks = JSON.parse(localStorage.getItem('my_likes') || '[]');
+        updateLikeUI(likedBooks.includes(activeBookData.id.toString()));
+    }
+
+    function updateLikeUI(isLiked) {
+        const btn = document.getElementById('like-btn');
+        if(!btn) return;
+        const icon = btn.querySelector('i');
+        const label = document.getElementById('like-label');
+        btn.style.color = isLiked ? '#e11d48' : '#64748b';
+        icon.className = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+        label.innerText = isLiked ? 'အသဲပေးထားပြီး' : 'အသဲပေးမည်';
+    }
+
+    // --- ၄။ ဆက်စပ်စာအုပ်များ (Author First, Category Second) ---
+    async function loadMoreRelatedBooks(currentCategory, currentAuthor, currentBookId) {
+        const relatedView = document.getElementById('related-view');
+        if (!relatedView) return;
+
+        try {
+            // ဦးစားပေး ၁ - စာရေးဆရာတူခြင်း
+            const { data: authorMatches } = await supabase
+                .from('books')
+                .select('id, title, cover, author')
+                .eq('author', currentAuthor)
+                .neq('id', currentBookId)
+                .limit(10);
+
+            let finalRelated = [...(authorMatches || [])];
+
+            // ဦးစားပေး ၂ - ၁၀ အုပ်မပြည့်လျှင် အမျိုးအစားတူထပ်ရှာခြင်း
+            if (finalRelated.length < 10) {
+                const remaining = 10 - finalRelated.length;
+                const excludedIds = finalRelated.map(b => b.id);
+                excludedIds.push(currentBookId);
+
+                const { data: catMatches } = await supabase
+                    .from('books')
+                    .select('id, title, cover, author')
+                    .eq('category', currentCategory)
+                    .not('id', 'in', `(${excludedIds.join(',')})`)
+                    .limit(remaining);
+
+                if (catMatches) finalRelated = [...finalRelated, ...catMatches];
+            }
+
+            if (finalRelated.length === 0) {
+                relatedView.innerHTML = '<p>ဆက်စပ်စာအုပ်မရှိပါ။</p>';
+                return;
+            }
+
+            relatedView.innerHTML = finalRelated.map(item => `
+                <div class="item-card" onclick="window.location.href='detail.html?id=${item.id}'">
+                    <div class="item-img"><img src="${item.cover}" onerror="this.src='https://via.placeholder.com/150x220'"></div>
+                    <p>${item.title}</p>
+                    <small style="color:var(--primary)">${item.author}</small>
+                </div>
+            `).join('');
+        } catch (err) { console.error(err); }
+    }
+
+    window.onload = loadPage;
 </script>
 </body>
 </html>
