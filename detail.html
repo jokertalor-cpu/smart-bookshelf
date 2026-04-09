@@ -330,11 +330,12 @@ async function loadMoreRelatedBooks(currentCategory, currentAuthor, currentBookI
 
     try {
         // ၁။ စာရေးဆရာတူတဲ့ စာအုပ်တွေကို အရင်ရှာမယ် (ဦးစားပေး - ၁)
-        const { data: authorMatches, error: authorError } = await supabase
+        // မှတ်ချက်- supabase အစား sb ကို သုံးရပါမည်
+        const { data: authorMatches, error: authorError } = await sb
             .from('books')
             .select('id, title, cover, author, category')
             .eq('author', currentAuthor)
-            .neq('id', currentBookId) // လက်ရှိစာအုပ်ကို ဖယ်မယ်
+            .neq('id', currentBookId) 
             .limit(10);
 
         if (authorError) throw authorError;
@@ -345,15 +346,15 @@ async function loadMoreRelatedBooks(currentCategory, currentAuthor, currentBookI
         if (finalRelatedBooks.length < 10) {
             const remainingNeeded = 10 - finalRelatedBooks.length;
             
-            // ရှာပြီးသား ID တွေကို စုစည်းမယ် (လက်ရှိစာအုပ် + အာသာတူစာအုပ်များ)
+            // ရှာပြီးသား ID များကို စုစည်းခြင်း
             const excludedIds = finalRelatedBooks.map(book => book.id);
             excludedIds.push(currentBookId);
 
-            const { data: categoryMatches, error: categoryError } = await supabase
+            const { data: categoryMatches, error: categoryError } = await sb
                 .from('books')
                 .select('id, title, cover, author, category')
                 .eq('category', currentCategory)
-                .not('id', 'in', `(${excludedIds.join(',')})`) // ရှာပြီးသားတွေကို ထပ်မယူတော့ဘူး
+                .not('id', 'in', `(${excludedIds.join(',')})`) 
                 .limit(remainingNeeded);
 
             if (!categoryError && categoryMatches) {
@@ -367,7 +368,6 @@ async function loadMoreRelatedBooks(currentCategory, currentAuthor, currentBookI
             return;
         }
 
-        // HTML ပြသခြင်း (CSS ကို မပြင်ဘဲ Script သာ ပြင်ထားပါသည်)
         relatedViewElement.innerHTML = finalRelatedBooks.map(item => `
             <div class="item-card" onclick="window.location.href='detail.html?id=${item.id}'">
                 <div class="item-img">
@@ -380,6 +380,7 @@ async function loadMoreRelatedBooks(currentCategory, currentAuthor, currentBookI
 
     } catch (error) {
         console.error("Related books loading error:", error);
+        relatedViewElement.innerHTML = `<p style="padding:20px; color:red; text-align:center;">Error loading books.</p>`;
     }
 }
 
