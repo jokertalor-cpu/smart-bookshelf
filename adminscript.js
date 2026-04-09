@@ -8,7 +8,8 @@ const ADMIN_LIST = [
     "jokertalor@gmail.com",
     "khaingzinoo171224@gmail.com",
     "mthiri897@gmail.com",
-    "akemijk1997@gmail.com"
+    "akemijk1997@gmail.com",
+    "sanyuyu2005@gmail.com"
 ];
 
 // Global state for books to enable searching
