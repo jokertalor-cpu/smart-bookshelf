@@ -3,15 +3,6 @@ const supabaseUrl = 'https://mituedqotwbmporkwbqf.supabase.co';
 const supabaseKey = 'sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// Admin email စာရင်း
-const ADMIN_LIST = [
-    "jokertalor@gmail.com",
-    "khaingzinoo171224@gmail.com",
-    "mthiri897@gmail.com",
-    "akemijk1997@gmail.com",
-    "sanyuyu2005@gmail.com"
-];
-
 // Global state for books to enable searching
 let allBooks = [];
 
@@ -72,16 +63,20 @@ async function checkUser() {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
-        if (ADMIN_LIST.includes(user.email)) {
+        // Database မှ role ကို တိုက်ရိုက်စစ်ဆေးခြင်း
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile && profile.role === 'admin') {
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('admin-panel').classList.remove('hidden');
-            
-            const display = document.getElementById('user-email-display');
-            if (display) display.textContent = user.email;
-            
+            document.getElementById('user-email-display').textContent = user.email;
             fetchAdminBooks();
         } else {
-            alert("Unauthorized access! You are not an admin.");
+            alert("သင်သည် Admin မဟုတ်သဖြင့် ဝင်ရောက်ခွင့်မရှိပါ။");
             await handleLogout();
         }
     }
