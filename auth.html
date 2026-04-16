@@ -3,1085 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    
-    <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'nonce-{NONCE}';
-        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
-        img-src 'self' https: data:;
-        connect-src 'self' https://api.smartbookshelf.local https://mituedqotwbmporkwbqf.supabase.co;
-        frame-ancestors 'none';
-        base-uri 'self';
-        form-action 'self';
-    ">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    
     <title>Login - SmartBookshelf</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" integrity="sha512-..." crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js" integrity="sha512-..." crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js" integrity="sha512-..." crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        :root { 
-            --primary: #1a73e8; 
-            --primary-hover: #1557b0; 
-            --danger: #ea4335;
-            --success: #34a853;
-            --warning: #fbbc04;
-            --text-main: #3c4043; 
-            --bg: #f0f2f5;
-            --border: #dadce0;
-            --shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html, body {
-            height: 100%;
-            width: 100%;
-        }
-
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            background: linear-gradient(135deg, var(--bg) 0%, #e8eaed 100%);
-            margin: 0; 
-            padding: 20px;
-            overflow-x: hidden;
-        }
-
-        /* Main Container */
-        .auth-wrapper {
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .auth-card { 
-            background: white; 
-            padding: 40px 30px; 
-            border-radius: 20px; 
-            box-shadow: var(--shadow);
-            width: 100%;
-            text-align: center;
-            position: relative;
-            animation: slideUp 0.5s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Logo Section */
-        .logo-area {
-            margin-bottom: 30px;
-        }
-
-        .logo-area i { 
-            font-size: 3rem; 
-            color: var(--primary); 
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        h1 { 
-            margin: 10px 0 5px; 
-            color: #202124; 
-            font-size: 1.6rem;
-            font-weight: 700;
-        }
-
-        p.subtitle { 
-            color: #5f6368; 
-            margin-bottom: 30px; 
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        /* Alert Messages */
-        .alert {
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .alert.show {
-            display: flex;
-        }
-
-        .alert-info {
-            background: #e3f2fd;
-            color: #1565c0;
-            border-left: 4px solid #1565c0;
-        }
-
-        .alert-warning {
-            background: #fff3e0;
-            color: #e65100;
-            border-left: 4px solid #e65100;
-        }
-
-        .alert-error {
-            background: #ffebee;
-            color: #c62828;
-            border-left: 4px solid #c62828;
-        }
-
-        .alert-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-left: 4px solid #2e7d32;
-        }
-
-        .alert-close {
-            margin-left: auto;
-            cursor: pointer;
-            font-size: 16px;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .alert-close:hover {
-            opacity: 1;
-        }
+        :root { --primary: #1a73e8; --primary-hover: #1557b0; --google-bg: #ffffff; --text-main: #3c4043; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); margin: 0; padding: 20px; }
+        
+        .auth-card { background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+        .logo-area i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
+        h2 { margin: 10px 0 5px; color: #202124; font-size: 1.6rem; }
+        p.subtitle { color: #5f6368; margin-bottom: 30px; font-size: 14px; }
 
         /* Social Buttons */
-        .social-btn { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            background: white; 
-            color: var(--text-main); 
-            font-weight: 600; 
-            font-size: 15px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 12px; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .social-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.05);
-            transition: left 0.3s;
-        }
-
-        .social-btn:hover::before {
-            left: 0;
-        }
-
-        .social-btn:hover { 
-            background: #f8f9fa; 
-            border-color: #d2d4d7; 
-            box-shadow: 0 1px 3px rgba(60,64,67,0.3);
-        }
-
-        .social-btn:active {
-            transform: scale(0.98);
-        }
-
-        .social-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .social-btn img { 
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
-        }
-
-        .social-btn .spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(0,0,0,0.1);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .social-btn.loading .spinner {
-            display: block;
-        }
-
-        .social-btn.loading img {
-            display: none;
-        }
+        .social-btn { width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 8px; background: white; color: var(--text-main); font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: 20px; }
+        .social-btn:hover { background: #f8f9fa; border-color: #d2d4d7; box-shadow: 0 1px 3px rgba(60,64,67,0.3); }
+        .social-btn img { width: 20px; }
 
         /* Divider */
-        .divider { 
-            display: flex; 
-            align-items: center; 
-            text-align: center; 
-            margin: 25px 0; 
-            color: #70757a; 
-            font-size: 13px;
-        }
-
-        .divider::before, .divider::after { 
-            content: ''; 
-            flex: 1; 
-            border-bottom: 1px solid #e8eaed; 
-        }
-
-        .divider span { 
-            padding: 0 10px; 
-        }
+        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: #70757a; font-size: 13px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #e8eaed; }
+        .divider span { padding: 0 10px; }
 
         /* Form Styling */
-        .input-group { 
-            text-align: left; 
-            margin-bottom: 15px;
-            position: relative;
-        }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        label { display: block; font-size: 13px; margin-bottom: 5px; color: #5f6368; font-weight: 500; }
+        input { width: 100%; padding: 12px 15px; border: 1px solid #dadce0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
 
-        label { 
-            display: block; 
-            font-size: 13px; 
-            margin-bottom: 5px; 
-            color: #5f6368; 
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .btn-main { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        .btn-main:hover { background: var(--primary-hover); }
+        .btn-main:disabled { background: #ccc; cursor: not-allowed; }
 
-        .required::after {
-            content: '*';
-            color: var(--danger);
-        }
-
-        input { 
-            width: 100%; 
-            padding: 12px 15px; 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            font-size: 15px; 
-            transition: all 0.2s;
-            background: white;
-        }
-
-        input:focus { 
-            outline: none; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
-            background: #f8f9fa;
-        }
-
-        input:invalid:not(:placeholder-shown) {
-            border-color: var(--danger);
-        }
-
-        input:valid:not(:placeholder-shown) {
-            border-color: var(--success);
-        }
-
-        .input-error {
-            font-size: 12px;
-            color: var(--danger);
-            margin-top: 5px;
-            display: none;
-            animation: slideDown 0.2s ease-out;
-        }
-
-        .input-error.show {
-            display: block;
-        }
-
-        .password-strength {
-            margin-top: 8px;
-            display: none;
-        }
-
-        .strength-bar {
-            height: 4px;
-            background: #e8eaed;
-            border-radius: 2px;
-            overflow: hidden;
-            margin-bottom: 5px;
-        }
-
-        .strength-fill {
-            height: 100%;
-            width: 0%;
-            transition: all 0.3s;
-            border-radius: 2px;
-        }
-
-        .strength-fill.weak {
-            width: 33%;
-            background: var(--danger);
-        }
-
-        .strength-fill.fair {
-            width: 66%;
-            background: var(--warning);
-        }
-
-        .strength-fill.good {
-            width: 100%;
-            background: var(--success);
-        }
-
-        .strength-text {
-            font-size: 12px;
-            color: #5f6368;
-        }
-
-        /* Main Button */
-        .btn-main { 
-            width: 100%; 
-            padding: 13px; 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-weight: 600; 
-            font-size: 15px; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            margin-top: 10px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-main::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.2);
-            transition: left 0.3s;
-        }
-
-        .btn-main:hover::before {
-            left: 100%;
-        }
-
-        .btn-main:hover { 
-            background: var(--primary-hover);
-            box-shadow: 0 4px 12px rgba(26,115,232,0.3);
-        }
-
-        .btn-main:active {
-            transform: scale(0.98);
-        }
-
-        .btn-main:disabled { 
-            background: #ccc; 
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .btn-spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-
-        .btn-main.loading .btn-spinner {
-            display: block;
-        }
-
-        .btn-main.loading span {
-            display: none;
-        }
-
-        /* Footer */
-        .footer-text { 
-            margin-top: 25px; 
-            font-size: 13px; 
-            color: #5f6368;
-            line-height: 1.6;
-        }
-
-        .footer-text a { 
-            color: var(--primary); 
-            text-decoration: none; 
-            font-weight: 600;
-            transition: color 0.2s;
-        }
-
-        .footer-text a:hover {
-            color: var(--primary-hover);
-            text-decoration: underline;
-        }
-
-        /* Privacy Notice */
-        .privacy-notice {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e8eaed;
-            font-size: 12px;
-            color: #70757a;
-            line-height: 1.5;
-        }
-
-        .privacy-notice a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .privacy-notice a:hover {
-            text-decoration: underline;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 480px) {
-            .auth-card {
-                padding: 30px 20px;
-                border-radius: 16px;
-            }
-
-            h1 {
-                font-size: 1.4rem;
-            }
-
-            .social-btn {
-                font-size: 14px;
-                padding: 11px;
-            }
-
-            input {
-                font-size: 16px;
-            }
-
-            .btn-main {
-                font-size: 14px;
-                padding: 12px;
-            }
-        }
-
-        /* Loading State */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.3);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+        .footer-text { margin-top: 25px; font-size: 13px; color: #5f6368; }
+        .footer-text a { color: var(--primary); text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <div class="auth-wrapper">
-        <div class="auth-card">
-            <div class="logo-area">
-                <i class="fas fa-book-reader"></i>
-                <h1>Smart Bookshelf</h1>
-                <p class="subtitle">သင်၏ စာကြည့်တိုက်သို့ ဝင်ရောက်ပါ</p>
-            </div>
-
-            <!-- Alert Messages -->
-            <div id="alertBox" class="alert">
-                <span id="alertText"></span>
-                <span class="alert-close" onclick="closeAlert()">&times;</span>
-            </div>
-
-            <!-- Google OAuth Button -->
-            <button class="social-btn" id="googleBtn" onclick="signInWithGoogle()" aria-label="Google ဖြင့် ဝင်ရောက်ပါ">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
-                <span>Continue with Google</span>
-                <div class="spinner"></div>
-            </button>
-
-            <div class="divider"><span>သို့မဟုတ် Email ဖြင့်ဝင်မည်</span></div>
-
-            <!-- Email Input -->
-            <div class="input-group">
-                <label for="email" class="required">Email Address</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    placeholder="example@gmail.com"
-                    autocomplete="email"
-                    required
-                    aria-label="Email Address"
-                    aria-describedby="emailError"
-                >
-                <div id="emailError" class="input-error"></div>
-            </div>
-
-            <!-- Password Input -->
-            <div class="input-group">
-                <label for="password" class="required">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    placeholder="••••••••"
-                    autocomplete="current-password"
-                    required
-                    aria-label="Password"
-                    aria-describedby="passwordError"
-                    oninput="checkPasswordStrength()"
-                >
-                <div id="passwordError" class="input-error"></div>
-                <div id="passwordStrength" class="password-strength">
-                    <div class="strength-bar">
-                        <div id="strengthFill" class="strength-fill"></div>
-                    </div>
-                    <div class="strength-text" id="strengthText"></div>
-                </div>
-            </div>
-
-            <!-- Login Button -->
-            <button id="authBtn" class="btn-main" onclick="handleAuth()" aria-label="Login သို့မဟုတ် Sign Up လုပ်ပါ">
-                <div class="btn-spinner"></div>
-                <span>LOGIN / SIGN UP</span>
-            </button>
-
-            <!-- Footer Text -->
-            <p class="footer-text">
-                အကောင့်မရှိသေးပါက အပေါ်တွင် ဖြည့်ပြီး <br>တန်းရိုက်ထည့်ရုံဖြင့် Sign Up လုပ်နိုင်ပါသည်။
-            </p>
-
-            <!-- Privacy Notice -->
-            <div class="privacy-notice">
-                <p>
-                    ဝင်ရောက်ခြင်းအားဖြင့် သင်သည် ကျွန်ုပ်တို့၏ 
-                    <a href="/privacy" target="_blank">Privacy Policy</a> နှင့် 
-                    <a href="/terms" target="_blank">Terms of Service</a> 
-                    သို့ သဘောတူလက်ခြင်းဖြစ်ပါသည်။
-                </p>
-            </div>
+    <div class="auth-card">
+        <div class="logo-area">
+            <i class="fas fa-book-reader"></i>
+            <h2>Smart Bookshelf</h2>
+            <p class="subtitle">သင်၏ စာကြည့်တိုက်သို့ ဝင်ရောက်ပါ</p>
         </div>
-    </div>
 
-    <!-- Scripts with Integrity Checks -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js" integrity="sha512-..." crossorigin="anonymous"></script>
+        <button class="social-btn" onclick="signInWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Continue with Google
+        </button>
+
+        <div class="divider"><span>သို့မဟုတ် Email ဖြင့်ဝင်မည်</span></div>
+
+        <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="example@gmail.com">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <button id="auth-btn" class="btn-main" onclick="handleAuth()">LOGIN / SIGN UP</button>
+
+        <p class="footer-text">
+            အကောင့်မရှိသေးပါက အပေါ်တွင် ဖြည့်ပြီး <br>တန်းရိုက်ထည့်ရုံဖြင့် Sign Up လုပ်နိုင်ပါသည်။
+        </p>
+    </div>
 
     <script>
-        // ============================================
-        // SECURITY & CONFIGURATION
-        // ============================================
-
-        // Environment Configuration (Should be loaded from backend)
-        const CONFIG = {
-            API_ENDPOINT: 'https://api.smartbookshelf.local',
-            CSRF_TOKEN_ENDPOINT: '/api/csrf-token',
-            AUTH_ENDPOINT: '/api/auth',
-            RATE_LIMIT_ATTEMPTS: 5,
-            RATE_LIMIT_WINDOW: 15 * 60 * 1000, // 15 minutes
-            SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
-            PASSWORD_MIN_LENGTH: 12,
-            PASSWORD_REQUIRE_UPPERCASE: true,
-            PASSWORD_REQUIRE_NUMBERS: true,
-            PASSWORD_REQUIRE_SPECIAL: true,
-        };
-
-        // CSRF Token Management
-        let csrfToken = null;
-
-        async function initializeCSRFToken() {
-            try {
-                const response = await fetch(`${CONFIG.API_ENDPOINT}${CONFIG.CSRF_TOKEN_ENDPOINT}`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json',
-                    }
-                });
-
-                if (!response.ok) throw new Error('Failed to get CSRF token');
-                const data = await response.json();
-                csrfToken = data.token;
-            } catch (err) {
-                console.error('CSRF initialization error:', err);
-                showAlert('System initialization failed. Please refresh the page.', 'error');
+        // Supabase Configuration
+        const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
+        const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+async function signInWithGoogle() {
+    try {
+        const { error } = await sb.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                // အောက်ပါအတိုင်း တိုက်ရိုက် ရေးကြည့်ပါ
+                redirectTo: 'https://jokertalor-cpu.github.io/smart-bookshelf/library.html'
             }
-        }
-
-        // Rate Limiting
-        class RateLimiter {
-            constructor(maxAttempts, windowMs) {
-                this.maxAttempts = maxAttempts;
-                this.windowMs = windowMs;
-                this.attempts = [];
-            }
-
-            isLimited() {
-                const now = Date.now();
-                this.attempts = this.attempts.filter(time => now - time < this.windowMs);
-
-                if (this.attempts.length >= this.maxAttempts) {
-                    return true;
-                }
-
-                this.attempts.push(now);
-                return false;
-            }
-
-            getRemainingTime() {
-                if (this.attempts.length === 0) return 0;
-                return Math.ceil((this.attempts[0] + this.windowMs - Date.now()) / 1000);
-            }
-        }
-
-        const authLimiter = new RateLimiter(CONFIG.RATE_LIMIT_ATTEMPTS, CONFIG.RATE_LIMIT_WINDOW);
-
-        // ============================================
-        // INPUT VALIDATION & SANITIZATION
-        // ============================================
-
-        function sanitizeInput(input) {
-            const div = document.createElement('div');
-            div.textContent = input;
-            return div.innerHTML;
-        }
-
-        function validateEmail(email) {
-            const sanitized = sanitizeInput(email.trim());
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(sanitized) && sanitized.length <= 254;
-        }
-
-        function validatePassword(password) {
-            const errors = [];
-
-            if (password.length < CONFIG.PASSWORD_MIN_LENGTH) {
-                errors.push(`အနည်းဆုံး ${CONFIG.PASSWORD_MIN_LENGTH} လုံးရှိရန်`);
-            }
-
-            if (CONFIG.PASSWORD_REQUIRE_UPPERCASE && !/[A-Z]/.test(password)) {
-                errors.push('အကြီးလုံးအဆင်း (A-Z) ပါရှိရန်');
-            }
-
-            if (CONFIG.PASSWORD_REQUIRE_NUMBERS && !/[0-9]/.test(password)) {
-                errors.push('ဂဏန်း (0-9) ပါရှိရန်');
-            }
-
-            if (CONFIG.PASSWORD_REQUIRE_SPECIAL && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-                errors.push('အထူးအက္ခရာ (!@#$%^&* စသည်) ပါရှိရန်');
-            }
-
-            return errors;
-        }
-
-        // ============================================
-        // PASSWORD STRENGTH INDICATOR
-        // ============================================
-
-        function checkPasswordStrength() {
-            const password = document.getElementById('password').value;
-            const strengthContainer = document.getElementById('passwordStrength');
-            const strengthFill = document.getElementById('strengthFill');
-            const strengthText = document.getElementById('strengthText');
-
-            if (!password) {
-                strengthContainer.style.display = 'none';
-                return;
-            }
-
-            strengthContainer.style.display = 'block';
-
-            let strength = 0;
-
-            // Length
-            if (password.length >= 8) strength += 20;
-            if (password.length >= 12) strength += 10;
-            if (password.length >= 16) strength += 10;
-
-            // Character variety
-            if (/[a-z]/.test(password)) strength += 15;
-            if (/[A-Z]/.test(password)) strength += 15;
-            if (/[0-9]/.test(password)) strength += 15;
-            if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength += 15;
-
-            // Remove common patterns
-            if (/(.)\1{2,}/.test(password)) strength -= 10; // Repeated characters
-            if (/^(123|abc|password)/i.test(password)) strength -= 20; // Common patterns
-
-            strength = Math.max(0, Math.min(100, strength));
-
-            // Update UI
-            strengthFill.className = 'strength-fill';
-            if (strength < 40) {
-                strengthFill.classList.add('weak');
-                strengthText.textContent = 'အားနည်း (Weak)';
-            } else if (strength < 70) {
-                strengthFill.classList.add('fair');
-                strengthText.textContent = 'အလယ်အလတ် (Fair)';
-            } else {
-                strengthFill.classList.add('good');
-                strengthText.textContent = 'အားကောင်း (Strong)';
-            }
-
-            strengthFill.style.width = strength + '%';
-        }
-
-        // ============================================
-        // ALERT MANAGEMENT
-        // ============================================
-
-        function showAlert(message, type = 'info') {
-            const alertBox = document.getElementById('alertBox');
-            const alertText = document.getElementById('alertText');
-
-            alertBox.className = `alert show alert-${type}`;
-            alertText.textContent = message;
-
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                closeAlert();
-            }, 5000);
-        }
-
-        function closeAlert() {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.classList.remove('show');
-        }
-
-        // ============================================
-        // FORM VALIDATION
-        // ============================================
-
-        function validateForm() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const emailError = document.getElementById('emailError');
-            const passwordError = document.getElementById('passwordError');
-
-            let isValid = true;
-
-            // Email validation
-            emailError.classList.remove('show');
-            if (!email) {
-                emailError.textContent = 'Email လိပ်စာ ဖြည့်သွင်းပေးပါ';
-                emailError.classList.add('show');
-                isValid = false;
-            } else if (!validateEmail(email)) {
-                emailError.textContent = 'အကျယ်အဝန်း မှားသော Email လိပ်စာ';
-                emailError.classList.add('show');
-                isValid = false;
-            }
-
-            // Password validation
-            passwordError.classList.remove('show');
-            if (!password) {
-                passwordError.textContent = 'Password ဖြည့်သွင်းပေးပါ';
-                passwordError.classList.add('show');
-                isValid = false;
-            } else {
-                const passwordErrors = validatePassword(password);
-                if (passwordErrors.length > 0) {
-                    passwordError.textContent = passwordErrors.join(', ');
-                    passwordError.classList.add('show');
-                    isValid = false;
-                }
-            }
-
-            return isValid;
-        }
-
-        // ============================================
-        // AUTHENTICATION HANDLERS
-        // ============================================
-
-        async function signInWithGoogle() {
-            if (authLimiter.isLimited()) {
-                const remainingTime = authLimiter.getRemainingTime();
-                showAlert(`အများကြီး ကြိုးစားပါသည်။ ${remainingTime} စက္ကန့်အကြာ ထပ်မံကြိုးစားပါ။`, 'warning');
-                return;
-            }
-
-            const googleBtn = document.getElementById('googleBtn');
-            googleBtn.disabled = true;
-            googleBtn.classList.add('loading');
-
-            try {
-                // Verify CSRF token exists
-                if (!csrfToken) {
-                    throw new Error('Security token not initialized');
-                }
-
-                // Call backend OAuth endpoint
-                const response = await fetch(`${CONFIG.API_ENDPOINT}/api/auth/google`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken,
-                    },
-                    body: JSON.stringify({
-                        redirectUrl: window.location.origin + '/library.html'
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('OAuth initialization failed');
-                }
-
-                const data = await response.json();
-                
-                // Redirect to OAuth provider
-                if (data.authUrl) {
-                    window.location.href = data.authUrl;
-                }
-            } catch (err) {
-                console.error('Google Sign-In Error:', err);
-                showAlert('Google ဖြင့် ဝင်ရောက်ခြင်း ပരိုက်ပတ်ခဲ့သည်။ ထပ်မံကြိုးစားပါ။', 'error');
-                googleBtn.disabled = false;
-                googleBtn.classList.remove('loading');
-            }
-        }
-
-        async function handleAuth() {
-            // Validate form
-            if (!validateForm()) {
-                return;
-            }
-
-            // Check rate limiting
-            if (authLimiter.isLimited()) {
-                const remainingTime = authLimiter.getRemainingTime();
-                showAlert(`အများကြီး ကြိုးစားပါသည်။ ${remainingTime} စက္ကန့်အကြာ ထပ်မံကြိုးစားပါ။`, 'warning');
-                return;
-            }
-
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const authBtn = document.getElementById('authBtn');
-
-            authBtn.disabled = true;
-            authBtn.classList.add('loading');
-
-            try {
-                // Verify CSRF token
-                if (!csrfToken) {
-                    throw new Error('Security token not initialized');
-                }
-
-                // Call backend authentication endpoint
-                const response = await fetch(`${CONFIG.API_ENDPOINT}${CONFIG.AUTH_ENDPOINT}`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken,
-                    },
-                    body: JSON.stringify({
-                        email: sanitizeInput(email),
-                        password: password,
-                        action: 'login_signup'
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Authentication failed');
-                }
-
-                const data = await response.json();
-
-                if (data.requiresEmailVerification) {
-                    showAlert('Confirmation email ပို့ထားပါသည်။ Email ကို စစ်ဆေးပါ။', 'info');
-                } else if (data.success) {
-                    showAlert('အောင်မြင်ပါသည်။ စာကြည့်တိုက်သို့ ပြောင်းလဲနေပါသည်...', 'success');
-                    
-                    // Redirect after short delay
-                    setTimeout(() => {
-                        window.location.href = '/library.html';
-                    }, 1500);
-                }
-            } catch (err) {
-                console.error('Authentication Error:', err);
-                showAlert(err.message || 'ဝင်ရောက်ခြင်း ပରိုက်ပတ်ခဲ့သည်။ ထပ်မံကြိုးစားပါ။', 'error');
-            } finally {
-                authBtn.disabled = false;
-                authBtn.classList.remove('loading');
-            }
-        }
-
-        // ============================================
-        // SESSION MANAGEMENT
-        // ============================================
-
-        async function checkSession() {
-            try {
-                const response = await fetch(`${CONFIG.API_ENDPOINT}/api/auth/session`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json',
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.authenticated) {
-                        window.location.href = '/library.html';
-                    }
-                }
-            } catch (err) {
-                console.error('Session check error:', err);
-            }
-        }
-
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Initialize CSRF token
-            await initializeCSRFToken();
-
-            // Check existing session
-            await checkSession();
-
-            // Add real-time validation
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-
-            emailInput.addEventListener('blur', () => {
-                const emailError = document.getElementById('emailError');
-                const email = emailInput.value.trim();
-                emailError.classList.remove('show');
-
-                if (email && !validateEmail(email)) {
-                    emailError.textContent = 'အကျယ်အဝန်း မှားသော Email လိပ်စာ';
-                    emailError.classList.add('show');
-                }
-            });
-
-            passwordInput.addEventListener('blur', () => {
-                const passwordError = document.getElementById('passwordError');
-                const password = passwordInput.value;
-                passwordError.classList.remove('show');
-
-                if (password) {
-                    const errors = validatePassword(password);
-                    if (errors.length > 0) {
-                        passwordError.textContent = errors.join(', ');
-                        passwordError.classList.add('show');
-                    }
-                }
-            });
-
-            // Prevent form submission on Enter if form is invalid
-            document.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
-                    if (validateForm()) {
-                        handleAuth();
-                    }
-                }
-            });
         });
+        if (error) throw error;
+    } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+    }
+}
 
-        // ============================================
-        // SECURITY: Disable right-click context menu in production
-        // ============================================
-        if (window.location.hostname !== 'localhost') {
-            document.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-            });
-        }
+        // ၂။ Email/Password Auth Function
+        async function handleAuth() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const btn = document.getElementById('auth-btn');
 
-        // ============================================
-        // SECURITY: Prevent console access in production
-        // ============================================
-        if (window.location.hostname !== 'localhost') {
-            (function() {
-                let devtools = { open: false, orientation: null };
-                const threshold = 160;
+            if (!email || !password) {
+                Swal.fire('ဖြည့်စွက်ရန်', 'Email နှင့် Password ဖြည့်ပါ', 'warning');
+                return;
+            }
 
-                setInterval(() => {
-                    if (window.outerHeight - window.innerHeight > threshold ||
-                        window.outerWidth - window.innerWidth > threshold) {
-                        if (!devtools.open) {
-                            devtools.open = true;
-                            devtools.orientation = null;
-                        }
+            btn.disabled = true;
+            btn.innerText = "လုပ်ဆောင်နေပါသည်...";
+
+            try {
+                // Login အရင်စမ်းမယ်
+                const { data, error: loginError } = await sb.auth.signInWithPassword({ email, password });
+
+                if (loginError) {
+                    if (loginError.message.includes("Invalid login credentials")) {
+                        // အကောင့်မရှိရင် Sign Up လုပ်ပေးမယ်
+                        const { error: signUpError } = await sb.auth.signUp({ email, password });
+                        if (signUpError) throw signUpError;
+                        Swal.fire('အောင်မြင်ပါသည်', 'အကောင့်သစ် ဖွင့်လိုက်ပါပြီ။ Email Confirm လုပ်ရန် လိုအပ်နိုင်ပါသည်။', 'success');
                     } else {
-                        devtools.open = false;
+                        throw loginError;
                     }
-                }, 500);
-            })();
+                } else {
+                    // Login အောင်မြင်ရင် ခေါ်သွားမယ်
+                    window.location.href = 'library.html';
+                }
+            } catch (err) {
+                Swal.fire('မှားယွင်းမှု', err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "LOGIN / SIGN UP";
+            }
         }
+
+        // Login ဝင်ပြီးသားဆိုရင် Library ကို တန်းပို့မယ်
+        async function checkSession() {
+            const { data } = await sb.auth.getSession();
+            if (data.session) {
+                window.location.href = 'library.html';
+            }
+        }
+        checkSession();
     </script>
 </body>
 </html>
