@@ -54,19 +54,13 @@
             </div>
         </div>
     </div>
-  <div id="profile-section" style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-    <h3 style="margin-top: 0;"><i class="fas fa-user-cog"></i> Profile ပြင်ဆင်ရန်</h3>
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-        <input type="text" id="display-name" placeholder="သင့်အမည် ရိုက်ထည့်ပါ" style="padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-        <button onclick="saveProfile()" class="btn btn-read" style="width: 100%;">သိမ်းမည်</button>
-    </div>
-</div>
+
     <div class="container">
         <div id="login-reminder" class="auth-notice">
             <span><i class="fas fa-info-circle"></i> Login ဝင်ထားပါက စက်ပြောင်းသော်လည်း စာရင်းများ ပြန်ရနိုင်ပါသည်။</span>
             <a href="auth.html" style="color: #856404; font-weight: bold; text-decoration: none;">Login ဝင်မည်</a>
         </div>
-      
+
         <div class="section-title">
             <i class="fas fa-download"></i> အော့ဖ်လိုင်းဖတ်ရန် သိမ်းထားသည်များ
         </div>
@@ -96,68 +90,35 @@ window.onload = () => {
     renderLibrary(); 
     loadMyFavorites(); 
 };
-// --- စုစည်းထားသော Auth Listener ---
+
+// --- Authentication & Sync Logic ---
 function setupAuthListener() {
     const reminder = document.getElementById('login-reminder');
     const logoutBtn = document.getElementById('logout-btn');
-    const profileSection = document.getElementById('profile-section');
 
     sb.auth.onAuthStateChange(async (event, session) => {
         if (session) {
-            // Login ဝင်ထားချိန်
             reminder.style.display = 'none';
             logoutBtn.style.display = 'block';
-            profileSection.style.display = 'block';
 
-            const userId = session.user.id;
+            // ၁။ Local က Like လုပ်ထားတာတွေကို Cloud ပို့မယ်
+            await syncLikesToCloud(session.user.id);
+            // ၂။ Cloud က Like တွေကို Local ထဲ ပြန်ဆွဲမယ်
+            await fetchLikesFromCloud(session.user.id);
+            // ၃။ အရင်ဒေါင်းထားဖူးတဲ့ စာအုပ်တွေကို Auto Background Sync လုပ်မယ်
+            await autoSyncDownloads(session.user.id);
 
-            // Sync အပိုင်းကို တစ်ခုချင်းစီ ခေါ်မယ်
-            await loadUserProfile(userId);
-            await syncLikesToCloud(userId);
-            await fetchLikesFromCloud(userId);
-            await autoSyncDownloads(userId);
-
+            // UI ကို Update လုပ်မယ်
             renderLibrary();
             loadMyFavorites();
         } else {
-            // Logout ဖြစ်သွားချိန်
             reminder.style.display = 'flex';
             logoutBtn.style.display = 'none';
-            profileSection.style.display = 'none';
-            
-            // UI ကို clean လုပ်မယ်
-            document.getElementById('library-grid').innerHTML = '<div class="empty-state">Login ဝင်ရန် လိုအပ်သည်။</div>';
-            document.getElementById('fav-view').innerHTML = '';
+            // Logout လုပ်ရင် Local data ရှင်းချင်ရင် ဒီမှာ ရှင်းနိုင်ပါတယ်
         }
     });
 }
 
-// --- Profile Update (Advanced) ---
-async function saveProfile() {
-    const { data: { user } } = await sb.auth.getUser();
-    const name = document.getElementById('display-name').value;
-
-    if(!name) return Swal.fire('အမည်ထည့်ပါ', '', 'error');
-
-    // loading ပြမယ်
-    Swal.showLoading();
-
-    const { error } = await sb
-        .from('profiles')
-        .upsert({ 
-            id: user.id, 
-            full_name: name,
-            updated_at: new Date() 
-        });
-
-    Swal.close();
-
-    if (!error) {
-        Swal.fire({ title: 'အောင်မြင်သည်', icon: 'success', timer: 1500 });
-    } else {
-        Swal.fire('မှားယွင်းမှုရှိသည်', error.message, 'error');
-    }
-}
 // --- Background Auto Download Logic ---
 async function autoSyncDownloads(userId) {
     try {
