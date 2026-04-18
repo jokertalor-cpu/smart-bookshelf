@@ -149,7 +149,7 @@
         if (!currentUser) return;
         showSyncStatus(true);
         try {
-            // 1. Fetch latest likes from Cloud and update Local Storage
+            // 1. Sync Favorites (Supabase to Local)
             const { data: likesData, error: likesError } = await sb
                 .from('user_likes')
                 .select('book_id')
@@ -157,23 +157,35 @@
             
             if (!likesError && likesData) {
                 const likedIds = likesData.map(i => i.book_id.toString());
+                // Always use Supabase data as truth
                 localStorage.setItem('my_likes', JSON.stringify(likedIds));
             }
 
-            // 2. Fetch latest downloads from Cloud and sync with Dexie
+            // 2. Sync Downloads (Supabase to Dexie)
             const { data: downloadsData, error: downloadsError } = await sb
                 .from('user_downloads')
                 .select('book_id, books(id, title, author, cover, download_link)')
                 .eq('user_id', currentUser.id);
 
             if (!downloadsError && downloadsData) {
+                const cloudIds = new Set(downloadsData.filter(d => d.books).map(d => d.books.id.toString()));
                 const localBooks = await db.savedBooks.toArray();
-                const localIds = new Set(localBooks.map(b => b.id));
+                const localIds = new Set(localBooks.map(b => b.id.toString()));
 
+                // Add missing books to local (Dexie)
                 for (const item of downloadsData) {
                     const book = item.books;
                     if (book && !localIds.has(book.id.toString())) {
                         await downloadAndSave(book);
+                    }
+                }
+
+                // Remove extra books from local (Dexie) that are not in Supabase
+                for (const localBook of localBooks) {
+                    if (!cloudIds.has(localBook.id.toString())) {
+                        await db.savedBooks.delete(localBook.id);
+                        // Also try numeric delete just in case
+                        if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
                     }
                 }
             }
@@ -199,7 +211,7 @@
                     fileData: blob
                 });
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Download Error:", e); }
     }
 
     async function renderLibrary() {
@@ -247,7 +259,7 @@
                         <h3>${item.title}</h3>
                         <div class="actions">
                             <button class="btn btn-info" onclick="location.href='detail.html?id=${item.id}'"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
-                            <button class="btn btn-delete" onclick="confirmDelete('${item.id}', 'like')"><i class="fas fa-heart-crack"></i> Unlike</button>
+                            <button class="btn btn-delete" onclick="confirmDelete('${item.id}', 'fav')"><i class="fas fa-heart-broken"></i> မကြိုက်တော့ပါ</button>
                         </div>
                     </div>
                 `).join('');
@@ -270,13 +282,20 @@
         }).then(async (result) => {
             if (result.isConfirmed) {
                 if (type === 'download') {
+                    // Local Delete
                     await db.savedBooks.delete(id);
                     await db.savedBooks.delete(Number(id));
+                    // Cloud Delete
+                    if (currentUser) {
+                        await sb.from('user_downloads').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
+                    }
                     await renderLibrary();
                 } else {
+                    // Local Delete
                     let likes = JSON.parse(localStorage.getItem('my_likes') || '[]');
                     likes = likes.filter(item => item != id);
                     localStorage.setItem('my_likes', JSON.stringify(likes));
+                    // Cloud Delete
                     if (currentUser) {
                         await sb.from('user_likes').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
                     }

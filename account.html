@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     
     <style>
         :root { --primary: #1a73e8; --primary-hover: #1557b0; --success: #34a853; --danger: #ea4335; --bg: #f8f9fa; }
@@ -326,9 +327,28 @@
             0% { transform: rotate(0deg); } 
             100% { transform: rotate(360deg); } 
         }
+
+        /* Sync Status Overlay */
+        #syncOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 2000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
     </style>
 </head>
 <body>
+
+    <div id="syncOverlay">
+        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+        <p style="margin-top: 15px;">ဒေတာများ ညှိနှိုင်းနေသည်...</p>
+    </div>
 
     <nav>
         <a href="index.html" class="logo">SMART BOOKSHELF</a>
@@ -361,71 +381,69 @@
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card">
                     <div class="number" id="downloadCount">0</div>
-                    <div class="label">ဒေါင်းလုဒ်ထားသည်</div>
+                    <div class="label">ဒေါင်းလုဒ်စာအုပ်များ</div>
                 </div>
                 <div class="stat-card">
                     <div class="number" id="favoriteCount">0</div>
-                    <div class="label">အသဲပေးထားသည်</div>
+                    <div class="label">အသဲပေးစာအုပ်များ</div>
                 </div>
                 <div class="stat-card">
                     <div class="number" id="readingCount">0</div>
-                    <div class="label">ဖတ်နေသည်</div>
+                    <div class="label">ဖတ်လက်စစာအုပ်များ</div>
                 </div>
             </div>
         </div>
 
         <!-- Profile Settings -->
         <div class="section">
-            <h2><i class="fas fa-user-cog"></i> ကိုယ်ရေးအချက်အလက်</h2>
-            <div class="form-group">
-                <label>အီမေးလ်လိပ်စာ</label>
-                <input type="email" id="emailInput" readonly>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>အမည်</label>
-                    <input type="text" id="nameInput" placeholder="သင်၏အမည်ထည့်သွင်းပါ">
+            <h2><i class="fas fa-user-edit"></i> ကိုယ်ရေးအချက်အလက် ပြင်ဆင်ရန်</h2>
+            <div id="profileForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nameInput">အမည်</label>
+                        <input type="text" id="nameInput" placeholder="သင့်အမည်">
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneInput">ဖုန်းနံပါတ်</label>
+                        <input type="text" id="phoneInput" placeholder="၀၉xxxxxxxxx">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>ဖုန်းနံပါတ်</label>
-                    <input type="tel" id="phoneInput" placeholder="+95 9xxxxxxxxx">
+                    <label for="bioInput">ကိုယ်ရေးအကျဉ်း (Bio)</label>
+                    <textarea id="bioInput" placeholder="သင့်အကြောင်း အနည်းငယ်ဖော်ပြပါ"></textarea>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>အကျဉ်းချုပ်</label>
-                <textarea id="bioInput" placeholder="သင်အကြောင်း အကျဉ်းချုပ်ရေးသားပါ..."></textarea>
-            </div>
-            <div class="button-group">
                 <button class="btn btn-primary" onclick="saveProfile()">
                     <i class="fas fa-save"></i> သိမ်းဆည်းမည်
-                </button>
-                <button class="btn btn-secondary" onclick="loadProfile()">
-                    <i class="fas fa-redo"></i> ပြန်လည်ဆွဲယူမည်
                 </button>
             </div>
         </div>
 
-        <!-- Security Settings -->
+        <!-- Security -->
         <div class="section">
-            <h2><i class="fas fa-lock"></i> လုံခြုံရေးအချက်အလက်</h2>
-            <div class="form-group">
-                <label>လက်ရှိစကားဝှက်</label>
-                <input type="password" id="currentPassword" placeholder="လက်ရှိစကားဝှက်ထည့်သွင်းပါ">
-            </div>
-            <div class="form-row">
+            <h2><i class="fas fa-shield-alt"></i> လုံခြုံရေး</h2>
+            <div id="passwordForm">
                 <div class="form-group">
-                    <label>စကားဝှက်သစ်</label>
-                    <input type="password" id="newPassword" placeholder="စကားဝှက်သစ်ထည့်သွင်းပါ">
+                    <label for="currentPassword">လက်ရှိ စကားဝှက်</label>
+                    <input type="password" id="currentPassword" placeholder="••••••••">
                 </div>
-                <div class="form-group">
-                    <label>စကားဝှက်သစ်အတည်းပြုခြင်း</label>
-                    <input type="password" id="confirmPassword" placeholder="စကားဝှက်သစ်ထပ်မံထည့်သွင်းပါ">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newPassword">စကားဝှက်သစ်</label>
+                        <input type="password" id="newPassword" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">စကားဝှက်သစ်ကို အတည်ပြုပါ</label>
+                        <input type="password" id="confirmPassword" placeholder="••••••••">
+                    </div>
                 </div>
-            </div>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="changePassword()">
-                    <i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်
-                </button>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="changePassword()">
+                        <i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်
+                    </button>
+                    <button class="btn btn-danger" onclick="confirmDeleteAccount()">
+                        <i class="fas fa-user-times"></i> အကောင့်ဖျက်သိမ်းမည်
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -433,78 +451,110 @@
         <div class="section">
             <h2><i class="fas fa-history"></i> လုပ်ဆောင်ချက်မှတ်တမ်း</h2>
             <div id="activityLog">
-                <p style="text-align: center; color: #5f6368;">မှတ်တမ်းများ ဆွဲယူနေသည်...</p>
+                <p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်းများကို ဆွဲယူနေသည်...</p>
             </div>
         </div>
 
-        <!-- Danger Zone -->
-        <div class="section" style="border-left: 4px solid var(--danger);">
-            <h2 style="border-bottom-color: var(--danger); color: var(--danger);">
-                <i class="fas fa-exclamation-triangle"></i> အန္တရာယ်ဆိုင်ရာ
-            </h2>
-            <p style="color: #5f6368; margin-bottom: 20px;">
-                အောက်ပါလုပ်ဆောင်ချက်များသည် ပြန်လည်ဆောင်ရွက်၍မရနိုင်ပါ။ ကျေးဇူးပြု၍ သတိထားပါ။
-            </p>
-            <div class="button-group">
-                <button class="btn btn-danger" onclick="handleLogout()">
-                    <i class="fas fa-sign-out-alt"></i> ထွက်မည်
-                </button>
-                <button class="btn btn-danger" onclick="confirmDeleteAccount()">
-                    <i class="fas fa-trash"></i> အကောင့်ဖျက်သိမ်းမည်
-                </button>
-            </div>
+        <!-- Logout Button -->
+        <div style="text-align: center; margin-bottom: 50px;">
+            <button class="btn btn-secondary" onclick="handleLogout()" style="width: 200px; justify-content: center;">
+                <i class="fas fa-sign-out-alt"></i> အကောင့်မှ ထွက်မည်
+            </button>
         </div>
     </div>
 
     <script>
-        // Supabase Configuration
-        const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
+        const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co";
         const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
         const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        const db = new Dexie("MyDigitalLibrary");
+        db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
         let currentUser = null;
 
         // Initialize
         window.onload = async () => {
-            await checkAuth();
-            await loadProfile();
-            await loadStats();
-            await loadActivityLog();
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                updateUI();
+                await syncAndLoadData();
+            } else {
+                window.location.href = 'auth.html';
+            }
         };
 
-        // Check Authentication
-        async function checkAuth() {
-            const { data: { user }, error } = await sb.auth.getUser();
-            if (error || !user) {
-                window.location.href = 'auth.html';
-                return;
+        async function syncAndLoadData() {
+            document.getElementById('syncOverlay').style.display = 'flex';
+            try {
+                // 1. Sync Logic (Supabase to Local)
+                // Favorites
+                const { data: likesData } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
+                if (likesData) {
+                    const likedIds = likesData.map(i => i.book_id.toString());
+                    localStorage.setItem('my_likes', JSON.stringify(likedIds));
+                }
+
+                // Downloads (Dexie)
+                const { data: downloadsData } = await sb.from('user_downloads').select('book_id, books(id, title, author, cover, download_link)').eq('user_id', currentUser.id);
+                if (downloadsData) {
+                    const cloudIds = new Set(downloadsData.filter(d => d.books).map(d => d.books.id.toString()));
+                    const localBooks = await db.savedBooks.toArray();
+                    const localIds = new Set(localBooks.map(b => b.id.toString()));
+
+                    // Add missing
+                    for (const item of downloadsData) {
+                        if (item.books && !localIds.has(item.books.id.toString())) {
+                            await downloadAndSave(item.books);
+                        }
+                    }
+                    // Remove extra
+                    for (const localBook of localBooks) {
+                        if (!cloudIds.has(localBook.id.toString())) {
+                            await db.savedBooks.delete(localBook.id);
+                            if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
+                        }
+                    }
+                }
+
+                // 2. Refresh UI Stats & Logs
+                await loadStats();
+                await loadActivityLog();
+            } catch (err) {
+                console.error("Sync/Load Error:", err);
+            } finally {
+                document.getElementById('syncOverlay').style.display = 'none';
             }
-            currentUser = user;
-            updateUserHeader(user);
         }
 
-        // Update User Header
-        function updateUserHeader(user) {
-            document.getElementById('userName').textContent = user.email.split('@')[0] || 'User';
-            document.getElementById('userEmail').textContent = user.email;
-            const created = new Date(user.created_at).toLocaleDateString('my-MM');
-            document.getElementById('userCreated').textContent = `အကောင့်ဖွင့်သည့်နေ့: ${created}`;
+        async function downloadAndSave(book) {
+            try {
+                const res = await fetch(book.download_link);
+                if (res.ok) {
+                    const blob = await res.blob();
+                    await db.savedBooks.put({
+                        id: book.id.toString(),
+                        title: book.title,
+                        author: book.author,
+                        cover: book.cover,
+                        fileData: blob
+                    });
+                }
+            } catch (e) { console.error(e); }
         }
 
-        // Load Profile
-        async function loadProfile() {
-            if (!currentUser) return;
+        function updateUI() {
+            document.getElementById('userName').textContent = currentUser.user_metadata.name || 'အမည်မရှိ';
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userCreated').textContent = 'Joined: ' + new Date(currentUser.created_at).toLocaleDateString();
             
-            document.getElementById('emailInput').value = currentUser.email;
-            
-            // Load from user metadata if available
             const metadata = currentUser.user_metadata || {};
             document.getElementById('nameInput').value = metadata.name || '';
             document.getElementById('phoneInput').value = metadata.phone || '';
             document.getElementById('bioInput').value = metadata.bio || '';
         }
 
-        // Save Profile
         async function saveProfile() {
             const btn = event.target;
             btn.disabled = true;
@@ -518,10 +568,10 @@
                         bio: document.getElementById('bioInput').value
                     }
                 });
-
                 if (error) throw error;
-
                 Swal.fire('အောင်မြင်ပါသည်', 'ကိုယ်ရေးအချက်အလက်များကို သိမ်းဆည်းပြီးပါပြီ။', 'success');
+                currentUser.user_metadata = { ...currentUser.user_metadata, name: document.getElementById('nameInput').value };
+                updateUI();
             } catch (err) {
                 Swal.fire('မှားယွင်းမှု', err.message, 'error');
             } finally {
@@ -530,132 +580,62 @@
             }
         }
 
-        // Change Password
         async function changePassword() {
-            const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                Swal.fire('သတိပေးချက်', 'အားလုံးဖြည့်စွက်ပါ', 'warning');
+            if (!newPassword || newPassword !== confirmPassword) {
+                Swal.fire('သတိပေးချက်', 'စကားဝှက်များ မကိုက်ညီပါ သို့မဟုတ် မပြည့်စုံပါ', 'warning');
                 return;
             }
-
-            if (newPassword !== confirmPassword) {
-                Swal.fire('သတိပေးချက်', 'စကားဝှက်သစ်များ မကိုက်ညီပါ', 'warning');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                Swal.fire('သတိပေးချက်', 'စကားဝှက်သည် အနည်းဆုံး အက္ခရာ ၆ လုံးရှိရမည်', 'warning');
-                return;
-            }
-
-            const btn = event.target;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> ပြောင်းလဲနေသည်...';
 
             try {
                 const { error } = await sb.auth.updateUser({ password: newPassword });
                 if (error) throw error;
-
                 Swal.fire('အောင်မြင်ပါသည်', 'စကားဝှက်ပြောင်းလဲပြီးပါပြီ။', 'success');
-                document.getElementById('currentPassword').value = '';
                 document.getElementById('newPassword').value = '';
                 document.getElementById('confirmPassword').value = '';
             } catch (err) {
                 Swal.fire('မှားယွင်းမှု', err.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်';
             }
         }
 
-        // Load Statistics
         async function loadStats() {
             try {
-                // Get download count
-                const { count: downloadCount } = await sb
-                    .from('user_downloads')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', currentUser.id);
-
-                // Get favorite count
-                const { count: favoriteCount } = await sb
-                    .from('user_likes')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', currentUser.id);
-
+                const { count: downloadCount } = await sb.from('user_downloads').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+                const { count: favoriteCount } = await sb.from('user_likes').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+                
                 document.getElementById('downloadCount').textContent = downloadCount || 0;
                 document.getElementById('favoriteCount').textContent = favoriteCount || 0;
-                document.getElementById('readingCount').textContent = '0'; // Can be enhanced
-            } catch (err) {
-                console.error('Error loading stats:', err);
-            }
+                
+                const localBooks = await db.savedBooks.toArray();
+                document.getElementById('readingCount').textContent = localBooks.length;
+            } catch (err) { console.error(err); }
         }
 
-        // Load Activity Log
         async function loadActivityLog() {
             try {
-                const { data: downloads, error } = await sb
-                    .from('user_downloads')
-                    .select('created_at, books(title)')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false })
-                    .limit(10);
-
+                const { data: downloads, error } = await sb.from('user_downloads').select('created_at, books(title)').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
                 if (error) throw error;
-
-                const logHtml = downloads && downloads.length > 0 
-                    ? downloads.map(item => `
-                        <div class="activity-item success">
-                            <div class="activity-time">${new Date(item.created_at).toLocaleString('my-MM')}</div>
-                            <div class="activity-desc">
-                                <i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်
-                            </div>
-                        </div>
-                    `).join('')
-                    : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
-
+                const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
+                    <div class="activity-item success">
+                        <div class="activity-time">${new Date(item.created_at).toLocaleString()}</div>
+                        <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်</div>
+                    </div>
+                `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
                 document.getElementById('activityLog').innerHTML = logHtml;
-            } catch (err) {
-                console.error('Error loading activity log:', err);
-                document.getElementById('activityLog').innerHTML = '<p style="color: red;">မှတ်တမ်းများ ဆွဲယူရာတွင် အမှားအယွင်း ရှိပါသည်။</p>';
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // Logout
         async function handleLogout() {
-            const { error } = await sb.auth.signOut();
-            if (!error) {
-                window.location.href = 'auth.html';
-            }
+            await sb.auth.signOut();
+            window.location.href = 'auth.html';
         }
 
-        // Delete Account
         async function confirmDeleteAccount() {
-            const result = await Swal.fire({
-                title: 'အကောင့်ဖျက်သိမ်းမည်လား?',
-                text: 'ဤလုပ်ဆောင်ချက်သည် ပြန်လည်ဆောင်ရွက်၍မရနိုင်ပါ။',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ea4335',
-                cancelButtonColor: '#ccc',
-                confirmButtonText: 'ဖျက်သိမ်းမည်',
-                cancelButtonText: 'ပယ်ဖျက်မည်'
-            });
-
+            const result = await Swal.fire({ title: 'အကောင့်ဖျက်သိမ်းမည်လား?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ea4335', confirmButtonText: 'ဖျက်သိမ်းမည်' });
             if (result.isConfirmed) {
-                try {
-                    // Delete user account
-                    const { error } = await sb.auth.admin.deleteUser(currentUser.id);
-                    if (error) throw error;
-
-                    Swal.fire('အောင်မြင်ပါသည်', 'အကောင့်ဖျက်သိမ်းပြီးပါပြီ။', 'success');
-                    setTimeout(() => window.location.href = 'index.html', 2000);
-                } catch (err) {
-                    Swal.fire('မှားယွင်းမှု', err.message, 'error');
-                }
+                Swal.fire('အကောင့်ဖျက်သိမ်းခြင်းကို System Admin မှတစ်ဆင့်သာ ဆောင်ရွက်နိုင်ပါသည်။', '', 'info');
             }
         }
     </script>
