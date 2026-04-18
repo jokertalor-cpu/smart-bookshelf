@@ -316,7 +316,42 @@
                 </button>
             </div>
         </div>
-
+     <div class="card" style="margin-top: 2rem; padding: 20px; border: 1px solid #ddd;">
+    <h3><i class="fa-solid fa-calendar-days"></i> Seasonal Icon Manager</h3>
+    <div style="display: grid; gap: 10px;">
+        <input type="text" id="theme-name" placeholder="အမည် (ဥပမာ - သင်္ကြန်)" class="search-input">
+        <select id="theme-category" class="search-input">
+            <option value="festival">ပွဲတော်ရက် (Festival)</option>
+            <option value="summer">နွေရာသီ (Summer)</option>
+            <option value="rainy">မိုးရာသီ (Rainy)</option>
+            <option value="winter">ဆောင်းရာသီ (Winter)</option>
+        </select>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="theme-start" placeholder="စမည့်ရက် (MM-DD)" class="search-input">
+            <input type="text" id="theme-end" placeholder="ပြီးမည့်ရက် (MM-DD)" class="search-input">
+        </div>
+        <input type="file" id="theme-file" accept="image/*" class="search-input">
+        <button class="btn btn-main" onclick="uploadSeasonalIcon()">Icon တင်မည်</button>
+    </div>
+</div>
+<div class="card" style="margin-top: 2rem;">
+    <h3><i class="fa-solid fa-images"></i> လက်ရှိတင်ထားသော Seasonal Icons များ</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Icon</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Date Range</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="seasonal-list">
+                </tbody>
+        </table>
+    </div>
+</div>
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
             <h3 style="margin: 0;"><i class="fa-solid fa-list"></i> စာအုပ်စာရင်းများ</h3>
             <div class="search-container">

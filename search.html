@@ -37,13 +37,10 @@
             </div>
 
             <div class="search-wrapper">
-               <div class="search-box" id="search-box">
-    <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." 
-           oninput="handleInput(event)" 
-           onkeydown="handleKeyDown(event)" 
-           autocomplete="off">
-    <div id="search-suggestions" class="search-suggestions"></div>
-</div>
+                <div class="search-box" id="search-box">
+                    <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." oninput="handleInput()" onkeydown="handleKeyDown(event)" autocomplete="off">
+                    <div id="search-suggestions" class="search-suggestions"></div>
+                </div>
                 <button id="search-trigger" class="search-btn">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
@@ -53,53 +50,17 @@
                 <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
                 <li><a href="categories.html"><i class="fa-solid fa-book"></i>စာအုပ်အမျိုးအစားများ</a></li> 
                 <li><a href="authors.html"><i class="fa-solid fa-pen-nib"></i>AUTHORS</a></li>
-                <li><a href="library.html"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
+                <li><a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
             </ul>
         </div>
     </nav>
+<main class="container">
+    <h2 id="search-title" style="margin-top: 20px;">ရှာဖွေမှုရလဒ်</h2>
+    <div id="search-results-container" class="book-grid">
+        <p>ရှာဖွေနေပါသည်...</p>
+    </div>
+</main>
 
-    <div class="swiper main-slider">
-        <div class="swiper-wrapper">
-            <div class="swiper-slide">
-                <img src="https://todaybooks.com.mm/img?path=img/banners/73edd818-0f63-47a2-a8cb-de06222f0eef.jpg" alt="Promotion 1">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://todaybooks.com.mm/img?path=img/banners/2ab57692-7530-48c9-ad50-df7294ad440e.jpg" alt="Promotion 2">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://todaybooks.com.mm/img?path=img/banners/51c8992f-a3d2-4837-83ab-07aa93e89aca.jpg" alt="Promotion 3">
-            </div>
-        </div>
-        <div class="swiper-pagination"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-    </div>
-
-   <section id="book-display-section" class="book-section">
-    <div class="section-header">
-        <h2 id="section-title">နောက်ဆုံးတင်ထားသော စာအုပ်များ</h2>
-        <a href="all-books.html?sort=latest" class="view-all-link">အကုန်ကြည့်မယ် →</a>
-    </div>
-    <div id="book-list-container" class="book-grid">
-        </div>
-</section>
-
-<section class="book-section">
-    <div class="section-header">
-        <h2>လူကြိုက်အများဆုံး စာအုပ်များ</h2>
-        <a href="all-books.html?sort=popular" class="view-all-link">အကုန်ကြည့်မယ် →</a>
-    </div>
-    <div id="popular-books-container" class="book-grid">
-        </div>
-</section>
-<section class="book-section">
-    <div class="section-header">
-        <h2>Download အများဆုံး စာအုပ်များ</h2>
-        <a href="all-books.html?sort=downloads" class="view-all-link">အကုန်ကြည့်မယ် →</a>
-    </div>
-    <div id="download-books-container" class="book-grid">
-        </div>
-</section>
     <a href="admin.html" class="button-style">ADMIN</a>
 
     <footer class="main-footer">
@@ -108,7 +69,7 @@
                 <img src="photo_2026-03-20_09-18-40.jpg" alt="Smart Bookshelf Logo" class="footer-logo">
                 <div class="social-links">
                     <a href="#"><i class="fa-brands fa-facebook"></i></a>
-                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-messenger"></i></a>
                     <a href="#"><i class="fa-brands fa-telegram"></i></a>
                     <a href="#"><i class="fa-brands fa-youtube"></i></a>
                 </div>
@@ -138,6 +99,6 @@
     </footer>
 
     <script src="mainscript.js"></script>
-    <script src="indexscript.js"></script>
+    <script src="searchscript.js"></script>
 </body>
 </html>

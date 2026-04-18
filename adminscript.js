@@ -165,7 +165,41 @@ async function uploadToStorage(inputElement, folder) {
     const { data: { publicUrl } } = supabase.storage.from('book-assets').getPublicUrl(fileName);
     return publicUrl;
 }
+async function uploadSeasonalIcon() {
+    const file = document.getElementById('theme-file').files[0];
+    const name = document.getElementById('theme-name').value;
+    const category = document.getElementById('theme-category').value;
+    const start = document.getElementById('theme-start')?.value || null;
+    const end = document.getElementById('theme-end')?.value || null;
 
+    if (!file || !name) return alert("ဖိုင်နှင့် အမည်ကို ဖြည့်စွက်ပါ");
+
+    try {
+        const fileName = `seasonal/${Date.now()}_${file.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('seasonal-assets')
+            .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('seasonal-assets')
+            .getPublicUrl(fileName);
+
+        const { error: dbError } = await supabase
+            .from('seasonal_themes')
+            .insert([{ 
+                name, category, icon_url: publicUrl, 
+                start_date: start, end_date: end, is_active: true 
+            }]);
+
+        if (dbError) throw dbError;
+        alert("အောင်မြင်စွာ တင်ပြီးပါပြီ");
+        location.reload();
+    } catch (err) {
+        alert("Error: " + err.message);
+    }
+}
 async function saveBook() {
     const id = document.getElementById('edit-book-id').value;
     const saveBtn = document.getElementById('save-btn');
@@ -282,3 +316,59 @@ function resetForm() {
     document.getElementById('save-btn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Book Data';
     document.getElementById('cancel-btn').classList.add('hidden');
 }
+// ၁။ Icon စာရင်းကို Database ကနေ ဆွဲထုတ်ပြီး ပြပေးတဲ့ Function
+async function loadSeasonalIcons() {
+    const listBody = document.getElementById('seasonal-list');
+    if (!listBody) return;
+
+    const { data, error } = await supabase
+        .from('seasonal_themes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) return console.error(error);
+
+    listBody.innerHTML = data.map(item => `
+        <tr>
+            <td><img src="${item.icon_url}" style="width: 40px; height: 40px; object-fit: contain;"></td>
+            <td><strong>${item.name}</strong></td>
+            <td><span class="badge">${item.category}</span></td>
+            <td>${item.start_date || '-'} to ${item.end_date || '-'}</td>
+            <td>
+                <button class="btn" onclick="deleteSeasonalIcon('${item.id}', '${item.icon_url}')" style="background: var(--danger); color: white; padding: 5px 10px;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ၂။ Icon ကို ဖျက်တဲ့ Function
+async function deleteSeasonalIcon(id, imageUrl) {
+    if (!confirm("ဒီ Icon ကို ဖျက်မှာ သေချာပါသလား?")) return;
+
+    try {
+        // (က) Database ထဲက အရင်ဖျက်မယ်
+        const { error: dbError } = await supabase
+            .from('seasonal_themes')
+            .delete()
+            .eq('id', id);
+
+        if (dbError) throw dbError;
+
+        // (ခ) Storage ထဲက ပုံကိုလည်း ဖျက်ချင်ရင် (Optional)
+        // မှတ်ချက် - URL ထဲကနေ ဖိုင်နာမည်ကို ခွဲထုတ်ဖို့ လိုပါတယ်
+        const fileName = imageUrl.split('/').pop();
+        await supabase.storage.from('seasonal-assets').remove([`seasonal/${fileName}`]);
+
+        alert("ဖျက်ပြီးပါပြီ။");
+        loadSeasonalIcons(); // List ကို Refresh လုပ်မယ်
+    } catch (err) {
+        alert("Error deleting: " + err.message);
+    }
+}
+
+// Page load တဲ့အခါ Icon List ကိုပါ တစ်ခါတည်း ခေါ်ခိုင်းမယ်
+document.addEventListener('DOMContentLoaded', () => {
+    loadSeasonalIcons();
+});

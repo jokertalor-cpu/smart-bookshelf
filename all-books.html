@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>စာအုပ်များအားလုံး - SMARTBOOKSHELF</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="mainstyle.css">
+    <style>
+       .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 50px 0;
+    flex-wrap: wrap; /* Mobile မှာ ဆန့်အောင် */
+}
+
+.page-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.page-btn.active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+        .sort-info {
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--dark-blue);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+</head>
+<body>
+    <div class="menu-overlay" id="menu-overlay"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            <div class="logo">
+                <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
+            </div>
+
+            <div class="search-wrapper">
+               <div class="search-box" id="search-box">
+    <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." 
+           oninput="handleInput(event)" 
+           onkeydown="handleKeyDown(event)" 
+           autocomplete="off">
+    <div id="search-suggestions" class="search-suggestions"></div>
+</div>
+                <button id="search-trigger" class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
+                <li><a href="categories.html"><i class="fa-solid fa-book"></i>စာအုပ်အမျိုးအစားများ</a></li> 
+                <li><a href="authors.html"><i class="fa-solid fa-pen-nib"></i>AUTHORS</a></li>
+                <li><a href="library.html"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <div class="sort-info" id="sort-display-text">အားလုံးသော စာအုပ်များ</div>
+
+    <section class="book-section">
+        <div id="all-books-container" class="book-grid">
+            </div>
+    </section>
+
+    <div class="pagination-container" id="pagination-controls">
+        </div>
+
+    <script src="mainscript.js"></script>
+    <script src="allbooks.js"></script>
+</body>
+</html>

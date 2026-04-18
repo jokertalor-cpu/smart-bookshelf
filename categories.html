@@ -3,6 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>စာအုပ်အမျိုးအစားများ - SMARTBOOKSHELF</title>
+    <link rel="stylesheet" href="mainstyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMARTBOOKSHELF - မြန်မာ့အကြီးဆုံး ဒစ်ဂျစ်တယ်စာအုပ်စင်</title>
     <meta name="title" content="SMARTBOOKSHELF - မြန်မာ့အကြီးဆုံး ဒစ်ဂျစ်တယ်စာအုပ်စင်">
     <meta name="description" content="Xianxia, Novel, Technical နှင့် ဗဟုသုတဖြစ်ဖွယ် စာအုပ်ပေါင်းများစွာကို တစ်နေရာတည်းတွင် အခမဲ့ ဖတ်ရှုနိုင်ပါသည်။">
@@ -58,51 +68,82 @@
         </div>
     </nav>
 
-    <div class="swiper main-slider">
-        <div class="swiper-wrapper">
-            <div class="swiper-slide">
-                <img src="https://todaybooks.com.mm/img?path=img/banners/73edd818-0f63-47a2-a8cb-de06222f0eef.jpg" alt="Promotion 1">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://todaybooks.com.mm/img?path=img/banners/2ab57692-7530-48c9-ad50-df7294ad440e.jpg" alt="Promotion 2">
-            </div>
-            <div class="swiper-slide">
-                <img src="https://todaybooks.com.mm/img?path=img/banners/51c8992f-a3d2-4837-83ab-07aa93e89aca.jpg" alt="Promotion 3">
-            </div>
-        </div>
-        <div class="swiper-pagination"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
+    <main class="container">
+        <h2 class="page-title">စာအုပ်အမျိုးအစားများ</h2>
+        
+      <div class="category-grid">
+    <div class="category-item" onclick="filterByCategory('xianxia')">
+        <div class="icon-wrapper"><i class="fa-solid fa-scroll"></i></div>
+        <span>Xianxia</span>
     </div>
 
-   <section id="book-display-section" class="book-section">
-    <div class="section-header">
-        <h2 id="section-title">နောက်ဆုံးတင်ထားသော စာအုပ်များ</h2>
-        <a href="all-books.html?sort=latest" class="view-all-link">အကုန်ကြည့်မယ် →</a>
+    <div class="category-item" onclick="filterByCategory('technical')">
+        <div class="icon-wrapper"><i class="fa-solid fa-laptop-code"></i></div>
+        <span>Technical</span>
     </div>
-    <div id="book-list-container" class="book-grid">
-        </div>
-</section>
 
-<section class="book-section">
-    <div class="section-header">
-        <h2>လူကြိုက်အများဆုံး စာအုပ်များ</h2>
-        <a href="all-books.html?sort=popular" class="view-all-link">အကုန်ကြည့်မယ် →</a>
+    <div class="category-item" onclick="filterByCategory('novel')">
+        <div class="icon-wrapper"><i class="fa-solid fa-book-open"></i></div>
+        <span>Novel</span>
     </div>
-    <div id="popular-books-container" class="book-grid">
-        </div>
-</section>
-<section class="book-section">
-    <div class="section-header">
-        <h2>Download အများဆုံး စာအုပ်များ</h2>
-        <a href="all-books.html?sort=downloads" class="view-all-link">အကုန်ကြည့်မယ် →</a>
-    </div>
-    <div id="download-books-container" class="book-grid">
-        </div>
-</section>
-    <a href="admin.html" class="button-style">ADMIN</a>
 
-    <footer class="main-footer">
+    <div class="category-item" onclick="filterByCategory('knowledge')">
+        <div class="icon-wrapper"><i class="fa-solid fa-lightbulb"></i></div>
+        <span>Knowledge</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('poem')">
+        <div class="icon-wrapper"><i class="fa-solid fa-feather-pointed"></i></div>
+        <span>Poem</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('magazine')">
+        <div class="icon-wrapper"><i class="fa-solid fa-newspaper"></i></div>
+        <span>Magazine</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('history')">
+        <div class="icon-wrapper"><i class="fa-solid fa-monument"></i></div>
+        <span>History</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('adventure')">
+        <div class="icon-wrapper"><i class="fa-solid fa-compass"></i></div>
+        <span>Adventure</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('health')">
+        <div class="icon-wrapper"><i class="fa-solid fa-heart-pulse"></i></div>
+        <span>Health</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('business')">
+        <div class="icon-wrapper"><i class="fa-solid fa-briefcase"></i></div>
+        <span>Business</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('comic')">
+        <div class="icon-wrapper"><i class="fa-solid fa-mask"></i></div>
+        <span>Comic</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('rarebook')">
+        <div class="icon-wrapper"><i class="fa-solid fa-vault"></i></div>
+        <span>Rare Book</span>
+    </div>
+
+    <div class="category-item" onclick="filterByCategory('horror')">
+        <div class="icon-wrapper"><i class="fa-solid fa-ghost"></i></div>
+        <span>Horror</span>
+    </div>
+</div>
+        <hr>
+
+        <h3 id="category-title" style="margin-top: 30px;">စာအုပ်များ</h3>
+        <div id="category-book-list" class="book-grid">
+            </div>
+    </main>
+ <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-brand">
                 <img src="photo_2026-03-20_09-18-40.jpg" alt="Smart Bookshelf Logo" class="footer-logo">
@@ -136,8 +177,8 @@
             </div>
         </div>
     </footer>
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
     <script src="mainscript.js"></script>
-    <script src="indexscript.js"></script>
+    <script src="categoryscript.js"></script>
 </body>
 </html>
