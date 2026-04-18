@@ -473,7 +473,6 @@
 
         let currentUser = null;
 
-        // Initialize
         window.onload = async () => {
             const { data: { session } } = await sb.auth.getSession();
             if (session) {
@@ -488,28 +487,29 @@
         async function syncAndLoadData() {
             document.getElementById('syncOverlay').style.display = 'flex';
             try {
-                // 1. Sync Logic (Supabase to Local)
-                // Favorites
+                // 1. Sync Favorites
                 const { data: likesData } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
                 if (likesData) {
                     const likedIds = likesData.map(i => i.book_id.toString());
                     localStorage.setItem('my_likes', JSON.stringify(likedIds));
                 }
 
-                // Downloads (Dexie)
-                const { data: downloadsData } = await sb.from('user_downloads').select('book_id, books(id, title, author, cover, download_link)').eq('user_id', currentUser.id);
+                // 2. Sync Downloads (Fix: Correct Alias & Mapping)
+                const { data: downloadsData } = await sb
+                    .from('user_downloads')
+                    .select('book_id, books:book_id(id, title, author, cover, download_link)')
+                    .eq('user_id', currentUser.id);
+
                 if (downloadsData) {
                     const cloudIds = new Set(downloadsData.filter(d => d.books).map(d => d.books.id.toString()));
                     const localBooks = await db.savedBooks.toArray();
                     const localIds = new Set(localBooks.map(b => b.id.toString()));
 
-                    // Add missing
                     for (const item of downloadsData) {
                         if (item.books && !localIds.has(item.books.id.toString())) {
                             await downloadAndSave(item.books);
                         }
                     }
-                    // Remove extra
                     for (const localBook of localBooks) {
                         if (!cloudIds.has(localBook.id.toString())) {
                             await db.savedBooks.delete(localBook.id);
@@ -518,11 +518,10 @@
                     }
                 }
 
-                // 2. Refresh UI Stats & Logs
                 await loadStats();
                 await loadActivityLog();
             } catch (err) {
-                console.error("Sync/Load Error:", err);
+                console.error("Sync Error:", err);
             } finally {
                 document.getElementById('syncOverlay').style.display = 'none';
             }
@@ -530,6 +529,7 @@
 
         async function downloadAndSave(book) {
             try {
+                if (!book.download_link) return;
                 const res = await fetch(book.download_link);
                 if (res.ok) {
                     const blob = await res.blob();
@@ -615,7 +615,7 @@
 
         async function loadActivityLog() {
             try {
-                const { data: downloads, error } = await sb.from('user_downloads').select('created_at, books(title)').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
+                const { data: downloads, error } = await sb.from('user_downloads').select('created_at, books:book_id(title)').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
                 if (error) throw error;
                 const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
                     <div class="activity-item success">
