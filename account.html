@@ -10,38 +10,322 @@
     
     <style>
         :root { --primary: #1a73e8; --primary-hover: #1557b0; --success: #34a853; --danger: #ea4335; --bg: #f8f9fa; }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: #3c4043; }
-        nav { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 20px; font-weight: bold; color: var(--primary); text-decoration: none; }
-        .nav-links { display: flex; gap: 20px; }
-        .nav-links a { text-decoration: none; color: #5f6368; font-weight: 600; transition: color 0.2s; }
-        .nav-links a:hover { color: var(--primary); }
-        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
-        .account-header { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 30px; display: flex; align-items: center; gap: 30px; }
-        .avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #4285f4); display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; flex-shrink: 0; }
-        .user-info h1 { font-size: 24px; margin-bottom: 10px; color: #202124; }
-        .user-info p { color: #5f6368; margin-bottom: 5px; font-size: 14px; }
-        .user-status { display: inline-block; padding: 4px 12px; background: #e6f4ea; color: var(--success); border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 10px; }
-        .section { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 30px; }
-        .section h2 { font-size: 18px; margin-bottom: 20px; color: #202124; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
-        .section h2 i { color: var(--primary); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); text-align: center; }
-        .stat-card .number { font-size: 28px; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
-        .stat-card .label { font-size: 12px; color: #5f6368; font-weight: 600; }
-        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: #feeef3; color: var(--danger); }
-        .btn-secondary { background: #f1f3f4; color: #5f6368; }
-        .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .activity-item { padding: 15px; border-left: 3px solid #e8eaed; margin-bottom: 15px; background: #f8f9fa; border-radius: 4px; }
-        .activity-item.success { border-left-color: var(--success); }
-        .activity-time { font-size: 12px; color: #5f6368; }
-        .activity-desc { font-size: 14px; color: #3c4043; margin-top: 5px; font-weight: 500; }
-        @media (max-width: 768px) { .account-header { flex-direction: column; text-align: center; } }
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg); 
+            color: #3c4043;
+        }
+        
+        /* Navigation */
+        nav { 
+            background: white; 
+            padding: 15px 5%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+        }
+        
+        .logo { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: var(--primary); 
+            text-decoration: none; 
+        }
+        
+        .nav-links { 
+            display: flex; 
+            gap: 20px; 
+        }
+        
+        .nav-links a { 
+            text-decoration: none; 
+            color: #5f6368; 
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover { 
+            color: var(--primary); 
+        }
+        
+        /* Main Container */
+        .container { 
+            max-width: 900px; 
+            margin: 30px auto; 
+            padding: 0 20px;
+        }
+        
+        .account-header { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .avatar { 
+            width: 100px; 
+            height: 100px; 
+            border-radius: 50%; 
+            background: linear-gradient(135deg, var(--primary), #4285f4); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+        
+        .user-info h1 { 
+            font-size: 24px; 
+            margin-bottom: 10px;
+            color: #202124;
+        }
+        
+        .user-info p { 
+            color: #5f6368; 
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .user-status { 
+            display: inline-block; 
+            padding: 4px 12px; 
+            background: #e6f4ea; 
+            color: var(--success); 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        /* Sections */
+        .section { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            margin-bottom: 30px;
+        }
+        
+        .section h2 { 
+            font-size: 18px; 
+            margin-bottom: 20px; 
+            color: #202124;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        
+        .section h2 i { 
+            color: var(--primary); 
+        }
+        
+        /* Form Groups */
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        
+        .form-group label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            color: #202124;
+            font-size: 14px;
+        }
+        
+        .form-group input, 
+        .form-group textarea { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #dadce0; 
+            border-radius: 8px; 
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus, 
+        .form-group textarea:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 2px rgba(26,115,232,0.1);
+        }
+        
+        .form-group textarea { 
+            resize: vertical; 
+            min-height: 100px;
+        }
+        
+        .form-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px;
+        }
+        
+        /* Stats */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border-left: 4px solid var(--primary);
+            text-align: center;
+        }
+        
+        .stat-card .number { 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .label { 
+            font-size: 12px; 
+            color: #5f6368;
+            font-weight: 600;
+        }
+        
+        /* Buttons */
+        .btn { 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            font-size: 14px; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary { 
+            background: var(--primary); 
+            color: white; 
+        }
+        
+        .btn-primary:hover { 
+            background: var(--primary-hover); 
+            box-shadow: 0 4px 12px rgba(26,115,232,0.2);
+        }
+        
+        .btn-primary:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        
+        .btn-danger { 
+            background: #feeef3; 
+            color: var(--danger); 
+        }
+        
+        .btn-danger:hover { 
+            background: #fdd7e4; 
+        }
+        
+        .btn-secondary { 
+            background: #f1f3f4; 
+            color: #5f6368; 
+        }
+        
+        .btn-secondary:hover { 
+            background: #e8eaed; 
+        }
+        
+        .button-group { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap;
+        }
+        
+        /* Activity Log */
+        .activity-item { 
+            padding: 15px; 
+            border-left: 3px solid #e8eaed; 
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .activity-item.success { 
+            border-left-color: var(--success); 
+        }
+        
+        .activity-item.warning { 
+            border-left-color: #fbbc04; 
+        }
+        
+        .activity-item.danger { 
+            border-left-color: var(--danger); 
+        }
+        
+        .activity-time { 
+            font-size: 12px; 
+            color: #5f6368;
+        }
+        
+        .activity-desc { 
+            font-size: 14px; 
+            color: #3c4043;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .account-header { 
+                flex-direction: column; 
+                text-align: center;
+            }
+            
+            .form-row { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .nav-links { 
+                gap: 10px; 
+            }
+        }
+        
+        /* Loading State */
+        .loading { 
+            opacity: 0.6; 
+            pointer-events: none; 
+        }
+        
+        .spinner { 
+            display: inline-block; 
+            width: 16px; 
+            height: 16px; 
+            border: 2px solid #f3f3f3; 
+            border-top: 2px solid var(--primary); 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
     </style>
 </head>
 <body>
@@ -56,19 +340,25 @@
     </nav>
 
     <div class="container">
+        <!-- User Header -->
         <div class="account-header" id="accountHeader">
-            <div class="avatar"><i class="fas fa-user"></i></div>
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
             <div class="user-info">
                 <h1 id="userName">Loading...</h1>
                 <p id="userEmail">-</p>
                 <p id="userCreated">-</p>
-                <div class="user-status"><i class="fas fa-check-circle"></i> အကောင့်သည် ရှင်းလင်းပါသည်</div>
+                <div class="user-status">
+                    <i class="fas fa-check-circle"></i> အကောင့်သည် ရှင်းလင်းပါသည်
+                </div>
             </div>
         </div>
 
+        <!-- Statistics -->
         <div class="section">
             <h2><i class="fas fa-chart-bar"></i> အကျဉ်းချုပ်စာရင်းအင်း</h2>
-            <div class="stats-grid">
+            <div class="stats-grid" id="statsGrid">
                 <div class="stat-card">
                     <div class="number" id="downloadCount">0</div>
                     <div class="label">ဒေါင်းလုဒ်ထားသည်</div>
@@ -77,9 +367,69 @@
                     <div class="number" id="favoriteCount">0</div>
                     <div class="label">အသဲပေးထားသည်</div>
                 </div>
+                <div class="stat-card">
+                    <div class="number" id="readingCount">0</div>
+                    <div class="label">ဖတ်နေသည်</div>
+                </div>
             </div>
         </div>
 
+        <!-- Profile Settings -->
+        <div class="section">
+            <h2><i class="fas fa-user-cog"></i> ကိုယ်ရေးအချက်အလက်</h2>
+            <div class="form-group">
+                <label>အီမေးလ်လိပ်စာ</label>
+                <input type="email" id="emailInput" readonly>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>အမည်</label>
+                    <input type="text" id="nameInput" placeholder="သင်၏အမည်ထည့်သွင်းပါ">
+                </div>
+                <div class="form-group">
+                    <label>ဖုန်းနံပါတ်</label>
+                    <input type="tel" id="phoneInput" placeholder="+95 9xxxxxxxxx">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>အကျဉ်းချုပ်</label>
+                <textarea id="bioInput" placeholder="သင်အကြောင်း အကျဉ်းချုပ်ရေးသားပါ..."></textarea>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="saveProfile()">
+                    <i class="fas fa-save"></i> သိမ်းဆည်းမည်
+                </button>
+                <button class="btn btn-secondary" onclick="loadProfile()">
+                    <i class="fas fa-redo"></i> ပြန်လည်ဆွဲယူမည်
+                </button>
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="section">
+            <h2><i class="fas fa-lock"></i> လုံခြုံရေးအချက်အလက်</h2>
+            <div class="form-group">
+                <label>လက်ရှိစကားဝှက်</label>
+                <input type="password" id="currentPassword" placeholder="လက်ရှိစကားဝှက်ထည့်သွင်းပါ">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>စကားဝှက်သစ်</label>
+                    <input type="password" id="newPassword" placeholder="စကားဝှက်သစ်ထည့်သွင်းပါ">
+                </div>
+                <div class="form-group">
+                    <label>စကားဝှက်သစ်အတည်းပြုခြင်း</label>
+                    <input type="password" id="confirmPassword" placeholder="စကားဝှက်သစ်ထပ်မံထည့်သွင်းပါ">
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="changePassword()">
+                    <i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်
+                </button>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
         <div class="section">
             <h2><i class="fas fa-history"></i> လုပ်ဆောင်ချက်မှတ်တမ်း</h2>
             <div id="activityLog">
@@ -87,33 +437,53 @@
             </div>
         </div>
 
+        <!-- Danger Zone -->
         <div class="section" style="border-left: 4px solid var(--danger);">
-            <h2 style="border-bottom-color: var(--danger); color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> အန္တရာယ်ဆိုင်ရာ</h2>
+            <h2 style="border-bottom-color: var(--danger); color: var(--danger);">
+                <i class="fas fa-exclamation-triangle"></i> အန္တရာယ်ဆိုင်ရာ
+            </h2>
+            <p style="color: #5f6368; margin-bottom: 20px;">
+                အောက်ပါလုပ်ဆောင်ချက်များသည် ပြန်လည်ဆောင်ရွက်၍မရနိုင်ပါ။ ကျေးဇူးပြု၍ သတိထားပါ။
+            </p>
             <div class="button-group">
-                <button class="btn btn-danger" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> ထွက်မည်</button>
+                <button class="btn btn-danger" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i> ထွက်မည်
+                </button>
+                <button class="btn btn-danger" onclick="confirmDeleteAccount()">
+                    <i class="fas fa-trash"></i> အကောင့်ဖျက်သိမ်းမည်
+                </button>
             </div>
         </div>
     </div>
 
     <script>
+        // Supabase Configuration
         const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
         const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
         const sb = supabase.createClient(SB_URL, SB_KEY);
 
         let currentUser = null;
 
+        // Initialize
         window.onload = async () => {
-            const { data: { session } } = await sb.auth.getSession();
-            if (!session) {
-                window.location.href = 'auth.html';
-                return;
-            }
-            currentUser = session.user;
-            updateUserHeader(currentUser);
+            await checkAuth();
+            await loadProfile();
             await loadStats();
             await loadActivityLog();
         };
 
+        // Check Authentication
+        async function checkAuth() {
+            const { data: { user }, error } = await sb.auth.getUser();
+            if (error || !user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+            currentUser = user;
+            updateUserHeader(user);
+        }
+
+        // Update User Header
         function updateUserHeader(user) {
             document.getElementById('userName').textContent = user.email.split('@')[0] || 'User';
             document.getElementById('userEmail').textContent = user.email;
@@ -121,34 +491,172 @@
             document.getElementById('userCreated').textContent = `အကောင့်ဖွင့်သည့်နေ့: ${created}`;
         }
 
-        async function loadStats() {
-            try {
-                const { count: dlCount } = await sb.from('user_downloads').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
-                const { count: favCount } = await sb.from('user_likes').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
-                document.getElementById('downloadCount').textContent = dlCount || 0;
-                document.getElementById('favoriteCount').textContent = favCount || 0;
-            } catch (err) { console.error(err); }
+        // Load Profile
+        async function loadProfile() {
+            if (!currentUser) return;
+            
+            document.getElementById('emailInput').value = currentUser.email;
+            
+            // Load from user metadata if available
+            const metadata = currentUser.user_metadata || {};
+            document.getElementById('nameInput').value = metadata.name || '';
+            document.getElementById('phoneInput').value = metadata.phone || '';
+            document.getElementById('bioInput').value = metadata.bio || '';
         }
 
+        // Save Profile
+        async function saveProfile() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> သိမ်းဆည်းနေသည်...';
+
+            try {
+                const { error } = await sb.auth.updateUser({
+                    data: {
+                        name: document.getElementById('nameInput').value,
+                        phone: document.getElementById('phoneInput').value,
+                        bio: document.getElementById('bioInput').value
+                    }
+                });
+
+                if (error) throw error;
+
+                Swal.fire('အောင်မြင်ပါသည်', 'ကိုယ်ရေးအချက်အလက်များကို သိမ်းဆည်းပြီးပါပြီ။', 'success');
+            } catch (err) {
+                Swal.fire('မှားယွင်းမှု', err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> သိမ်းဆည်းမည်';
+            }
+        }
+
+        // Change Password
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                Swal.fire('သတိပေးချက်', 'အားလုံးဖြည့်စွက်ပါ', 'warning');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                Swal.fire('သတိပေးချက်', 'စကားဝှက်သစ်များ မကိုက်ညီပါ', 'warning');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                Swal.fire('သတိပေးချက်', 'စကားဝှက်သည် အနည်းဆုံး အက္ခရာ ၆ လုံးရှိရမည်', 'warning');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> ပြောင်းလဲနေသည်...';
+
+            try {
+                const { error } = await sb.auth.updateUser({ password: newPassword });
+                if (error) throw error;
+
+                Swal.fire('အောင်မြင်ပါသည်', 'စကားဝှက်ပြောင်းလဲပြီးပါပြီ။', 'success');
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } catch (err) {
+                Swal.fire('မှားယွင်းမှု', err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်';
+            }
+        }
+
+        // Load Statistics
+        async function loadStats() {
+            try {
+                // Get download count
+                const { count: downloadCount } = await sb
+                    .from('user_downloads')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', currentUser.id);
+
+                // Get favorite count
+                const { count: favoriteCount } = await sb
+                    .from('user_likes')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', currentUser.id);
+
+                document.getElementById('downloadCount').textContent = downloadCount || 0;
+                document.getElementById('favoriteCount').textContent = favoriteCount || 0;
+                document.getElementById('readingCount').textContent = '0'; // Can be enhanced
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
+        // Load Activity Log
         async function loadActivityLog() {
             try {
-                const { data: downloads, error } = await sb.from('user_downloads').select('created_at, books(title)').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
+                const { data: downloads, error } = await sb
+                    .from('user_downloads')
+                    .select('created_at, books(title)')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
                 if (error) throw error;
+
                 const logHtml = downloads && downloads.length > 0 
                     ? downloads.map(item => `
                         <div class="activity-item success">
                             <div class="activity-time">${new Date(item.created_at).toLocaleString('my-MM')}</div>
-                            <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်</div>
+                            <div class="activity-desc">
+                                <i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်
+                            </div>
                         </div>
                     `).join('')
                     : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
+
                 document.getElementById('activityLog').innerHTML = logHtml;
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                console.error('Error loading activity log:', err);
+                document.getElementById('activityLog').innerHTML = '<p style="color: red;">မှတ်တမ်းများ ဆွဲယူရာတွင် အမှားအယွင်း ရှိပါသည်။</p>';
+            }
         }
 
+        // Logout
         async function handleLogout() {
-            await sb.auth.signOut();
-            window.location.href = 'auth.html';
+            const { error } = await sb.auth.signOut();
+            if (!error) {
+                window.location.href = 'auth.html';
+            }
+        }
+
+        // Delete Account
+        async function confirmDeleteAccount() {
+            const result = await Swal.fire({
+                title: 'အကောင့်ဖျက်သိမ်းမည်လား?',
+                text: 'ဤလုပ်ဆောင်ချက်သည် ပြန်လည်ဆောင်ရွက်၍မရနိုင်ပါ။',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ea4335',
+                cancelButtonColor: '#ccc',
+                confirmButtonText: 'ဖျက်သိမ်းမည်',
+                cancelButtonText: 'ပယ်ဖျက်မည်'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    // Delete user account
+                    const { error } = await sb.auth.admin.deleteUser(currentUser.id);
+                    if (error) throw error;
+
+                    Swal.fire('အောင်မြင်ပါသည်', 'အကောင့်ဖျက်သိမ်းပြီးပါပြီ။', 'success');
+                    setTimeout(() => window.location.href = 'index.html', 2000);
+                } catch (err) {
+                    Swal.fire('မှားယွင်းမှု', err.message, 'error');
+                }
+            }
         }
     </script>
 </body>
