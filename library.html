@@ -111,17 +111,24 @@
     let currentUser = null;
 
     window.onload = async () => {
-        const { data: { session } } = await sb.auth.getSession();
-        if (session) {
-            currentUser = session.user;
-            document.getElementById('login-reminder').style.display = 'none';
-            document.getElementById('logout-btn').style.display = 'block';
-            await syncAll();
-        } else {
-            document.getElementById('login-reminder').style.display = 'flex';
-            document.getElementById('logout-btn').style.display = 'none';
-            await renderLibrary();
-            await renderFavorites();
+        // First, render what we have locally for immediate offline access
+        await renderLibrary();
+        await renderFavorites();
+
+        try {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('login-reminder').style.display = 'none';
+                document.getElementById('logout-btn').style.display = 'block';
+                // Then sync with cloud if online
+                await syncAll();
+            } else {
+                document.getElementById('login-reminder').style.display = 'flex';
+                document.getElementById('logout-btn').style.display = 'none';
+            }
+        } catch (e) {
+            console.log("Offline mode or session error:", e);
         }
         setupAuthListener();
     };
@@ -146,7 +153,7 @@
     }
 
     async function syncAll() {
-        if (!currentUser) return;
+        if (!currentUser || !navigator.onLine) return;
         showSyncStatus(true);
         try {
             // 1. Fetch latest likes from Cloud and update Local Storage
@@ -230,6 +237,13 @@
             return;
         }
 
+        // If offline, we can't fetch book details from Supabase, so we show a placeholder or use cached data if available
+        // For now, let's try to fetch if online, otherwise show a message
+        if (!navigator.onLine) {
+            favContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#888;">အော့ဖ်လိုင်းဖြစ်နေသဖြင့် အကြိုက်ဆုံးစာရင်းကို မပြနိုင်ပါ။</p>`;
+            return;
+        }
+
         try {
             const numericIds = likedIds.map(id => parseInt(id)).filter(id => !isNaN(id));
             if (numericIds.length === 0) {
@@ -247,7 +261,6 @@
                         <h3>${item.title}</h3>
                         <div class="actions">
                             <button class="btn btn-info" onclick="location.href='detail.html?id=${item.id}'"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
-                            <button class="btn btn-delete" onclick="confirmDelete('${item.id}', 'like')"><i class="fas fa-heart-crack"></i> Unlike</button>
                         </div>
                     </div>
                 `).join('');
@@ -277,7 +290,7 @@
                     let likes = JSON.parse(localStorage.getItem('my_likes') || '[]');
                     likes = likes.filter(item => item != id);
                     localStorage.setItem('my_likes', JSON.stringify(likes));
-                    if (currentUser) {
+                    if (currentUser && navigator.onLine) {
                         await sb.from('user_likes').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
                     }
                     await renderFavorites();

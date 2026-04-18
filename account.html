@@ -360,145 +360,119 @@
             <h2><i class="fas fa-chart-bar"></i> အကျဉ်းချုပ်စာရင်းအင်း</h2>
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card">
+                    <div class="number" id="readingCount">0</div>
+                    <div class="label">ဖတ်နေသည်</div>
+                </div>
+                <div class="stat-card">
                     <div class="number" id="downloadCount">0</div>
-                    <div class="label">ဒေါင်းလုဒ်ထားသည်</div>
+                    <div class="label">ဒေါင်းလုဒ်များ</div>
                 </div>
                 <div class="stat-card">
                     <div class="number" id="favoriteCount">0</div>
-                    <div class="label">အသဲပေးထားသည်</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="readingCount">0</div>
-                    <div class="label">ဖတ်နေသည်</div>
+                    <div class="label">အကြိုက်ဆုံးများ</div>
                 </div>
             </div>
         </div>
 
         <!-- Profile Settings -->
         <div class="section">
-            <h2><i class="fas fa-user-cog"></i> ကိုယ်ရေးအချက်အလက်</h2>
-            <div class="form-group">
-                <label>အီမေးလ်လိပ်စာ</label>
-                <input type="email" id="emailInput" readonly>
-            </div>
+            <h2><i class="fas fa-user-edit"></i> ကိုယ်ရေးအချက်အလက် ပြင်ဆင်ရန်</h2>
             <div class="form-row">
                 <div class="form-group">
                     <label>အမည်</label>
-                    <input type="text" id="nameInput" placeholder="သင်၏အမည်ထည့်သွင်းပါ">
+                    <input type="text" id="nameInput" placeholder="သင့်အမည်">
                 </div>
                 <div class="form-group">
                     <label>ဖုန်းနံပါတ်</label>
-                    <input type="tel" id="phoneInput" placeholder="+95 9xxxxxxxxx">
+                    <input type="text" id="phoneInput" placeholder="၀၉xxxxxxxxx">
                 </div>
             </div>
             <div class="form-group">
-                <label>အကျဉ်းချုပ်</label>
-                <textarea id="bioInput" placeholder="သင်အကြောင်း အကျဉ်းချုပ်ရေးသားပါ..."></textarea>
+                <label>ကိုယ်ရေးအကျဉ်း</label>
+                <textarea id="bioInput" placeholder="သင့်အကြောင်း အနည်းငယ် ရေးသားပါ..."></textarea>
             </div>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="saveProfile()">
-                    <i class="fas fa-save"></i> သိမ်းဆည်းမည်
-                </button>
-                <button class="btn btn-secondary" onclick="loadProfile()">
-                    <i class="fas fa-redo"></i> ပြန်လည်ဆွဲယူမည်
-                </button>
-            </div>
+            <button class="btn btn-primary" onclick="saveProfile()">
+                <i class="fas fa-save"></i> သိမ်းဆည်းမည်
+            </button>
         </div>
 
-        <!-- Security Settings -->
+        <!-- Security -->
         <div class="section">
-            <h2><i class="fas fa-lock"></i> လုံခြုံရေးအချက်အလက်</h2>
+            <h2><i class="fas fa-shield-alt"></i> လုံခြုံရေး</h2>
             <div class="form-group">
-                <label>လက်ရှိစကားဝှက်</label>
-                <input type="password" id="currentPassword" placeholder="လက်ရှိစကားဝှက်ထည့်သွင်းပါ">
+                <label>လက်ရှိ စကားဝှက်</label>
+                <input type="password" id="currentPassword" placeholder="••••••••">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>စကားဝှက်သစ်</label>
-                    <input type="password" id="newPassword" placeholder="စကားဝှက်သစ်ထည့်သွင်းပါ">
+                    <label>စကားဝှက်အသစ်</label>
+                    <input type="password" id="newPassword" placeholder="••••••••">
                 </div>
                 <div class="form-group">
-                    <label>စကားဝှက်သစ်အတည်းပြုခြင်း</label>
-                    <input type="password" id="confirmPassword" placeholder="စကားဝှက်သစ်ထပ်မံထည့်သွင်းပါ">
+                    <label>စကားဝှက်အသစ် (ထပ်မံရိုက်ထည့်ပါ)</label>
+                    <input type="password" id="confirmPassword" placeholder="••••••••">
                 </div>
             </div>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="changePassword()">
-                    <i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်
-                </button>
-            </div>
+            <button class="btn btn-primary" onclick="changePassword()">
+                <i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်
+            </button>
         </div>
 
         <!-- Activity Log -->
         <div class="section">
             <h2><i class="fas fa-history"></i> လုပ်ဆောင်ချက်မှတ်တမ်း</h2>
             <div id="activityLog">
-                <p style="text-align: center; color: #5f6368;">မှတ်တမ်းများ ဆွဲယူနေသည်...</p>
+                <p style="text-align: center; color: #5f6368;">မှတ်တမ်းများကို ဆွဲယူနေသည်...</p>
             </div>
         </div>
 
         <!-- Danger Zone -->
-        <div class="section" style="border-left: 4px solid var(--danger);">
-            <h2 style="border-bottom-color: var(--danger); color: var(--danger);">
-                <i class="fas fa-exclamation-triangle"></i> အန္တရာယ်ဆိုင်ရာ
+        <div class="section" style="border-top: 4px solid var(--danger);">
+            <h2 style="color: var(--danger); border-bottom-color: var(--danger);">
+                <i class="fas fa-exclamation-triangle"></i> အန္တရာယ်ရှိသော လုပ်ဆောင်ချက်များ
             </h2>
-            <p style="color: #5f6368; margin-bottom: 20px;">
-                အောက်ပါလုပ်ဆောင်ချက်များသည် ပြန်လည်ဆောင်ရွက်၍မရနိုင်ပါ။ ကျေးဇူးပြု၍ သတိထားပါ။
+            <p style="margin-bottom: 20px; font-size: 14px; color: #5f6368;">
+                အကောင့်ဖျက်သိမ်းပါက သင်၏ ဒေတာများအားလုံးကို ပြန်လည်ရယူနိုင်တော့မည် မဟုတ်ပါ။
             </p>
             <div class="button-group">
-                <button class="btn btn-danger" onclick="handleLogout()">
-                    <i class="fas fa-sign-out-alt"></i> ထွက်မည်
+                <button class="btn btn-secondary" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i> အကောင့်မှ ထွက်မည်
                 </button>
                 <button class="btn btn-danger" onclick="confirmDeleteAccount()">
-                    <i class="fas fa-trash"></i> အကောင့်ဖျက်သိမ်းမည်
+                    <i class="fas fa-user-slash"></i> အကောင့်ဖျက်သိမ်းမည်
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Supabase Configuration
         const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
         const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
         const sb = supabase.createClient(SB_URL, SB_KEY);
 
         let currentUser = null;
 
-        // Initialize
+        // Check Auth
         window.onload = async () => {
-            await checkAuth();
-            await loadProfile();
-            await loadStats();
-            await loadActivityLog();
-        };
-
-        // Check Authentication
-        async function checkAuth() {
-            const { data: { user }, error } = await sb.auth.getUser();
-            if (error || !user) {
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) {
                 window.location.href = 'auth.html';
                 return;
             }
-            currentUser = user;
-            updateUserHeader(user);
-        }
+            currentUser = session.user;
+            displayUserInfo();
+            loadStats();
+            loadActivityLog();
+        };
 
-        // Update User Header
-        function updateUserHeader(user) {
-            document.getElementById('userName').textContent = user.email.split('@')[0] || 'User';
-            document.getElementById('userEmail').textContent = user.email;
-            const created = new Date(user.created_at).toLocaleDateString('my-MM');
-            document.getElementById('userCreated').textContent = `အကောင့်ဖွင့်သည့်နေ့: ${created}`;
-        }
-
-        // Load Profile
-        async function loadProfile() {
-            if (!currentUser) return;
-            
-            document.getElementById('emailInput').value = currentUser.email;
-            
-            // Load from user metadata if available
+        // Display User Info
+        function displayUserInfo() {
             const metadata = currentUser.user_metadata || {};
+            document.getElementById('userName').textContent = metadata.name || currentUser.email.split('@')[0];
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userCreated').textContent = 'Joined: ' + new Date(currentUser.created_at).toLocaleDateString();
+            
+            // Fill form
             document.getElementById('nameInput').value = metadata.name || '';
             document.getElementById('phoneInput').value = metadata.phone || '';
             document.getElementById('bioInput').value = metadata.bio || '';
@@ -573,22 +547,29 @@
 
         // Load Statistics
         async function loadStats() {
+            if (!currentUser) return;
             try {
                 // Get download count
-                const { count: downloadCount } = await sb
+                const { count: downloadCount, error: dlError } = await sb
                     .from('user_downloads')
                     .select('*', { count: 'exact', head: true })
                     .eq('user_id', currentUser.id);
 
                 // Get favorite count
-                const { count: favoriteCount } = await sb
+                const { count: favoriteCount, error: favError } = await sb
                     .from('user_likes')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', currentUser.id);
+
+                // Get reading count (user_progress)
+                const { count: readCount, error: readError } = await sb
+                    .from('user_progress')
                     .select('*', { count: 'exact', head: true })
                     .eq('user_id', currentUser.id);
 
                 document.getElementById('downloadCount').textContent = downloadCount || 0;
                 document.getElementById('favoriteCount').textContent = favoriteCount || 0;
-                document.getElementById('readingCount').textContent = '0'; // Can be enhanced
+                document.getElementById('readingCount').textContent = readCount || 0;
             } catch (err) {
                 console.error('Error loading stats:', err);
             }
@@ -596,8 +577,8 @@
 
         // Load Activity Log
         async function loadActivityLog() {
+            if (!currentUser) return;
             try {
-               
                 const { data: downloads, error } = await sb
                     .from('user_downloads')
                     .select('created_at, books(title)')
@@ -624,20 +605,6 @@
                 document.getElementById('activityLog').innerHTML = '<p style="color: red;">မှတ်တမ်းများ ဆွဲယူရာတွင် အမှားအယွင်း ရှိပါသည်။</p>';
             }
         }
-        // Reading count ကို user_progress table မှ ဆွဲယူရန်
-async function updateReadingCount(userId) {
-    const { count, error } = await sb
-        .from('user_progress')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
-
-    if (!error) {
-        document.getElementById('readingCount').innerText = count || 0;
-    }
-}
-
-// checkUser function ထဲမှာ ဒါကို ခေါ်ပေးပါ
-// updateReadingCount(user.id);
 
         // Logout
         async function handleLogout() {
