@@ -199,24 +199,33 @@
         }
     }
 
-    async function downloadAndSave(book) {
-        try {
-            const url = book.download_link;
-            if (!url) return;
-            
+  async function downloadAndSave(book) {
+    try {
+        const url = book.download_link;
+        
+        // ၁။ ဖိုင်မပါဘဲ စာအုပ်အချက်အလက်ကို အရင်သိမ်းပါ (ဒါမှ Library မှာ ချက်ချင်းပေါ်မှာပါ)
+        await db.savedBooks.put({
+            id: book.id.toString(),
+            title: book.title,
+            author: book.author,
+            cover: book.cover,
+            fileData: null // အရင် null ထားပါ
+        });
+
+        // ၂။ ဖိုင်ရှိရင် ဖိုင်ကို Background မှာ ဆွဲပါ
+        if (url) {
             const res = await fetch(url);
             if (res.ok) {
                 const blob = await res.blob();
-                await db.savedBooks.put({
-                    id: book.id.toString(),
-                    title: book.title,
-                    author: book.author,
-                    cover: book.cover,
-                    fileData: blob
-                });
+                // ၃။ ဖိုင်ရပြီဆိုမှ update ပြန်လုပ်ပါ
+                await db.savedBooks.update(book.id.toString(), { fileData: blob });
+                console.log(`Downloaded: ${book.title}`);
             }
-        } catch (e) { console.error("Download Error:", e); }
+        }
+    } catch (e) { 
+        console.error("Download Error:", e); 
     }
+}
 
     async function renderLibrary() {
         const grid = document.getElementById('library-grid');
