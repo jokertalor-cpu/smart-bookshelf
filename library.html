@@ -199,53 +199,92 @@
         }
     }
 
-  async function downloadAndSave(book) {
-    try {
-        const url = book.download_link;
-        
-        // ၁။ ဖိုင်မပါဘဲ စာအုပ်အချက်အလက်ကို အရင်သိမ်းပါ (ဒါမှ Library မှာ ချက်ချင်းပေါ်မှာပါ)
-        await db.savedBooks.put({
-            id: book.id.toString(),
-            title: book.title,
-            author: book.author,
-            cover: book.cover,
-            fileData: null // အရင် null ထားပါ
-        });
+ 
 
-        // ၂။ ဖိုင်ရှိရင် ဖိုင်ကို Background မှာ ဆွဲပါ
-        if (url) {
-            const res = await fetch(url);
-            if (res.ok) {
-                const blob = await res.blob();
-                // ၃။ ဖိုင်ရပြီဆိုမှ update ပြန်လုပ်ပါ
-                await db.savedBooks.update(book.id.toString(), { fileData: blob });
-                console.log(`Downloaded: ${book.title}`);
-            }
+   async function renderLibrary() {
+    const grid = document.getElementById('library-grid');
+    
+    // ၁။ အကယ်၍ Login ဝင်မထားရင် Dexie ထဲကပဲပြပါ
+    if (!currentUser) {
+        const localBooks = await db.savedBooks.toArray();
+        if (localBooks.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+            return;
         }
-    } catch (e) { 
-        console.error("Download Error:", e); 
+        displayBooks(localBooks, grid, true); // true ဆိုသည်မှာ local ရှိသည်ဟုမှတ်ယူခြင်း
+        return;
+    }
+
+    // ၂။ Login ဝင်ထားရင် Supabase ကနေ တိုက်ရိုက်ဆွဲထုတ်ပါ
+    try {
+        const { data: downloadsData, error } = await sb
+            .from('user_downloads')
+            .select('books:book_id(id, title, author, cover, download_link)')
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        if (!downloadsData || downloadsData.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><p>သင့်စာကြည့်တိုက်တွင် စာအုပ်မရှိသေးပါ။</p></div>`;
+            return;
+        }
+
+        const cloudBooks = downloadsData.map(d => d.books).filter(b => b !== null);
+        
+        // Dexie ထဲမှာ ဘယ်စာအုပ်တွေရှိလဲ စစ်ဆေးရန်
+        const localBooks = await db.savedBooks.toArray();
+        const localIds = new Set(localBooks.map(b => b.id.toString()));
+
+        let html = '';
+        for (const book of cloudBooks) {
+            const isLocal = localIds.has(book.id.toString());
+            html += `
+                <div class="book-card">
+                    <div style="position: relative;">
+                        <img src="${book.cover}" loading="lazy" onclick="location.href='detail.html?id=${book.id}'">
+                        ${isLocal ? '<i class="fas fa-check-circle" style="position:absolute; top:10px; right:10px; color:#34a853; background:white; border-radius:50%;"></i>' : ''}
+                    </div>
+                    <h3>${book.title}</h3>
+                    <div class="actions">
+                        ${isLocal 
+                            ? `<button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဖတ်ရှုမည်</button>`
+                            : `<button class="btn btn-info" onclick="downloadAndSync('${book.id}')" id="dl-btn-${book.id}">
+                                <i class="fas fa-cloud-download-alt"></i> ဒေါင်းလုဒ်လုပ်ရန်
+                               </button>`
+                        }
+                        <button class="btn btn-delete" onclick="confirmDelete('${book.id}', 'download')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        }
+        grid.innerHTML = html;
+
+    } catch (err) {
+        console.error("Library Load Error:", err);
+        grid.innerHTML = `<p style="text-align:center;">ဒေတာဆွဲယူရာတွင် အမှားရှိနေပါသည်။</p>`;
     }
 }
 
-    async function renderLibrary() {
-        const grid = document.getElementById('library-grid');
-        const books = await db.savedBooks.toArray();
-        if (books.length === 0) {
-            grid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
-            return;
-        }
-        grid.innerHTML = books.map(book => `
-            <div class="book-card">
-                <img src="${book.cover}" loading="lazy" onclick="openReader('${book.id}')" alt="${book.title}">
-                <h3>${book.title}</h3>
-                <div class="actions">
-                    <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
-                    <button class="btn btn-delete" onclick="confirmDelete('${book.id}', 'download')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
-                </div>
-            </div>
-        `).join('');
-    }
+// ဒေါင်းလုဒ်လုပ်ပြီး Dexie ထဲထည့်ရန် function အသစ်
+async function downloadAndSync(bookId) {
+    const btn = document.getElementById(`dl-btn-${bookId}`);
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> သိမ်းနေသည်...';
 
+    try {
+        const { data: book, error } = await sb.from('books').select('*').eq('id', bookId).single();
+        if (error) throw error;
+
+        await downloadAndSave(book); // သင်အရင်ရေးထားတဲ့ file download ဆွဲတဲ့ function
+        
+        Swal.fire({ title: "အောင်မြင်ပါသည်", text: "အော့ဖ်လိုင်းဖတ်ရန် သိမ်းဆည်းပြီးပါပြီ", icon: 'success', timer: 2000 });
+        renderLibrary(); // UI ကို update ပြန်လုပ်ရန်
+    } catch (err) {
+        Swal.fire('Error', 'ဒေါင်းလုဒ်လုပ်၍မရပါ', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> ဒေါင်းလုဒ်လုပ်ရန်';
+    }
+}
     async function renderFavorites() {
         const favContainer = document.getElementById('fav-view');
         let likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
