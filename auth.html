@@ -30,8 +30,46 @@
         /* Form Styling */
         .input-group { text-align: left; margin-bottom: 15px; }
         label { display: block; font-size: 13px; margin-bottom: 5px; color: #5f6368; font-weight: 500; }
-        input { width: 100%; padding: 12px 15px; border: 1px solid #dadce0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
+        input[type="email"], input[type="password"] { width: 100%; padding: 12px 15px; border: 1px solid #dadce0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
+        input[type="email"]:focus, input[type="password"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
+
+        /* Terms & Conditions Checkbox */
+        .terms-container { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 10px; 
+            margin: 20px 0; 
+            padding: 12px; 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            border: 1px solid #e8eaed;
+        }
+        
+        .terms-container input[type="checkbox"] { 
+            width: 18px; 
+            height: 18px; 
+            margin-top: 2px; 
+            cursor: pointer; 
+            accent-color: var(--primary);
+            flex-shrink: 0;
+        }
+        
+        .terms-text { 
+            font-size: 13px; 
+            color: #5f6368; 
+            line-height: 1.5; 
+            text-align: left;
+        }
+        
+        .terms-text a { 
+            color: var(--primary); 
+            text-decoration: none; 
+            font-weight: 600; 
+        }
+        
+        .terms-text a:hover { 
+            text-decoration: underline; 
+        }
 
         .btn-main { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         .btn-main:hover { background: var(--primary-hover); }
@@ -39,6 +77,18 @@
 
         .footer-text { margin-top: 25px; font-size: 13px; color: #5f6368; }
         .footer-text a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+        /* Terms Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: white; margin: 5% auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e8eaed; padding-bottom: 15px; }
+        .modal-header h2 { margin: 0; color: #202124; }
+        .close-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: #5f6368; }
+        .close-btn:hover { color: #202124; }
+        .modal-body { font-size: 14px; line-height: 1.8; color: #5f6368; }
+        .modal-body h3 { color: #202124; margin-top: 20px; margin-bottom: 10px; }
+        .modal-body ul { margin: 10px 0; padding-left: 20px; }
+        .modal-body li { margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -66,6 +116,15 @@
             <input type="password" id="password" placeholder="••••••••">
         </div>
 
+        <!-- Terms & Conditions Checkbox -->
+        <div class="terms-container">
+            <input type="checkbox" id="terms-checkbox">
+            <div class="terms-text">
+                ကျွန်ုပ်သည် <a href="#" onclick="openTermsModal(event)">အသုံးပြုမှုစည်းမျဉ်းများ</a> နှင့် 
+                <a href="#" onclick="openPrivacyModal(event)">ကိုယ်ရေးအချက်အလက်မူဝါဒ</a> သို့ သဘောတူညီပါသည်။
+            </div>
+        </div>
+
         <button id="auth-btn" class="btn-main" onclick="handleAuth()">LOGIN / SIGN UP</button>
 
         <p class="footer-text">
@@ -73,34 +132,141 @@
         </p>
     </div>
 
+    <!-- Terms & Conditions Modal -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>အသုံးပြုမှုစည်းမျဉ်းများ</h2>
+                <button class="close-btn" onclick="closeTermsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>1. ဝန်ဆောင်မှုအကျဉ်းချုပ်</h3>
+                <p>Smart Bookshelf သည် ဒစ်ဂျစ်တယ်စာအုပ်များကို အွန်လိုင်းမှတစ်ဆင့် ပေးဆောင်သည့် ဝန်ဆောင်မှုဖြစ်သည်။</p>
+
+                <h3>2. အကောင့်ကိုင်တွယ်ခြင်း</h3>
+                <ul>
+                    <li>အကောင့်ကို ကိုယ်ပိုင်အုပ်ချုပ်ရန်သည် သင်၏တာဝန်ဖြစ်သည်</li>
+                    <li>သင်၏စကားဝှက်ကို လုံခြုံစွာ ထိန်းသိမ်းရန်လိုအပ်သည်</li>
+                    <li>အကောင့်ကို အခြားသူများနှင့် မျှဝေရန်မပြုလုပ်ပါ</li>
+                </ul>
+
+                <h3>3. ဝန်ဆောင်မှုအသုံးပြုခွင့်</h3>
+                <ul>
+                    <li>ကျေးဇူးတင်ရှိသည့် အသုံးပြုမှုအတွက်သာ ဝန်ဆောင်မှုကို အသုံးပြုပါ</li>
+                    <li>အန္တရာယ်ဖြစ်စေသည့် သို့မဟုတ် ဥပဒေချိုးဖောက်သည့် လုပ်ဆောင်ချက်များမှ ရှောင်က避ပါ</li>
+                    <li>အခြားအသုံးပြုသူများ၏ အကောင့်သို့ အကြမ်းဖက်မှု မပြုလုပ်ပါ</li>
+                </ul>
+
+                <h3>4. ကျေးဇူးတင်ရှိသည့်အသုံးပြုခွင့်</h3>
+                <p>ဤဝန်ဆောင်မှုသည် ကျေးဇူးတင်ရှိသည့်အသုံးပြုခွင့်အပေါ် အခြေခံသည်။ ကျွန်ုပ်တို့သည် မည်သည့်အခါမျှ ကြိုတင်သတိပေးမှုမပြုလုပ်ဘဲ ဝန်ဆောင်မှုကို ရပ်စဲနိုင်သည်။</p>
+
+                <h3>5. ကျေးဇူးတင်ရှိသည့်အသုံးပြုခွင့်ဖျက်သိမ်းခြင်း</h3>
+                <p>ကျွန်ုပ်တို့သည် အကောင့်ကို ကျေးဇူးတင်ရှိသည့်အသုံးပြုခွင့်ဖျက်သိမ်းနိုင်သည်။</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ကိုယ်ရေးအချက်အလက်မူဝါဒ</h2>
+                <button class="close-btn" onclick="closePrivacyModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>1. အချက်အလက်စုဆောင်းခြင်း</h3>
+                <p>ကျွန်ုပ်တို့သည် အကောင့်ဖွင့်သည့်အခါ သင်၏အီမေးလ်လိပ်စာ၊ အမည်နှင့် အခြားအချက်အလက်များကို စုဆောင်းသည်။</p>
+
+                <h3>2. အချက်အလက်အသုံးပြုခြင်း</h3>
+                <ul>
+                    <li>ဝန်ဆောင်မှုပေးမှုအတွက်</li>
+                    <li>အကောင့်လုံခြုံရေးအတွက်</li>
+                    <li>ဝန်ဆောင်မှုတိုးတက်စေရန်အတွက်</li>
+                </ul>
+
+                <h3>3. အချက်အလက်ကာကွယ်ခြင်း</h3>
+                <p>ကျွန်ုပ်တို့သည် သင်၏ကိုယ်ရေးအချက်အလက်ကို လုံခြုံစွာ ထိန်းသိမ်းသည်။ သို့သော် အီန်တာနက်မှတစ်ဆင့် ပေးလွှဲသည့် အချက်အလက်သည် ၁၀၀% လုံခြုံမည်မဟုတ်ပါ။</p>
+
+                <h3>4. ကိုယ်ရေးအချက်အလက်ဖျက်သိမ်းခြင်း</h3>
+                <p>အကောင့်ကိုဖျက်သိမ်းသည့်အခါ သင်၏အချက်အလက်များကို ကျွန်ုပ်တို့ ဖျက်သိမ်းပါမည်။</p>
+
+                <h3>5. ကျွန်ုပ်တို့ထံ ဆက်သွယ်ခြင်း</h3>
+                <p>ကိုယ်ရေးအချက်အလက်မူဝါဒ အကြောင်း မေးခွန်းများရှိပါက ကျွန်ုပ်တို့ထံ ဆက်သွယ်ပါ။</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Supabase Configuration
         const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
         const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
         const sb = supabase.createClient(SB_URL, SB_KEY);
-async function signInWithGoogle() {
-    try {
-        const { error } = await sb.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                // အောက်ပါအတိုင်း တိုက်ရိုက် ရေးကြည့်ပါ
-                redirectTo: 'https://jokertalor-cpu.github.io/smart-bookshelf/library.html'
-            }
-        });
-        if (error) throw error;
-    } catch (err) {
-        Swal.fire('Error', err.message, 'error');
-    }
-}
 
-        // ၂။ Email/Password Auth Function
+        // Modal Functions
+        function openTermsModal(e) {
+            e.preventDefault();
+            document.getElementById('termsModal').style.display = 'block';
+        }
+
+        function closeTermsModal() {
+            document.getElementById('termsModal').style.display = 'none';
+        }
+
+        function openPrivacyModal(e) {
+            e.preventDefault();
+            document.getElementById('privacyModal').style.display = 'block';
+        }
+
+        function closePrivacyModal() {
+            document.getElementById('privacyModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const termsModal = document.getElementById('termsModal');
+            const privacyModal = document.getElementById('privacyModal');
+            if (event.target === termsModal) {
+                termsModal.style.display = 'none';
+            }
+            if (event.target === privacyModal) {
+                privacyModal.style.display = 'none';
+            }
+        }
+
+        async function signInWithGoogle() {
+            const termsCheckbox = document.getElementById('terms-checkbox');
+            if (!termsCheckbox.checked) {
+                Swal.fire('သတိပေးချက်', 'အသုံးပြုမှုစည်းမျဉ်းများကို သဘောတူညီရန် လိုအပ်ပါသည်။', 'warning');
+                return;
+            }
+
+            try {
+                const { error } = await sb.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: 'https://jokertalor-cpu.github.io/smart-bookshelf/library.html'
+                    }
+                });
+                if (error) throw error;
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
+        }
+
+        // Email/Password Auth Function
         async function handleAuth() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
+            const termsCheckbox = document.getElementById('terms-checkbox');
             const btn = document.getElementById('auth-btn');
 
             if (!email || !password) {
                 Swal.fire('ဖြည့်စွက်ရန်', 'Email နှင့် Password ဖြည့်ပါ', 'warning');
+                return;
+            }
+
+            if (!termsCheckbox.checked) {
+                Swal.fire('သတိပေးချက်', 'အသုံးပြုမှုစည်းမျဉ်းများကို သဘောတူညီရန် လိုအပ်ပါသည်။', 'warning');
                 return;
             }
 
