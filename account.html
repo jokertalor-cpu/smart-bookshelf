@@ -597,15 +597,7 @@
         // Load Activity Log
         async function loadActivityLog() {
             try {
-                // Reading count ကို ဆွဲယူရန်
-const { count: readCount, error: readError } = await sb
-    .from('user_progress')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id);
-
-if (!readError) {
-    document.getElementById('readingCount').innerText = readCount || 0;
-}
+               
                 const { data: downloads, error } = await sb
                     .from('user_downloads')
                     .select('created_at, books(title)')
@@ -632,6 +624,20 @@ if (!readError) {
                 document.getElementById('activityLog').innerHTML = '<p style="color: red;">မှတ်တမ်းများ ဆွဲယူရာတွင် အမှားအယွင်း ရှိပါသည်။</p>';
             }
         }
+        // Reading count ကို user_progress table မှ ဆွဲယူရန်
+async function updateReadingCount(userId) {
+    const { count, error } = await sb
+        .from('user_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+    if (!error) {
+        document.getElementById('readingCount').innerText = count || 0;
+    }
+}
+
+// checkUser function ထဲမှာ ဒါကို ခေါ်ပေးပါ
+// updateReadingCount(user.id);
 
         // Logout
         async function handleLogout() {
