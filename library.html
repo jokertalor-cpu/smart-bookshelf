@@ -3,101 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Library - SmartBookshelf</title>
+    <title>My Library - SmartBookshelf (Pro)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
 
     <style>
-        :root { --primary: #313336; --danger: #ea4335; --heart: #e11d48; --bg: #f8f9fa; }
-        body { font-family: 'Pyidaungsu', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
+        :root { --primary: #313336; --accent: #1a73e8; --danger: #ea4335; --heart: #e11d48; --bg: #f8f9fa; --success: #34a853; }
+        body { font-family: 'Segoe UI', 'Pyidaungsu', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; color: #3c4043; }
         
+        /* Navigation */
         .nav-header { background: white; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
         .nav-container { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .nav-container a { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 14px; margin-left: 20px; }
-        .nav-container a:hover { color: #1a73e8; }
+        .nav-container h2 { margin:0; font-size: 1.1rem; color: var(--primary); }
+        .nav-links { display: flex; gap: 15px; align-items: center; }
+        .nav-links a { text-decoration: none; color: #5f6368; font-weight: 600; font-size: 14px; transition: 0.2s; }
+        .nav-links a:hover { color: var(--accent); }
 
         .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-        .section-title { font-size: 1.1rem; color: #202124; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--primary); padding-left: 10px; }
-        .section-title.fav { border-left-color: var(--heart); }
-
-        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; min-height: 100px; }
-        .book-card { background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: 0.3s; display: flex; flex-direction: column; }
-        .book-card img { width: 100%; height: 190px; object-fit: cover; border-radius: 8px; cursor: pointer; }
-        .book-card h3 { font-size: 13px; margin: 10px 0; height: 38px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: #3c4043; }
-
-        .actions { display: flex; flex-direction: column; gap: 5px; margin-top: auto; }
-        .btn { border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; }
-        .btn-read { background: var(--primary); color: white; }
-        .btn-delete { background: #feeef3; color: var(--danger); }
-        .btn-info { background: #f1f3f4; color: #5f6368; }
-
-        .empty-state { text-align: center; padding: 40px; color: #70757a; grid-column: 1/-1; background: #fff; border-radius: 12px; }
-        .auth-notice { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 12px; border-radius: 10px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; font-size: 13px; }
         
-        #logout-btn { display: none; background: #f1f3f4; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; color: #5f6368; }
+        /* Section Titles */
+        .section-title { font-size: 1rem; font-weight: 700; color: #202124; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px; }
+        .section-title i { color: var(--accent); }
+        .section-title.fav i { color: var(--heart); }
 
-        .sync-status {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-size: 12px;
-            z-index: 999;
-        }
+        /* Book Grid & Cards */
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; min-height: 100px; }
+        .book-card { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; position: relative; border: 1px solid #f1f3f4; }
+        .book-card:hover { transform: translateY(-4px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .cover-wrapper { position: relative; width: 100%; height: 210px; border-radius: 8px; overflow: hidden; background: #eee; cursor: pointer; }
+        .book-card img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Download Status Badge */
+        .status-badge { position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; z-index: 5; }
+        .status-offline { background: var(--success); color: white; box-shadow: 0 2px 5px rgba(52,168,83,0.3); }
+        .status-syncing { background: var(--accent); color: white; }
+        .status-cloud { background: rgba(0,0,0,0.5); color: white; backdrop-filter: blur(4px); }
 
-        .sync-status.active { display: flex; align-items: center; gap: 8px; }
-        .sync-status .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #f3f3f3; border-top: 2px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
+        .book-card h3 { font-size: 13px; margin: 12px 0 8px; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; color: #202124; font-weight: 600; }
+        .book-author { font-size: 11px; color: #70757a; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Actions */
+        .actions { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: auto; }
+        .btn { border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #1557b0; }
+        .btn-outline { background: #f8f9fa; color: #5f6368; border: 1px solid #dadce0; }
+        .btn-outline:hover { background: #f1f3f4; color: #202124; }
+        .btn-danger-link { background: transparent; color: var(--danger); font-size: 11px; padding: 5px; margin-top: 5px; }
+
+        /* Empty States */
+        .empty-state { text-align: center; padding: 60px 20px; color: #70757a; grid-column: 1/-1; background: white; border-radius: 16px; border: 2px dashed #e8eaed; }
+        .empty-state i { margin-bottom: 15px; color: #dadce0; }
+
+        /* Auth Notice */
+        .auth-notice { background: #e8f0fe; color: #1967d2; padding: 14px 20px; border-radius: 12px; margin-bottom: 25px; display: none; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 500; border: 1px solid #d2e3fc; }
+        
+        /* Global Sync Indicator */
+        .sync-toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #202124; color: white; padding: 10px 20px; border-radius: 30px; font-size: 12px; display: none; align-items: center; gap: 10px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         @media (max-width: 480px) {
-            .book-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .book-card img { height: 170px; }
+            .book-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .cover-wrapper { height: 180px; }
+            .nav-links a span { display: none; }
         }
     </style>
 </head>
 <body>
 
+    <div class="sync-toast" id="globalSync">
+        <div class="spinner"></div>
+        <span id="syncText">စာအုပ်များ ညှိနှိုင်းနေသည်...</span>
+    </div>
+
     <div class="nav-header">
         <div class="nav-container">
-            <h2 style="margin:0; font-size: 1.1rem;"><i class="fas fa-bookmark"></i> စာကြည့်တိုက်</h2>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <a href="account.html"><i class="fas fa-user"></i> အကောင့်</a>
-                <button id="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> ထွက်မည်</button>
-                <a href="index.html"><i class="fa-solid fa-house"></i> ပင်မစာမျက်နှာ</a>
+            <h2><i class="fas fa-layer-group"></i> My Library</h2>
+            <div class="nav-links">
+                <a href="index.html"><i class="fa-solid fa-house"></i> <span>ပင်မ</span></a>
+                <a href="account.html"><i class="fas fa-user-circle"></i> <span>အကောင့်</span></a>
             </div>
         </div>
     </div>
 
     <div class="container">
         <div id="login-reminder" class="auth-notice">
-            <span><i class="fas fa-info-circle"></i> Login ဝင်ထားပါက စက်ပြောင်းသော်လည်း စာရင်းများ ပြန်ရနိုင်ပါသည်။</span>
-            <a href="auth.html" style="color: #856404; font-weight: bold; text-decoration: none;">Login ဝင်မည်</a>
+            <span><i class="fas fa-cloud-upload-alt"></i> Login ဝင်ထားပါက စက်ပြောင်းသော်လည်း ဒေတာများ ပြန်ရနိုင်ပါသည်။</span>
+            <a href="auth.html" style="color: var(--accent); font-weight: 700; text-decoration: none;">Login ဝင်မည်</a>
         </div>
 
         <div class="section-title">
-            <i class="fas fa-download"></i> အော့ဖ်လိုင်းဖတ်ရန် သိမ်းထားသည်များ
+            <i class="fas fa-book-reader"></i> အော့ဖ်လိုင်းဖတ်ရန် သိမ်းထားသည်များ
         </div>
         <div id="library-grid" class="book-grid">
-            <p style="grid-column: 1/-1; text-align: center;">ဒေါင်းလုဒ်များကို စစ်ဆေးနေသည်...</p>
+            <!-- Loading skeleton would go here -->
+            <p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">စာရင်းများကို စစ်ဆေးနေသည်...</p>
         </div>
 
         <div class="section-title fav">
-            <i class="fas fa-heart" style="color: var(--heart);"></i> သင်ကြိုက်နှစ်သက်သောစာအုပ်များ
+            <i class="fas fa-heart"></i> သင်ကြိုက်နှစ်သက်သောစာအုပ်များ
         </div>
         <div id="fav-view" class="book-grid">
-            <p style="grid-column: 1/-1; text-align: center;">အသဲပေးထားသည်များကို စစ်ဆေးနေသည်...</p>
+            <p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">စာရင်းများကို စစ်ဆေးနေသည်...</p>
         </div>
-    </div>
-
-    <div class="sync-status" id="syncStatus">
-        <div class="spinner"></div>
-        <span>ဒေတာများ ညှိနှိုင်းနေသည်...</span>
     </div>
 
 <script>
@@ -109,73 +121,124 @@
     db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
     let currentUser = null;
+    let syncQueue = [];
+    let isSyncing = false;
 
     window.onload = async () => {
         const { data: { session } } = await sb.auth.getSession();
         if (session) {
             currentUser = session.user;
             document.getElementById('login-reminder').style.display = 'none';
-            document.getElementById('logout-btn').style.display = 'block';
-            await syncAll();
+            // Start Pro Hybrid Sync
+            await initProSync();
         } else {
             document.getElementById('login-reminder').style.display = 'flex';
-            document.getElementById('logout-btn').style.display = 'none';
-            await renderLibrary();
-            await renderFavorites();
+            await renderOfflineOnly();
         }
-        setupAuthListener();
     };
 
-    function setupAuthListener() {
-        sb.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-                if (session) {
-                    currentUser = session.user;
-                    document.getElementById('login-reminder').style.display = 'none';
-                    document.getElementById('logout-btn').style.display = 'block';
-                    await syncAll();
-                }
-            } else if (event === 'SIGNED_OUT') {
-                currentUser = null;
-                document.getElementById('login-reminder').style.display = 'flex';
-                document.getElementById('logout-btn').style.display = 'none';
-                localStorage.removeItem('my_likes');
-                // Clear Dexie on logout to ensure privacy and fresh start
-                await db.savedBooks.clear();
-                location.reload();
-            }
-        });
-    }
-async function syncAll() {
-    if (!currentUser) return;
+    // --- PRO ARCHITECTURE LOGIC ---
 
-    showSyncStatus(true);
-
-    try {
-        // only likes sync
-        const { data } = await sb
-            .from('user_likes')
-            .select('book_id')
-            .eq('user_id', currentUser.id);
-
-        const likedIds = data.map(i => i.book_id.toString());
-        localStorage.setItem('my_likes', JSON.stringify(likedIds));
-
-    } catch (e) {
-        console.error(e);
-    }
-
-    await renderLibrary();
-    await renderFavorites();
-    showSyncStatus(false);
-}
-
-    async function downloadAndSave(book) {
+    async function initProSync() {
+        showSyncIndicator(true, "ဒေတာများ ညှိနှိုင်းနေသည်...");
+        
         try {
-            const url = book.download_link;
-            if (!url) return;
+            // Phase 1: Immediate UI Render from Supabase (Source of Truth)
+            const { data: downloads, error } = await sb
+                .from('user_downloads')
+                .select('book_id, books:book_id(id, title, author, cover, download_link)')
+                .eq('user_id', currentUser.id);
+
+            if (!error && downloads) {
+                // UI မှာ ချက်ချင်းပြဖို့အတွက် Render လုပ်ပါ (Dexie ထဲမှာ ရှိရှိမရှိရှိ)
+                await renderProLibrary(downloads);
+                
+                // Phase 2: Background Dexie Alignment
+                backgroundSyncDexie(downloads);
+            }
+
+            // Sync Favorites as well
+            const { data: likes } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
+            if (likes) {
+                const likedIds = likes.map(i => i.book_id.toString());
+                localStorage.setItem('my_likes', JSON.stringify(likedIds));
+                renderFavorites();
+            }
+
+        } catch (err) {
+            console.error("Sync Error:", err);
+        } finally {
+            showSyncIndicator(false);
+        }
+    }
+
+    async function renderProLibrary(supabaseDownloads) {
+        const grid = document.getElementById('library-grid');
+        if (supabaseDownloads.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open fa-3x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+            return;
+        }
+
+        // Check Dexie for each book to show status
+        const localBooks = await db.savedBooks.toArray();
+        const localIds = new Set(localBooks.map(b => b.id.toString()));
+
+        grid.innerHTML = supabaseDownloads.map(item => {
+            const book = item.books;
+            if (!book) return '';
+            const isOffline = localIds.has(book.id.toString());
             
-            const res = await fetch(url);
+            return `
+                <div class="book-card" id="book-${book.id}">
+                    <div class="cover-wrapper" onclick="handleBookClick('${book.id}', ${isOffline})">
+                        <img src="${book.cover}" loading="lazy" alt="${book.title}">
+                        <div class="status-badge ${isOffline ? 'status-offline' : 'status-cloud'}">
+                            ${isOffline ? '<i class="fas fa-check"></i> Offline' : '<i class="fas fa-cloud"></i> Cloud'}
+                        </div>
+                    </div>
+                    <h3>${book.title}</h3>
+                    <div class="book-author">${book.author || 'Unknown Author'}</div>
+                    <div class="actions">
+                        <button class="btn ${isOffline ? 'btn-primary' : 'btn-outline'}" onclick="handleBookClick('${book.id}', ${isOffline})">
+                            <i class="fas ${isOffline ? 'fa-book-open' : 'fa-download'}"></i> 
+                            ${isOffline ? 'ဖတ်မည်' : 'ဒေါင်းလုဒ်လုပ်မည်'}
+                        </button>
+                        <button class="btn btn-danger-link" onclick="confirmRemove('${book.id}')">
+                            <i class="fas fa-trash-alt"></i> စာရင်းမှ ဖယ်ရှားမည်
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function backgroundSyncDexie(supabaseDownloads) {
+        const cloudIds = new Set(supabaseDownloads.filter(d => d.books).map(d => d.books.id.toString()));
+        const localBooks = await db.savedBooks.toArray();
+        
+        // 1. Remove local books NOT in Supabase (Source of Truth)
+        for (const localBook of localBooks) {
+            if (!cloudIds.has(localBook.id.toString())) {
+                await db.savedBooks.delete(localBook.id);
+                if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
+            }
+        }
+
+        // 2. Auto-download missing books in background
+        const localIds = new Set(localBooks.map(b => b.id.toString()));
+        for (const item of supabaseDownloads) {
+            const book = item.books;
+            if (book && !localIds.has(book.id.toString())) {
+                // Background download start
+                downloadInBackground(book);
+            }
+        }
+    }
+
+    async function downloadInBackground(book) {
+        updateBookStatusUI(book.id, 'syncing');
+        try {
+            const res = await fetch(book.download_link);
             if (res.ok) {
                 const blob = await res.blob();
                 await db.savedBooks.put({
@@ -185,149 +248,146 @@ async function syncAll() {
                     cover: book.cover,
                     fileData: blob
                 });
+                updateBookStatusUI(book.id, 'offline');
             }
-        } catch (e) { console.error("Download Error:", e); }
-    }
-
-    async function renderLibrary() {
-    const grid = document.getElementById('library-grid');
-
-    let localBooks = await db.savedBooks.toArray();
-    let cloudBooks = [];
-
-    if (currentUser) {
-        const { data } = await sb
-            .from('user_downloads')
-            .select('books:book_id(id,title,author,cover)')
-            .eq('user_id', currentUser.id);
-
-        cloudBooks = data.map(d => d.books);
-    }
-
-    // merge
-    const allBooks = [...localBooks];
-
-    cloudBooks.forEach(cb => {
-        if (!allBooks.find(lb => lb.id == cb.id)) {
-            allBooks.push(cb);
+        } catch (e) {
+            console.error("BG Download Error:", e);
+            updateBookStatusUI(book.id, 'cloud');
         }
-    });
-
-    if (allBooks.length === 0) {
-        grid.innerHTML = `empty`;
-        return;
     }
 
-    grid.innerHTML = allBooks.map(book => {
-        const isOffline = localBooks.find(b => b.id == book.id);
+    function updateBookStatusUI(bookId, status) {
+        const card = document.getElementById(`book-${bookId}`);
+        if (!card) return;
+        
+        const badge = card.querySelector('.status-badge');
+        const btn = card.querySelector('.btn-outline, .btn-primary');
+        
+        if (status === 'syncing') {
+            badge.className = 'status-badge status-syncing';
+            badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing';
+            if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        } else if (status === 'offline') {
+            badge.className = 'status-badge status-offline';
+            badge.innerHTML = '<i class="fas fa-check"></i> Offline';
+            if (btn) {
+                btn.className = 'btn btn-primary';
+                btn.innerHTML = '<i class="fas fa-book-open"></i> ဖတ်မည်';
+                btn.onclick = () => handleBookClick(bookId, true);
+            }
+        }
+    }
 
-        return `
-        <div class="book-card">
-            <img src="${book.cover}">
-            <h3>${book.title}</h3>
+    async function handleBookClick(id, isOffline) {
+        if (isOffline) {
+            window.location.href = `reader.html?id=${id}&mode=offline`;
+        } else {
+            // If not offline, trigger manual download or redirect to detail
+            Swal.fire({
+                title: 'ဒေါင်းလုဒ်လုပ်နေပါသည်',
+                text: 'စာအုပ်ဖိုင်ကို အော့ဖ်လိုင်းဖတ်နိုင်ရန် သိမ်းဆည်းနေပါသည်။ ခဏစောင့်ပေးပါ။',
+                icon: 'info',
+                showConfirmButton: false,
+                timer: 2000
+            });
+            // Background process already started, but we can prioritize it here if needed
+        }
+    }
 
-            <div class="actions">
-                ${
-                    isOffline
-                    ? `<button class="btn btn-read" onclick="openReader('${book.id}')">ဖတ်မည်</button>`
-                    : `<button class="btn btn-info" onclick="downloadAgain(${book.id})">Download</button>`
-                }
+    async function confirmRemove(id) {
+        const result = await Swal.fire({
+            title: 'စာရင်းမှ ဖယ်ရှားမည်လား?',
+            text: "အော့ဖ်လိုင်းဒေတာများပါ ပျက်သွားပါမည်။",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ea4335',
+            confirmButtonText: 'ဖယ်ရှားမည်',
+            cancelButtonText: 'မလုပ်တော့ပါ'
+        });
+
+        if (result.isConfirmed) {
+            showSyncIndicator(true, "ဖယ်ရှားနေသည်...");
+            // 1. Remove from Cloud
+            await sb.from('user_downloads').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
+            // 2. Remove from Local
+            await db.savedBooks.delete(id);
+            await db.savedBooks.delete(Number(id));
+            
+            // 3. Update UI
+            const card = document.getElementById(`book-${id}`);
+            if (card) card.remove();
+            
+            showSyncIndicator(false);
+            Swal.fire({ title: 'ဖယ်ရှားပြီးပါပြီ', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        }
+    }
+
+    // --- OTHER UI LOGIC ---
+
+    async function renderOfflineOnly() {
+        const grid = document.getElementById('library-grid');
+        const books = await db.savedBooks.toArray();
+        if (books.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open fa-3x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+            return;
+        }
+        grid.innerHTML = books.map(book => `
+            <div class="book-card">
+                <div class="cover-wrapper" onclick="window.location.href='reader.html?id=${book.id}&mode=offline'">
+                    <img src="${book.cover}" loading="lazy">
+                    <div class="status-badge status-offline"><i class="fas fa-check"></i> Offline</div>
+                </div>
+                <h3>${book.title}</h3>
+                <div class="book-author">${book.author || 'Unknown'}</div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="window.location.href='reader.html?id=${book.id}&mode=offline'">
+                        <i class="fas fa-book-open"></i> ဖတ်မည်
+                    </button>
+                </div>
             </div>
-        </div>`;
-    }).join('');
-}
-async function downloadAgain(id) {
-    const { data } = await sb
-        .from('books')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-    if (!data) return;
-
-    await downloadAndSave(data);
-    await renderLibrary();
-}
+        `).join('');
+        renderFavorites();
+    }
 
     async function renderFavorites() {
         const favContainer = document.getElementById('fav-view');
         let likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
 
         if (likedIds.length === 0) {
-            favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+            favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-3x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
             return;
         }
 
-        try {
-            const numericIds = likedIds.map(id => parseInt(id)).filter(id => !isNaN(id));
-            if (numericIds.length === 0) {
-                favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
-                return;
-            }
+        const numericIds = likedIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+        const { data } = await sb.from('books').select('id, title, cover, author').in('id', numericIds);
 
-            const { data, error } = await sb.from('books').select('id, title, cover').in('id', numericIds);
-            if (error) throw error;
-
-            if (data && data.length > 0) {
-                favContainer.innerHTML = data.map(item => `
-                    <div class="book-card">
-                        <img src="${item.cover}" alt="${item.title}" loading="lazy" onclick="location.href='detail.html?id=${item.id}'">
-                        <h3>${item.title}</h3>
-                        <div class="actions">
-                            <button class="btn btn-info" onclick="location.href='detail.html?id=${item.id}'"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
-                            <button class="btn btn-delete" onclick="confirmDelete('${item.id}', 'fav')"><i class="fas fa-heart-broken"></i> မကြိုက်တော့ပါ</button>
-                        </div>
+        if (data && data.length > 0) {
+            favContainer.innerHTML = data.map(item => `
+                <div class="book-card">
+                    <div class="cover-wrapper" onclick="location.href='detail.html?id=${item.id}'">
+                        <img src="${item.cover}" alt="${item.title}" loading="lazy">
                     </div>
-                `).join('');
-            } else {
-                favContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#888;">စာအုပ်အချက်အလက်များ ရှာမတွေ့ပါ။</p>`;
-            }
-        } catch (err) {
-            console.error("Fetch Favorites Error:", err);
-            favContainer.innerHTML = `<p style="text-align:center; color:#888;">ဒေတာများ ဆွဲယူရာတွင် အမှားရှိနေပါသည်။</p>`;
+                    <h3>${item.title}</h3>
+                    <div class="book-author">${item.author || 'Unknown'}</div>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="location.href='detail.html?id=${item.id}'">
+                            <i class="fas fa-info-circle"></i> အသေးစိတ်
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
     }
 
-    function openReader(id) { window.location.href = `reader.html?id=${id}&mode=offline`; }
-
-    function confirmDelete(id, type) {
-        const msg = type === 'download' ? "အော့ဖ်လိုင်းစာရင်းမှ ဖျက်မှာလား?" : "အသဲပေးစာရင်းမှ ဖယ်မှာလား?";
-        Swal.fire({
-            title: msg, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ea4335',
-            confirmButtonText: 'သေချာသည်', cancelButtonText: 'မလုပ်တော့ပါ'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                if (type === 'download') {
-                    // Local Delete
-                    await db.savedBooks.delete(id);
-                    await db.savedBooks.delete(Number(id));
-                    // Cloud Delete
-                    if (currentUser) {
-                        await sb.from('user_downloads').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
-                    }
-                    await renderLibrary();
-                } else {
-                    // Local Delete
-                    let likes = JSON.parse(localStorage.getItem('my_likes') || '[]');
-                    likes = likes.filter(item => item != id);
-                    localStorage.setItem('my_likes', JSON.stringify(likes));
-                    // Cloud Delete
-                    if (currentUser) {
-                        await sb.from('user_likes').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
-                    }
-                    await renderFavorites();
-                }
-                Swal.fire({ title: "ဖယ်ရှားပြီးပါပြီ", icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-            }
-        });
-    }
-
-    function showSyncStatus(show) {
-        document.getElementById('syncStatus').classList.toggle('active', show);
-    }
-
-    async function handleLogout() {
-        await sb.auth.signOut();
+    function showSyncIndicator(show, text = "") {
+        const toast = document.getElementById('globalSync');
+        const textEl = document.getElementById('syncText');
+        if (show) {
+            textEl.textContent = text;
+            toast.style.display = 'flex';
+        } else {
+            toast.style.display = 'none';
+        }
     }
 </script>
 </body>

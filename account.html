@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Account - SmartBookshelf</title>
+    <title>My Account - SmartBookshelf (Pro)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -165,11 +165,6 @@
             box-shadow: 0 0 0 2px rgba(26,115,232,0.1);
         }
         
-        .form-group textarea { 
-            resize: vertical; 
-            min-height: 100px;
-        }
-        
         .form-row { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -229,20 +224,6 @@
             box-shadow: 0 4px 12px rgba(26,115,232,0.2);
         }
         
-        .btn-primary:disabled { 
-            background: #ccc; 
-            cursor: not-allowed; 
-        }
-        
-        .btn-danger { 
-            background: #feeef3; 
-            color: var(--danger); 
-        }
-        
-        .btn-danger:hover { 
-            background: #fdd7e4; 
-        }
-        
         .btn-secondary { 
             background: #f1f3f4; 
             color: #5f6368; 
@@ -250,12 +231,6 @@
         
         .btn-secondary:hover { 
             background: #e8eaed; 
-        }
-        
-        .button-group { 
-            display: flex; 
-            gap: 10px; 
-            flex-wrap: wrap;
         }
         
         /* Activity Log */
@@ -271,14 +246,6 @@
             border-left-color: var(--success); 
         }
         
-        .activity-item.warning { 
-            border-left-color: #fbbc04; 
-        }
-        
-        .activity-item.danger { 
-            border-left-color: var(--danger); 
-        }
-        
         .activity-time { 
             font-size: 12px; 
             color: #5f6368;
@@ -291,26 +258,18 @@
             font-weight: 500;
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .account-header { 
-                flex-direction: column; 
-                text-align: center;
-            }
-            
-            .form-row { 
-                grid-template-columns: 1fr; 
-            }
-            
-            .nav-links { 
-                gap: 10px; 
-            }
-        }
-        
-        /* Loading State */
-        .loading { 
-            opacity: 0.6; 
-            pointer-events: none; 
+        /* Sync Status Overlay */
+        #syncOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 2000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
         }
         
         .spinner { 
@@ -326,20 +285,6 @@
         @keyframes spin { 
             0% { transform: rotate(0deg); } 
             100% { transform: rotate(360deg); } 
-        }
-
-        /* Sync Status Overlay */
-        #syncOverlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8);
-            z-index: 2000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: var(--primary);
         }
     </style>
 </head>
@@ -381,15 +326,15 @@
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card">
                     <div class="number" id="downloadCount">0</div>
-                    <div class="label">ဒေါင်းလုဒ်စာအုပ်များ</div>
+                    <div class="label">ဒေါင်းလုဒ်စာအုပ်များ (Cloud)</div>
                 </div>
                 <div class="stat-card">
                     <div class="number" id="favoriteCount">0</div>
                     <div class="label">အသဲပေးစာအုပ်များ</div>
                 </div>
                 <div class="stat-card">
-                    <div class="number" id="readingCount">0</div>
-                    <div class="label">ဖတ်လက်စစာအုပ်များ</div>
+                    <div class="number" id="offlineCount">0</div>
+                    <div class="label">အော့ဖ်လိုင်းအသင့်ရှိသောစာအုပ်များ</div>
                 </div>
             </div>
         </div>
@@ -415,35 +360,6 @@
                 <button class="btn btn-primary" onclick="saveProfile()">
                     <i class="fas fa-save"></i> သိမ်းဆည်းမည်
                 </button>
-            </div>
-        </div>
-
-        <!-- Security -->
-        <div class="section">
-            <h2><i class="fas fa-shield-alt"></i> လုံခြုံရေး</h2>
-            <div id="passwordForm">
-                <div class="form-group">
-                    <label for="currentPassword">လက်ရှိ စကားဝှက်</label>
-                    <input type="password" id="currentPassword" placeholder="••••••••">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newPassword">စကားဝှက်သစ်</label>
-                        <input type="password" id="newPassword" placeholder="••••••••">
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">စကားဝှက်သစ်ကို အတည်ပြုပါ</label>
-                        <input type="password" id="confirmPassword" placeholder="••••••••">
-                    </div>
-                </div>
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="changePassword()">
-                        <i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်
-                    </button>
-                    <button class="btn btn-danger" onclick="confirmDeleteAccount()">
-                        <i class="fas fa-user-times"></i> အကောင့်ဖျက်သိမ်းမည်
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -478,51 +394,32 @@
             if (session) {
                 currentUser = session.user;
                 updateUI();
-                await syncAndLoadData();
+                await syncProData();
             } else {
                 window.location.href = 'auth.html';
             }
         };
 
-        async function syncAndLoadData() {
+        async function syncProData() {
             document.getElementById('syncOverlay').style.display = 'flex';
             try {
-                // 1. Sync Favorites (Supabase First)
-                const { data: likesData } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
-                if (likesData) {
-                    const likedIds = likesData.map(i => i.book_id.toString());
-                    localStorage.setItem('my_likes', JSON.stringify(likedIds));
-                }
+                // 1. Sync Cloud Stats (Supabase First)
+                const { count: downloadCount } = await sb.from('user_downloads').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+                const { count: favoriteCount } = await sb.from('user_likes').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+                
+                document.getElementById('downloadCount').textContent = downloadCount || 0;
+                document.getElementById('favoriteCount').textContent = favoriteCount || 0;
 
-                // 2. Sync Downloads (Supabase First - Exact Sync)
-                const { data: downloadsData } = await sb
-                    .from('user_downloads')
-                    .select('book_id, books:book_id(id, title, author, cover, download_link)')
-                    .eq('user_id', currentUser.id);
+                // 2. Local Stats
+                const localBooks = await db.savedBooks.toArray();
+                document.getElementById('offlineCount').textContent = localBooks.length;
 
-                if (downloadsData) {
-                    const cloudIds = new Set(downloadsData.filter(d => d.books).map(d => d.books.id.toString()));
-                    const localBooks = await db.savedBooks.toArray();
-                    const localIds = new Set(localBooks.map(b => b.id.toString()));
-
-                    // Step A: Remove any book from Dexie that is NOT in Supabase Account
-                    for (const localBook of localBooks) {
-                        if (!cloudIds.has(localBook.id.toString())) {
-                            await db.savedBooks.delete(localBook.id);
-                            if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
-                        }
-                    }
-
-                    // Step B: Add missing books from Supabase to Dexie
-                    for (const item of downloadsData) {
-                        if (item.books && !localIds.has(item.books.id.toString())) {
-                            await downloadAndSave(item.books);
-                        }
-                    }
-                }
-
-                await loadStats();
+                // 3. Activity Log
                 await loadActivityLog();
+
+                // 4. Background Alignment (Silent)
+                backgroundAlignment();
+
             } catch (err) {
                 console.error("Sync Error:", err);
             } finally {
@@ -530,21 +427,29 @@
             }
         }
 
-        async function downloadAndSave(book) {
-            try {
-                if (!book.download_link) return;
-                const res = await fetch(book.download_link);
-                if (res.ok) {
-                    const blob = await res.blob();
-                    await db.savedBooks.put({
-                        id: book.id.toString(),
-                        title: book.title,
-                        author: book.author,
-                        cover: book.cover,
-                        fileData: blob
-                    });
+        async function backgroundAlignment() {
+            // This mirrors library_pro logic to ensure data is always in sync
+            const { data: downloads } = await sb
+                .from('user_downloads')
+                .select('book_id, books:book_id(id, title, author, cover, download_link)')
+                .eq('user_id', currentUser.id);
+
+            if (downloads) {
+                const cloudIds = new Set(downloads.filter(d => d.books).map(d => d.books.id.toString()));
+                const localBooks = await db.savedBooks.toArray();
+                
+                // Cleanup excess
+                for (const localBook of localBooks) {
+                    if (!cloudIds.has(localBook.id.toString())) {
+                        await db.savedBooks.delete(localBook.id);
+                        if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
+                    }
                 }
-            } catch (e) { console.error(e); }
+                
+                // Redraw local count if changed
+                const updatedLocal = await db.savedBooks.toArray();
+                document.getElementById('offlineCount').textContent = updatedLocal.length;
+            }
         }
 
         function updateUI() {
@@ -583,47 +488,13 @@
             }
         }
 
-        async function changePassword() {
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (!newPassword || newPassword !== confirmPassword) {
-                Swal.fire('သတိပေးချက်', 'စကားဝှက်များ မကိုက်ညီပါ သို့မဟုတ် မပြည့်စုံပါ', 'warning');
-                return;
-            }
-
-            try {
-                const { error } = await sb.auth.updateUser({ password: newPassword });
-                if (error) throw error;
-                Swal.fire('အောင်မြင်ပါသည်', 'စကားဝှက်ပြောင်းလဲပြီးပါပြီ။', 'success');
-                document.getElementById('newPassword').value = '';
-                document.getElementById('confirmPassword').value = '';
-            } catch (err) {
-                Swal.fire('မှားယွင်းမှု', err.message, 'error');
-            }
-        }
-
-        async function loadStats() {
-            try {
-                const { count: downloadCount } = await sb.from('user_downloads').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
-                const { count: favoriteCount } = await sb.from('user_likes').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
-                
-                document.getElementById('downloadCount').textContent = downloadCount || 0;
-                document.getElementById('favoriteCount').textContent = favoriteCount || 0;
-                
-                const localBooks = await db.savedBooks.toArray();
-                document.getElementById('readingCount').textContent = localBooks.length;
-            } catch (err) { console.error(err); }
-        }
-
         async function loadActivityLog() {
             try {
-                const { data: downloads, error } = await sb.from('user_downloads').select('created_at, books:book_id(title)').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
-                if (error) throw error;
+                const { data: downloads } = await sb.from('user_downloads').select('created_at, books:book_id(title)').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
                 const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
                     <div class="activity-item success">
                         <div class="activity-time">${new Date(item.created_at).toLocaleString()}</div>
-                        <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်</div>
+                        <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ကို ဒေါင်းလုဒ်စာရင်းထဲ ထည့်သွင်းခဲ့သည်။</div>
                     </div>
                 `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
                 document.getElementById('activityLog').innerHTML = logHtml;
@@ -634,13 +505,6 @@
             await sb.auth.signOut();
             await db.savedBooks.clear();
             window.location.href = 'auth.html';
-        }
-
-        async function confirmDeleteAccount() {
-            const result = await Swal.fire({ title: 'အကောင့်ဖျက်သိမ်းမည်လား?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ea4335', confirmButtonText: 'ဖျက်သိမ်းမည်' });
-            if (result.isConfirmed) {
-                Swal.fire('အကောင့်ဖျက်သိမ်းခြင်းကို System Admin မှတစ်ဆင့်သာ ဆောင်ရွက်နိုင်ပါသည်။', '', 'info');
-            }
         }
     </script>
 </body>
