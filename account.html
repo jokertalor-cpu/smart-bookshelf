@@ -487,14 +487,14 @@
         async function syncAndLoadData() {
             document.getElementById('syncOverlay').style.display = 'flex';
             try {
-                // 1. Sync Favorites
+                // 1. Sync Favorites (Supabase First)
                 const { data: likesData } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
                 if (likesData) {
                     const likedIds = likesData.map(i => i.book_id.toString());
                     localStorage.setItem('my_likes', JSON.stringify(likedIds));
                 }
 
-                // 2. Sync Downloads (Fix: Correct Alias & Mapping)
+                // 2. Sync Downloads (Supabase First - Exact Sync)
                 const { data: downloadsData } = await sb
                     .from('user_downloads')
                     .select('book_id, books:book_id(id, title, author, cover, download_link)')
@@ -505,15 +505,18 @@
                     const localBooks = await db.savedBooks.toArray();
                     const localIds = new Set(localBooks.map(b => b.id.toString()));
 
-                    for (const item of downloadsData) {
-                        if (item.books && !localIds.has(item.books.id.toString())) {
-                            await downloadAndSave(item.books);
-                        }
-                    }
+                    // Step A: Remove any book from Dexie that is NOT in Supabase Account
                     for (const localBook of localBooks) {
                         if (!cloudIds.has(localBook.id.toString())) {
                             await db.savedBooks.delete(localBook.id);
                             if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
+                        }
+                    }
+
+                    // Step B: Add missing books from Supabase to Dexie
+                    for (const item of downloadsData) {
+                        if (item.books && !localIds.has(item.books.id.toString())) {
+                            await downloadAndSave(item.books);
                         }
                     }
                 }
@@ -629,6 +632,7 @@
 
         async function handleLogout() {
             await sb.auth.signOut();
+            await db.savedBooks.clear();
             window.location.href = 'auth.html';
         }
 

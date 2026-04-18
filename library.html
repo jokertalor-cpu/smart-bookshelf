@@ -140,6 +140,8 @@
                 document.getElementById('login-reminder').style.display = 'flex';
                 document.getElementById('logout-btn').style.display = 'none';
                 localStorage.removeItem('my_likes');
+                // Clear Dexie on logout to ensure privacy and fresh start
+                await db.savedBooks.clear();
                 location.reload();
             }
         });
@@ -149,7 +151,7 @@
         if (!currentUser) return;
         showSyncStatus(true);
         try {
-            // 1. Sync Favorites
+            // 1. Sync Favorites (Supabase to Local)
             const { data: likesData, error: likesError } = await sb
                 .from('user_likes')
                 .select('book_id')
@@ -160,33 +162,31 @@
                 localStorage.setItem('my_likes', JSON.stringify(likedIds));
             }
 
-            // 2. Sync Downloads (Supabase to Dexie)
+            // 2. Sync Downloads (Only Supabase data remains in Dexie)
             const { data: downloadsData, error: downloadsError } = await sb
                 .from('user_downloads')
                 .select('book_id, books:book_id(id, title, author, cover, download_link)')
                 .eq('user_id', currentUser.id);
 
             if (!downloadsError && downloadsData) {
-                // cloudIds must be strings for comparison
                 const cloudIds = new Set(downloadsData.filter(d => d.books).map(d => d.books.id.toString()));
                 const localBooks = await db.savedBooks.toArray();
                 const localIds = new Set(localBooks.map(b => b.id.toString()));
 
-                // Add missing books to local
-                for (const item of downloadsData) {
-                    const book = item.books;
-                    if (book && !localIds.has(book.id.toString())) {
-                        await downloadAndSave(book);
-                    }
-                }
-
-                // Remove extra books from local that are NOT in cloud
+                // Step A: Remove any book from Dexie that is NOT in Supabase Account
                 for (const localBook of localBooks) {
                     const localIdStr = localBook.id.toString();
                     if (!cloudIds.has(localIdStr)) {
                         await db.savedBooks.delete(localBook.id);
-                        // Also try numeric delete if applicable
                         if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
+                    }
+                }
+
+                // Step B: Add missing books from Supabase to Dexie (for new devices or cleared data)
+                for (const item of downloadsData) {
+                    const book = item.books;
+                    if (book && !localIds.has(book.id.toString())) {
+                        await downloadAndSave(book);
                     }
                 }
             }
@@ -286,16 +286,20 @@
         }).then(async (result) => {
             if (result.isConfirmed) {
                 if (type === 'download') {
+                    // Local Delete
                     await db.savedBooks.delete(id);
                     await db.savedBooks.delete(Number(id));
+                    // Cloud Delete
                     if (currentUser) {
                         await sb.from('user_downloads').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
                     }
                     await renderLibrary();
                 } else {
+                    // Local Delete
                     let likes = JSON.parse(localStorage.getItem('my_likes') || '[]');
                     likes = likes.filter(item => item != id);
                     localStorage.setItem('my_likes', JSON.stringify(likes));
+                    // Cloud Delete
                     if (currentUser) {
                         await sb.from('user_likes').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
                     }
