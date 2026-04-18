@@ -146,58 +146,29 @@
             }
         });
     }
+async function syncAll() {
+    if (!currentUser) return;
 
-    async function syncAll() {
-        if (!currentUser) return;
-        showSyncStatus(true);
-        try {
-            // 1. Sync Favorites (Supabase to Local)
-            const { data: likesData, error: likesError } = await sb
-                .from('user_likes')
-                .select('book_id')
-                .eq('user_id', currentUser.id);
-            
-            if (!likesError && likesData) {
-                const likedIds = likesData.map(i => i.book_id.toString());
-                localStorage.setItem('my_likes', JSON.stringify(likedIds));
-            }
+    showSyncStatus(true);
 
-            // 2. Sync Downloads (Only Supabase data remains in Dexie)
-            const { data: downloadsData, error: downloadsError } = await sb
-                .from('user_downloads')
-                .select('book_id, books:book_id(id, title, author, cover, download_link)')
-                .eq('user_id', currentUser.id);
+    try {
+        // only likes sync
+        const { data } = await sb
+            .from('user_likes')
+            .select('book_id')
+            .eq('user_id', currentUser.id);
 
-            if (!downloadsError && downloadsData) {
-                const cloudIds = new Set(downloadsData.filter(d => d.books).map(d => d.books.id.toString()));
-                const localBooks = await db.savedBooks.toArray();
-                const localIds = new Set(localBooks.map(b => b.id.toString()));
+        const likedIds = data.map(i => i.book_id.toString());
+        localStorage.setItem('my_likes', JSON.stringify(likedIds));
 
-                // Step A: Remove any book from Dexie that is NOT in Supabase Account
-                for (const localBook of localBooks) {
-                    const localIdStr = localBook.id.toString();
-                    if (!cloudIds.has(localIdStr)) {
-                        await db.savedBooks.delete(localBook.id);
-                        if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
-                    }
-                }
-
-                // Step B: Add missing books from Supabase to Dexie (for new devices or cleared data)
-                for (const item of downloadsData) {
-                    const book = item.books;
-                    if (book && !localIds.has(book.id.toString())) {
-                        await downloadAndSave(book);
-                    }
-                }
-            }
-        } catch (err) {
-            console.error("Sync Error:", err);
-        } finally {
-            await renderLibrary();
-            await renderFavorites();
-            showSyncStatus(false);
-        }
+    } catch (e) {
+        console.error(e);
     }
+
+    await renderLibrary();
+    await renderFavorites();
+    showSyncStatus(false);
+}
 
     async function downloadAndSave(book) {
         try {
@@ -219,23 +190,64 @@
     }
 
     async function renderLibrary() {
-        const grid = document.getElementById('library-grid');
-        const books = await db.savedBooks.toArray();
-        if (books.length === 0) {
-            grid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
-            return;
-        }
-        grid.innerHTML = books.map(book => `
-            <div class="book-card">
-                <img src="${book.cover}" loading="lazy" onclick="openReader('${book.id}')" alt="${book.title}">
-                <h3>${book.title}</h3>
-                <div class="actions">
-                    <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
-                    <button class="btn btn-delete" onclick="confirmDelete('${book.id}', 'download')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
-                </div>
-            </div>
-        `).join('');
+    const grid = document.getElementById('library-grid');
+
+    let localBooks = await db.savedBooks.toArray();
+    let cloudBooks = [];
+
+    if (currentUser) {
+        const { data } = await sb
+            .from('user_downloads')
+            .select('books:book_id(id,title,author,cover)')
+            .eq('user_id', currentUser.id);
+
+        cloudBooks = data.map(d => d.books);
     }
+
+    // merge
+    const allBooks = [...localBooks];
+
+    cloudBooks.forEach(cb => {
+        if (!allBooks.find(lb => lb.id == cb.id)) {
+            allBooks.push(cb);
+        }
+    });
+
+    if (allBooks.length === 0) {
+        grid.innerHTML = `empty`;
+        return;
+    }
+
+    grid.innerHTML = allBooks.map(book => {
+        const isOffline = localBooks.find(b => b.id == book.id);
+
+        return `
+        <div class="book-card">
+            <img src="${book.cover}">
+            <h3>${book.title}</h3>
+
+            <div class="actions">
+                ${
+                    isOffline
+                    ? `<button class="btn btn-read" onclick="openReader('${book.id}')">ဖတ်မည်</button>`
+                    : `<button class="btn btn-info" onclick="downloadAgain(${book.id})">Download</button>`
+                }
+            </div>
+        </div>`;
+    }).join('');
+}
+async function downloadAgain(id) {
+    const { data } = await sb
+        .from('books')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (!data) return;
+
+    await downloadAndSave(data);
+    await renderLibrary();
+}
 
     async function renderFavorites() {
         const favContainer = document.getElementById('fav-view');
