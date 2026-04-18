@@ -597,6 +597,15 @@
         // Load Activity Log
         async function loadActivityLog() {
             try {
+                // Reading count ကို ဆွဲယူရန်
+const { count: readCount, error: readError } = await sb
+    .from('user_progress')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+
+if (!readError) {
+    document.getElementById('readingCount').innerText = readCount || 0;
+}
                 const { data: downloads, error } = await sb
                     .from('user_downloads')
                     .select('created_at, books(title)')
