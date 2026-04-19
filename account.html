@@ -8,16 +8,25 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
     <style>
-        :root { --primary: #1a73e8; --primary-hover: #1557b0; --success: #34a853; --danger: #ea4335; --bg: #f8f9fa; }
+        :root { 
+            --primary: #1a73e8; 
+            --primary-hover: #1557b0; 
+            --success: #34a853; 
+            --danger: #ea4335; 
+            --warning: #fbbc04;
+            --bg: #f8f9fa;
+        }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Pyidaungsu', sans-serif; 
             background: var(--bg); 
             color: #3c4043;
+            line-height: 1.6;
         }
         
         /* Navigation */
@@ -27,17 +36,21 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
             position: sticky; 
             top: 0; 
-            z-index: 1000; 
+            z-index: 1000;
+            backdrop-filter: blur(10px);
         }
         
         .logo { 
             font-size: 20px; 
-            font-weight: bold; 
+            font-weight: 700; 
             color: var(--primary); 
-            text-decoration: none; 
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .nav-links { 
@@ -49,7 +62,10 @@
             text-decoration: none; 
             color: #5f6368; 
             font-weight: 600;
-            transition: color 0.2s;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .nav-links a:hover { 
@@ -58,56 +74,113 @@
         
         /* Main Container */
         .container { 
-            max-width: 900px; 
+            max-width: 1000px; 
             margin: 30px auto; 
             padding: 0 20px;
         }
         
+        /* Account Header */
         .account-header { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            background: linear-gradient(135deg, var(--primary), #4285f4);
+            padding: 40px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 24px rgba(26, 115, 232, 0.15); 
             margin-bottom: 30px;
             display: flex;
             align-items: center;
             gap: 30px;
+            color: white;
         }
         
         .avatar { 
-            width: 100px; 
-            height: 100px; 
+            width: 120px; 
+            height: 120px; 
             border-radius: 50%; 
-            background: linear-gradient(135deg, var(--primary), #4285f4); 
+            background: rgba(255, 255, 255, 0.2);
             display: flex; 
             align-items: center; 
             justify-content: center; 
             color: white; 
-            font-size: 40px;
+            font-size: 48px;
             flex-shrink: 0;
+            border: 3px solid rgba(255, 255, 255, 0.3);
         }
         
         .user-info h1 { 
-            font-size: 24px; 
-            margin-bottom: 10px;
-            color: #202124;
+            font-size: 28px; 
+            margin-bottom: 8px;
+            font-weight: 700;
         }
         
         .user-info p { 
-            color: #5f6368; 
-            margin-bottom: 5px;
+            color: rgba(255, 255, 255, 0.9); 
+            margin-bottom: 8px;
             font-size: 14px;
         }
         
         .user-status { 
             display: inline-block; 
-            padding: 4px 12px; 
-            background: #e6f4ea; 
-            color: var(--success); 
+            padding: 6px 14px; 
+            background: rgba(255, 255, 255, 0.2); 
+            color: white; 
             border-radius: 20px; 
             font-size: 12px; 
             font-weight: 600;
-            margin-top: 10px;
+            margin-top: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Stats Grid */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card { 
+            background: white; 
+            padding: 24px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card .number { 
+            font-size: 32px; 
+            font-weight: 700; 
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .label { 
+            font-size: 13px; 
+            color: #5f6368;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.success .number {
+            color: var(--success);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .stat-card.warning .number {
+            color: var(--warning);
         }
         
         /* Sections */
@@ -121,19 +194,28 @@
         
         .section h2 { 
             font-size: 18px; 
-            margin-bottom: 20px; 
+            margin-bottom: 24px; 
             color: #202124;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
+            font-weight: 700;
         }
         
         .section h2 i { 
-            color: var(--primary); 
+            color: var(--primary);
+            font-size: 20px;
         }
         
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
         /* Form Groups */
         .form-group { 
             margin-bottom: 20px; 
@@ -155,14 +237,14 @@
             border-radius: 8px; 
             font-size: 14px;
             font-family: inherit;
-            transition: border-color 0.2s;
+            transition: all 0.3s;
         }
         
         .form-group input:focus, 
         .form-group textarea:focus { 
             outline: none; 
             border-color: var(--primary); 
-            box-shadow: 0 0 0 2px rgba(26,115,232,0.1);
+            box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
         }
         
         .form-group textarea { 
@@ -176,35 +258,6 @@
             gap: 20px;
         }
         
-        /* Stats */
-        .stats-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card { 
-            background: #f8f9fa; 
-            padding: 20px; 
-            border-radius: 8px; 
-            border-left: 4px solid var(--primary);
-            text-align: center;
-        }
-        
-        .stat-card .number { 
-            font-size: 28px; 
-            font-weight: bold; 
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-        
-        .stat-card .label { 
-            font-size: 12px; 
-            color: #5f6368;
-            font-weight: 600;
-        }
-        
         /* Buttons */
         .btn { 
             padding: 12px 24px; 
@@ -213,7 +266,7 @@
             font-weight: 600; 
             font-size: 14px; 
             cursor: pointer; 
-            transition: all 0.2s;
+            transition: all 0.3s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -226,12 +279,14 @@
         
         .btn-primary:hover { 
             background: var(--primary-hover); 
-            box-shadow: 0 4px 12px rgba(26,115,232,0.2);
+            box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+            transform: translateY(-2px);
         }
         
         .btn-primary:disabled { 
             background: #ccc; 
-            cursor: not-allowed; 
+            cursor: not-allowed;
+            transform: none;
         }
         
         .btn-danger { 
@@ -240,7 +295,7 @@
         }
         
         .btn-danger:hover { 
-            background: #fdd7e4; 
+            background: #fdd7e4;
         }
         
         .btn-secondary { 
@@ -249,22 +304,34 @@
         }
         
         .btn-secondary:hover { 
-            background: #e8eaed; 
+            background: #e8eaed;
         }
         
         .button-group { 
             display: flex; 
-            gap: 10px; 
+            gap: 12px; 
             flex-wrap: wrap;
+            margin-top: 20px;
         }
         
         /* Activity Log */
+        .activity-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
         .activity-item { 
-            padding: 15px; 
+            padding: 16px; 
             border-left: 3px solid #e8eaed; 
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             background: #f8f9fa;
-            border-radius: 4px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .activity-item:hover {
+            background: #f1f3f4;
+            border-left-color: var(--primary);
         }
         
         .activity-item.success { 
@@ -272,7 +339,7 @@
         }
         
         .activity-item.warning { 
-            border-left-color: #fbbc04; 
+            border-left-color: var(--warning); 
         }
         
         .activity-item.danger { 
@@ -282,12 +349,13 @@
         .activity-time { 
             font-size: 12px; 
             color: #5f6368;
+            font-weight: 500;
         }
         
         .activity-desc { 
             font-size: 14px; 
             color: #3c4043;
-            margin-top: 5px;
+            margin-top: 6px;
             font-weight: 500;
         }
         
@@ -304,6 +372,10 @@
             
             .nav-links { 
                 gap: 10px; 
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -333,25 +405,58 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.9);
             z-index: 2000;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 600;
             color: var(--primary);
+            backdrop-filter: blur(5px);
+        }
+
+        .sync-message {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        /* Sync Status Badge */
+        .sync-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        .sync-badge.synced {
+            background: #e6f4ea;
+            color: var(--success);
+        }
+
+        .sync-badge.syncing {
+            background: #e8f0fe;
+            color: var(--primary);
+        }
+
+        .sync-badge.error {
+            background: #feeef3;
+            color: var(--danger);
         }
     </style>
 </head>
 <body>
 
     <div id="syncOverlay">
-        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
-        <p style="margin-top: 15px;">ဒေတာများ ညှိနှိုင်းနေသည်...</p>
+        <div class="spinner" style="width: 48px; height: 48px; border-width: 4px;"></div>
+        <p class="sync-message">ဒေတာများ ညှိနှိုင်းနေသည်...</p>
     </div>
 
     <nav>
-        <a href="index.html" class="logo">SMART BOOKSHELF</a>
+        <a href="index.html" class="logo">
+            <i class="fas fa-book"></i> SMART BOOKSHELF
+        </a>
         <div class="nav-links">
             <a href="index.html"><i class="fas fa-home"></i> ပင်မစာမျက်နှာ</a>
             <a href="library.html"><i class="fas fa-book"></i> စာကြည့်တိုက်</a>
@@ -360,6 +465,7 @@
     </nav>
 
     <div class="container">
+        <!-- Account Header -->
         <div class="account-header">
             <div class="avatar" id="userAvatar">
                 <i class="fas fa-user"></i>
@@ -372,21 +478,38 @@
             </div>
         </div>
 
+        <!-- Statistics Grid -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="number" id="downloadCount">0</div>
-                <div class="label">MY BOOKS</div>
+                <div class="label">My Books</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card success">
                 <div class="number" id="readingCount">0</div>
-                <div class="label">OFFLINE BOOKS</div>
+                <div class="label">Downloaded</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="number" id="favoriteCount">0</div>
+                <div class="label">Favorites</div>
             </div>
             <div class="stat-card">
-                <div class="number" id="favoriteCount">0</div>
-                <div class="label">FAVORITES</div>
+                <div class="number" id="readingStreak">0</div>
+                <div class="label">Reading Streak</div>
             </div>
         </div>
 
+        <!-- Reading Analytics Section -->
+        <div class="section">
+            <h2><i class="fas fa-chart-line"></i> Reading Analytics <span class="sync-badge synced" id="syncBadge"><i class="fas fa-check"></i> Synced</span></h2>
+            <div class="chart-container">
+                <canvas id="readingChart"></canvas>
+            </div>
+            <p style="text-align: center; color: #5f6368; font-size: 13px; margin-top: 12px;">
+                <i class="fas fa-info-circle"></i> Last 7 days reading activity
+            </p>
+        </div>
+
+        <!-- Profile Section -->
         <div class="section">
             <h2><i class="fas fa-user-edit"></i> ကိုယ်ရေးအချက်အလက် ပြင်ဆင်ရန်</h2>
             <div class="form-group">
@@ -400,12 +523,13 @@
                 </div>
                 <div class="form-group">
                     <label>Bio</label>
-                    <textarea id="bioInput" placeholder="သင့်အကြောင်း အနည်းငယ်..."></textarea>
+                    <input type="text" id="bioInput" placeholder="သင့်အကြောင်း အနည်းငယ်...">
                 </div>
             </div>
             <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> သိမ်းဆည်းမည်</button>
         </div>
 
+        <!-- Password Section -->
         <div class="section">
             <h2><i class="fas fa-lock"></i> စကားဝှက် ပြောင်းလဲရန်</h2>
             <div class="form-row">
@@ -421,13 +545,15 @@
             <button class="btn btn-primary" onclick="changePassword()"><i class="fas fa-key"></i> စကားဝှက်ပြောင်းမည်</button>
         </div>
 
+        <!-- Activity Log Section -->
         <div class="section">
             <h2><i class="fas fa-history"></i> လတ်တလော လုပ်ဆောင်ချက်များ</h2>
-            <div id="activityLog">
+            <div class="activity-list" id="activityLog">
                 <p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်များကို ရယူနေသည်...</p>
             </div>
         </div>
 
+        <!-- Action Buttons -->
         <div class="button-group">
             <button class="btn btn-secondary" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> အကောင့်မှ ထွက်မည်</button>
             <button class="btn btn-danger" onclick="confirmDeleteAccount()"><i class="fas fa-user-slash"></i> အကောင့်ဖျက်သိမ်းမည်</button>
@@ -440,9 +566,13 @@
         const sb = supabase.createClient(SB_URL, SB_KEY);
 
         const db = new Dexie("MyDigitalLibrary");
-        db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
+        db.version(3).stores({ 
+            savedBooks: "id, title, author, cover, fileData, lastPage, lastReadDate, readingProgress",
+            downloadQueue: "id, bookId, status, retryCount, createdAt"
+        });
 
         let currentUser = null;
+        let readingChart = null;
 
         window.onload = async () => {
             const { data: { session } } = await sb.auth.getSession();
@@ -458,8 +588,16 @@
         async function syncAll() {
             if (!currentUser) return;
             document.getElementById('syncOverlay').style.display = 'flex';
+            updateSyncBadge('syncing');
+            
             try {
-                // Silent Background Sync: Check cloud downloads and sync metadata to Dexie
+                // Sync Favorites
+                const { data: likesData } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
+                if (likesData) {
+                    localStorage.setItem('my_likes', JSON.stringify(likesData.map(i => i.book_id.toString())));
+                }
+
+                // Sync Downloads Metadata
                 const { data: downloadsData } = await sb
                     .from('user_downloads')
                     .select('book_id, books:book_id(id, title, author, cover)')
@@ -468,22 +606,21 @@
                 if (downloadsData) {
                     const cloudBooks = downloadsData.filter(d => d.books).map(d => d.books);
                     
-                    // Update Dexie metadata (Metadata Cache logic)
                     for (const book of cloudBooks) {
                         const existing = await db.savedBooks.get(book.id.toString());
                         if (!existing) {
-                            // If not in Dexie, put metadata only (Cloud-First)
                             await db.savedBooks.put({
                                 id: book.id.toString(),
                                 title: book.title,
                                 author: book.author,
                                 cover: book.cover,
-                                fileData: null
+                                fileData: null,
+                                readingProgress: 0,
+                                lastReadDate: null
                             });
                         }
                     }
 
-                    // Remove local metadata if no longer in cloud
                     const cloudIds = new Set(cloudBooks.map(b => b.id.toString()));
                     const localBooks = await db.savedBooks.toArray();
                     for (const lb of localBooks) {
@@ -495,17 +632,34 @@
 
                 await loadStats();
                 await loadActivityLog();
+                await loadReadingChart();
+                updateSyncBadge('synced');
+                
             } catch (err) {
                 console.error("Sync Error:", err);
+                updateSyncBadge('error');
             } finally {
                 document.getElementById('syncOverlay').style.display = 'none';
             }
         }
 
+        function updateSyncBadge(status) {
+            const badge = document.getElementById('syncBadge');
+            badge.className = `sync-badge ${status}`;
+            
+            if (status === 'syncing') {
+                badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+            } else if (status === 'synced') {
+                badge.innerHTML = '<i class="fas fa-check"></i> Synced';
+            } else {
+                badge.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error';
+            }
+        }
+
         function updateUI() {
-            document.getElementById('userName').textContent = currentUser.user_metadata.name || 'အမည်မရှိ';
+            document.getElementById('userName').textContent = currentUser.user_metadata?.name || 'အမည်မရှိ';
             document.getElementById('userEmail').textContent = currentUser.email;
-            document.getElementById('userCreated').textContent = 'Joined: ' + new Date(currentUser.created_at).toLocaleDateString();
+            document.getElementById('userCreated').textContent = 'Joined: ' + new Date(currentUser.created_at).toLocaleDateString('my-MM');
             
             const metadata = currentUser.user_metadata || {};
             document.getElementById('nameInput').value = metadata.name || '';
@@ -528,8 +682,6 @@
                 });
                 if (error) throw error;
                 Swal.fire('အောင်မြင်ပါသည်', 'ကိုယ်ရေးအချက်အလက်များကို သိမ်းဆည်းပြီးပါပြီ။', 'success');
-                currentUser.user_metadata = { ...currentUser.user_metadata, name: document.getElementById('nameInput').value };
-                updateUI();
             } catch (err) {
                 Swal.fire('မှားယွင်းမှု', err.message, 'error');
             } finally {
@@ -569,19 +721,98 @@
                 const localBooks = await db.savedBooks.toArray();
                 const offlineCount = localBooks.filter(b => b.fileData !== null).length;
                 document.getElementById('readingCount').textContent = offlineCount;
+
+                // Calculate reading streak
+                const today = new Date();
+                let streak = 0;
+                for (let i = 0; i < 30; i++) {
+                    const checkDate = new Date(today);
+                    checkDate.setDate(checkDate.getDate() - i);
+                    const hasActivity = localBooks.some(b => {
+                        if (!b.lastReadDate) return false;
+                        const readDate = new Date(b.lastReadDate);
+                        return readDate.toDateString() === checkDate.toDateString();
+                    });
+                    if (hasActivity) streak++;
+                    else break;
+                }
+                document.getElementById('readingStreak').textContent = streak;
+                
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadReadingChart() {
+            try {
+                const ctx = document.getElementById('readingChart').getContext('2d');
+                const localBooks = await db.savedBooks.toArray();
+                
+                // Generate last 7 days data
+                const labels = [];
+                const data = [];
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    labels.push(date.toLocaleDateString('my-MM', { month: 'short', day: 'numeric' }));
+                    
+                    const count = localBooks.filter(b => {
+                        if (!b.lastReadDate) return false;
+                        const readDate = new Date(b.lastReadDate);
+                        return readDate.toDateString() === date.toDateString();
+                    }).length;
+                    data.push(count);
+                }
+
+                if (readingChart) readingChart.destroy();
+                
+                readingChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Books Read',
+                            data: data,
+                            borderColor: '#1a73e8',
+                            backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#1a73e8',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: Math.max(...data, 5),
+                                ticks: { stepSize: 1 }
+                            }
+                        }
+                    }
+                });
             } catch (err) { console.error(err); }
         }
 
         async function loadActivityLog() {
             try {
-                const { data: downloads, error } = await sb.from('user_downloads').select('created_at, books:book_id(title)').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
+                const { data: downloads, error } = await sb.from('user_downloads').select('created_at, books:book_id(title)').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(15);
                 if (error) throw error;
+                
                 const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
                     <div class="activity-item success">
-                        <div class="activity-time">${new Date(item.created_at).toLocaleString()}</div>
+                        <div class="activity-time"><i class="fas fa-clock"></i> ${new Date(item.created_at).toLocaleString('my-MM')}</div>
                         <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်</div>
                     </div>
                 `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
+                
                 document.getElementById('activityLog').innerHTML = logHtml;
             } catch (err) { console.error(err); }
         }
@@ -602,7 +833,15 @@
         }
 
         async function confirmDeleteAccount() {
-            const result = await Swal.fire({ title: 'အကောင့်ဖျက်သိမ်းမည်လား?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ea4335', confirmButtonText: 'ဖျက်သိမ်းမည်' });
+            const result = await Swal.fire({ 
+                title: 'အကောင့်ဖျက်သိမ်းမည်လား?', 
+                text: 'ဤလုပ်ဆောင်ချက်ကို ပြန်လည်ပြင်ဆင်၍မရပါ။',
+                icon: 'warning', 
+                showCancelButton: true, 
+                confirmButtonColor: '#ea4335', 
+                confirmButtonText: 'ဖျက်သိမ်းမည်',
+                cancelButtonText: 'မလုပ်တော့ပါ'
+            });
             if (result.isConfirmed) {
                 Swal.fire('အကောင့်ဖျက်သိမ်းခြင်းကို System Admin မှတစ်ဆင့်သာ ဆောင်ရွက်နိုင်ပါသည်။', '', 'info');
             }

@@ -10,66 +10,466 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
 
     <style>
-        :root { --primary: #313336; --danger: #ea4335; --heart: #e11d48; --bg: #f8f9fa; }
-        body { font-family: 'Pyidaungsu', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
+        :root { 
+            --primary: #313336; 
+            --danger: #ea4335; 
+            --heart: #e11d48; 
+            --bg: #f8f9fa;
+            --success: #34a853;
+            --warning: #fbbc04;
+        }
         
-        .nav-header { background: white; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
-        .nav-container { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .nav-container a { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 14px; margin-left: 20px; }
-        .nav-container a:hover { color: #1a73e8; }
-
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-        .section-title { font-size: 1.1rem; color: #202124; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--primary); padding-left: 10px; }
-        .section-title.fav { border-left-color: var(--heart); }
-
-        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; min-height: 100px; }
-        .book-card { background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: 0.3s; display: flex; flex-direction: column; position: relative; }
-        .book-card img { width: 100%; height: 190px; object-fit: cover; border-radius: 8px; cursor: pointer; }
-        .book-card h3 { font-size: 13px; margin: 10px 0; height: 38px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: #3c4043; }
-
-        .actions { display: flex; flex-direction: column; gap: 5px; margin-top: auto; }
-        .btn { border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; }
-        .btn-read { background: var(--primary); color: white; }
-        .btn-download { background: #e8f0fe; color: #1a73e8; }
-        .btn-delete { background: #feeef3; color: var(--danger); }
-        .btn-info { background: #f1f3f4; color: #5f6368; }
-
-        .download-badge { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; display: none; }
-        .book-card.offline .download-badge { display: block; }
-
-        .empty-state { text-align: center; padding: 40px; color: #70757a; grid-column: 1/-1; background: #fff; border-radius: 12px; }
-        .auth-notice { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 12px; border-radius: 10px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; font-size: 13px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        #logout-btn { display: none; background: #f1f3f4; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; color: #5f6368; }
+        body { 
+            font-family: 'Pyidaungsu', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding-bottom: 50px;
+            overflow-x: hidden;
+        }
+        
+        .nav-header { 
+            background: white; 
+            padding: 15px 20px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .nav-container h2 { 
+            font-size: 1.2rem; 
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-container a { 
+            text-decoration: none; 
+            color: var(--primary); 
+            font-weight: 600; 
+            font-size: 14px; 
+            margin-left: 20px;
+            transition: color 0.3s;
+        }
+        
+        .nav-container a:hover { 
+            color: #1a73e8; 
+        }
 
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px 15px; 
+        }
+        
+        .section-title { 
+            font-size: 1.2rem; 
+            color: #202124; 
+            margin: 30px 0 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            border-left: 4px solid var(--primary); 
+            padding-left: 12px;
+            font-weight: 600;
+        }
+        
+        .section-title.fav { 
+            border-left-color: var(--heart); 
+        }
+
+        /* Skeleton Loading Animation */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        .skeleton-card {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .skeleton-image {
+            width: 100%;
+            height: 190px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .skeleton-title {
+            height: 16px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-text {
+            height: 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        /* Book Grid */
+        .book-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 15px; 
+            min-height: 100px; 
+        }
+        
+        .book-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; 
+            flex-direction: column; 
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .book-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transform: translateY(-4px);
+        }
+        
+        .book-card-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 190px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .book-card img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+
+        .book-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .book-card h3 { 
+            font-size: 13px; 
+            margin: 8px 0; 
+            height: 36px; 
+            overflow: hidden; 
+            display: -webkit-box; 
+            -webkit-line-clamp: 2; 
+            -webkit-box-orient: vertical; 
+            color: #3c4043;
+            font-weight: 500;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .status-badge.offline {
+            background: rgba(52, 168, 83, 0.9);
+            color: white;
+        }
+
+        .status-badge.downloading {
+            background: rgba(251, 188, 4, 0.9);
+            color: white;
+        }
+
+        .status-badge.queued {
+            background: rgba(26, 115, 232, 0.9);
+            color: white;
+        }
+
+        /* Download Progress Bar */
+        .progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(0,0,0,0.1);
+            display: none;
+            z-index: 5;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #1a73e8, #4285f4);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .actions { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            margin-top: auto; 
+        }
+        
+        .btn { 
+            border: none; 
+            padding: 8px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 11px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 5px; 
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-read { 
+            background: var(--primary); 
+            color: white;
+        }
+
+        .btn-read:hover:not(:disabled) {
+            background: #1f2023;
+            box-shadow: 0 4px 12px rgba(49, 51, 54, 0.2);
+        }
+        
+        .btn-download { 
+            background: #e8f0fe; 
+            color: #1a73e8;
+            font-weight: 600;
+        }
+
+        .btn-download:hover:not(:disabled) {
+            background: #d2e3fc;
+        }
+
+        .btn-delete { 
+            background: #feeef3; 
+            color: var(--danger);
+        }
+
+        .btn-delete:hover:not(:disabled) {
+            background: #fdd7e4;
+        }
+
+        .empty-state { 
+            text-align: center; 
+            padding: 60px 40px; 
+            color: #70757a; 
+            grid-column: 1/-1; 
+            background: white; 
+            border-radius: 12px;
+            border: 2px dashed #dadce0;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #dadce0;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+
+        .auth-notice { 
+            background: linear-gradient(135deg, #fff3cd, #fffbea);
+            border: 1px solid #ffeeba; 
+            color: #856404; 
+            padding: 14px 16px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+            display: none; 
+            align-items: center; 
+            justify-content: space-between; 
+            font-size: 13px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        #logout-btn { 
+            display: none; 
+            background: #f1f3f4; 
+            border: none; 
+            padding: 6px 14px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            color: #5f6368;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        #logout-btn:hover {
+            background: #e8eaed;
+        }
+
+        /* Sync Status */
         .sync-status {
             display: none;
             position: fixed;
             bottom: 20px;
             right: 20px;
             background: white;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             font-size: 12px;
             z-index: 999;
+            animation: slideIn 0.3s ease;
         }
 
-        .sync-status.active { display: flex; align-items: center; gap: 8px; }
-        .sync-status .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #f3f3f3; border-top: 2px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .sync-status.active { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+
+        .sync-status .spinner { 
+            display: inline-block; 
+            width: 14px; 
+            height: 14px; 
+            border: 2px solid #f3f3f3; 
+            border-top: 2px solid #1a73e8; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        /* Pull to Refresh */
+        .pull-to-refresh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transform: translateY(-100%);
+            transition: transform 0.3s;
+            z-index: 50;
+        }
+
+        .pull-to-refresh.active {
+            transform: translateY(0);
+        }
+
+        .pull-to-refresh .spinner {
+            width: 20px;
+            height: 20px;
+            border-width: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .book-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+                gap: 12px; 
+            }
+
+            .book-card img { 
+                height: 160px; 
+            }
+
+            .nav-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .nav-container a {
+                margin-left: 0;
+                font-size: 12px;
+            }
+        }
 
         @media (max-width: 480px) {
-            .book-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .book-card img { height: 170px; }
+            .book-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 10px; 
+            }
+
+            .book-card img { 
+                height: 140px; 
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
 
+    <div class="pull-to-refresh" id="pullToRefresh">
+        <div class="spinner"></div>
+    </div>
+
     <div class="nav-header">
         <div class="nav-container">
-            <h2 style="margin:0; font-size: 1.1rem;"><i class="fas fa-bookmark"></i> စာကြည့်တိုက်</h2>
+            <h2><i class="fas fa-bookmark"></i> စာကြည့်တိုက်</h2>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <a href="account.html"><i class="fas fa-user"></i> အကောင့်</a>
                 <button id="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> ထွက်မည်</button>
@@ -88,14 +488,14 @@
             <i class="fas fa-cloud"></i> ကျွန်ုပ်၏ စာအုပ်များ
         </div>
         <div id="library-grid" class="book-grid">
-            <p style="grid-column: 1/-1; text-align: center;">စာအုပ်စာရင်းများကို စစ်ဆေးနေသည်...</p>
+            <!-- Skeleton Loaders -->
         </div>
 
         <div class="section-title fav">
             <i class="fas fa-heart" style="color: var(--heart);"></i> သင်ကြိုက်နှစ်သက်သောစာအုပ်များ
         </div>
         <div id="fav-view" class="book-grid">
-            <p style="grid-column: 1/-1; text-align: center;">အသဲပေးထားသည်များကို စစ်ဆေးနေသည်...</p>
+            <!-- Favorites -->
         </div>
     </div>
 
@@ -110,13 +510,41 @@
     const sb = supabase.createClient(SB_URL, SB_KEY);
 
     const db = new Dexie("MyDigitalLibrary");
-    db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
+    db.version(3).stores({ 
+        savedBooks: "id, title, author, cover, fileData, lastPage, lastReadDate, readingProgress",
+        downloadQueue: "id, bookId, status, retryCount, createdAt"
+    });
 
     let currentUser = null;
     let isOffline = !navigator.onLine;
+    let downloadQueue = new Map();
+    let touchStartY = 0;
 
+    // Network Status Listeners
     window.addEventListener('online', () => { isOffline = false; syncAll(); });
     window.addEventListener('offline', () => { isOffline = true; renderLibrary(); });
+
+    // Pull to Refresh
+    document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    });
+
+    document.addEventListener('touchmove', (e) => {
+        if (window.scrollY === 0) {
+            const touchY = e.touches[0].clientY;
+            const diff = touchY - touchStartY;
+            if (diff > 50) {
+                document.getElementById('pullToRefresh').classList.add('active');
+            }
+        }
+    });
+
+    document.addEventListener('touchend', async (e) => {
+        if (document.getElementById('pullToRefresh').classList.contains('active')) {
+            document.getElementById('pullToRefresh').classList.remove('active');
+            await syncAll();
+        }
+    });
 
     window.onload = async () => {
         const { data: { session } } = await sb.auth.getSession();
@@ -124,6 +552,7 @@
             currentUser = session.user;
             document.getElementById('login-reminder').style.display = 'none';
             document.getElementById('logout-btn').style.display = 'block';
+            showSkeletonLoaders();
             await syncAll();
         } else {
             document.getElementById('login-reminder').style.display = 'flex';
@@ -132,6 +561,7 @@
             await renderFavorites();
         }
         setupAuthListener();
+        loadDownloadQueue();
     };
 
     function setupAuthListener() {
@@ -141,6 +571,7 @@
                     currentUser = session.user;
                     document.getElementById('login-reminder').style.display = 'none';
                     document.getElementById('logout-btn').style.display = 'block';
+                    showSkeletonLoaders();
                     await syncAll();
                 }
             } else if (event === 'SIGNED_OUT') {
@@ -154,6 +585,18 @@
         });
     }
 
+    function showSkeletonLoaders() {
+        const grid = document.getElementById('library-grid');
+        grid.innerHTML = Array(8).fill(0).map(() => `
+            <div class="skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 80%;"></div>
+            </div>
+        `).join('');
+    }
+
     async function syncAll() {
         if (!currentUser || isOffline) {
             await renderLibrary();
@@ -163,37 +606,38 @@
 
         showSyncStatus(true, "စာရင်းများ ညှိနှိုင်းနေသည်...");
         try {
-            // 1. Sync Favorites
+            // Sync Favorites
             const { data: likesData } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
             if (likesData) {
                 localStorage.setItem('my_likes', JSON.stringify(likesData.map(i => i.book_id.toString())));
             }
 
-            // 2. Sync Downloads Metadata (Cloud-First UI)
-            const { data: downloadsData, error: downloadsError } = await sb
+            // Sync Downloads Metadata (Cloud-First)
+            const { data: downloadsData } = await sb
                 .from('user_downloads')
                 .select('book_id, books:book_id(id, title, author, cover, download_link)')
                 .eq('user_id', currentUser.id);
 
-            if (!downloadsError && downloadsData) {
+            if (downloadsData) {
                 const cloudBooks = downloadsData.filter(d => d.books).map(d => d.books);
                 
-                // Silent Background Sync: Update metadata in Dexie without deleting fileData if exists
+                // Update metadata in Dexie
                 for (const book of cloudBooks) {
                     const existing = await db.savedBooks.get(book.id.toString());
                     if (!existing) {
-                        // Metadata Cache: Put basic info first
                         await db.savedBooks.put({
                             id: book.id.toString(),
                             title: book.title,
                             author: book.author,
                             cover: book.cover,
-                            fileData: null // Mark as not downloaded yet
+                            fileData: null,
+                            readingProgress: 0,
+                            lastReadDate: null
                         });
                     }
                 }
 
-                // Remove local books that are no longer in cloud
+                // Remove local books not in cloud
                 const cloudIds = new Set(cloudBooks.map(b => b.id.toString()));
                 const localBooks = await db.savedBooks.toArray();
                 for (const lb of localBooks) {
@@ -202,6 +646,9 @@
                     }
                 }
             }
+
+            // Process download queue
+            await processDownloadQueue();
         } catch (err) {
             console.error("Sync Error:", err);
         } finally {
@@ -211,59 +658,143 @@
         }
     }
 
-    async function downloadAndSave(bookId) {
+    async function downloadAndSave(bookId, retryCount = 0) {
+        const MAX_RETRIES = 3;
         const book = await db.savedBooks.get(bookId);
         if (!book) return;
 
-        showSyncStatus(true, `"${book.title}" ကို ဒေါင်းလုဒ်လုပ်နေသည်...`);
         try {
-            // Get download link from Supabase if not in Dexie
+            // Get download link from Supabase
             const { data, error } = await sb.from('books').select('download_link').eq('id', bookId).single();
             if (error || !data.download_link) throw new Error("Download link not found");
 
-            const res = await fetch(data.download_link);
-            if (!res.ok) throw new Error("Download failed");
+            const cardElement = document.querySelector(`[data-book-id="${bookId}"]`);
+            const progressBar = cardElement?.querySelector('.progress-bar');
+            const progressContainer = cardElement?.querySelector('.progress-container');
+
+            if (progressContainer) progressContainer.classList.add('active');
+
+            const xhr = new XMLHttpRequest();
             
-            const blob = await res.blob();
-            await db.savedBooks.update(bookId, { fileData: blob });
-            
-            Swal.fire({ title: 'အောင်မြင်ပါသည်', text: `"${book.title}" ကို ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ။`, icon: 'success', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable && progressBar) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                }
+            });
+
+            xhr.addEventListener('load', async () => {
+                if (xhr.status === 200) {
+                    const blob = new Blob([xhr.response], { type: 'application/pdf' });
+                    await db.savedBooks.update(bookId, { 
+                        fileData: blob,
+                        lastReadDate: new Date().toISOString()
+                    });
+                    
+                    // Remove from queue
+                    await db.downloadQueue.delete(bookId);
+                    downloadQueue.delete(bookId);
+                    
+                    showSyncStatus(true, `"${book.title}" ကို ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ။`);
+                    setTimeout(() => showSyncStatus(false), 2000);
+                    
+                    await renderLibrary();
+                } else {
+                    throw new Error('Download failed');
+                }
+            });
+
+            xhr.addEventListener('error', async () => {
+                if (retryCount < MAX_RETRIES) {
+                    console.log(`Retrying download for book ${bookId}... (${retryCount + 1}/${MAX_RETRIES})`);
+                    await db.downloadQueue.update(bookId, { 
+                        retryCount: retryCount + 1,
+                        status: 'retrying'
+                    });
+                    setTimeout(() => downloadAndSave(bookId, retryCount + 1), 2000 * (retryCount + 1));
+                } else {
+                    await db.downloadQueue.update(bookId, { status: 'failed' });
+                    Swal.fire('အမှားအယွင်း', `"${book.title}" ဒေါင်းလုဒ်လုပ်၍မရပါ။ နောက်မှ ထပ်မံကြိုးစားပါ။`, 'error');
+                }
+            });
+
+            xhr.open('GET', data.download_link);
+            xhr.responseType = 'arraybuffer';
+            xhr.send();
+
+            // Add to queue
+            await db.downloadQueue.put({
+                id: bookId,
+                bookId: bookId,
+                status: 'downloading',
+                retryCount: retryCount,
+                createdAt: new Date().toISOString()
+            });
+
         } catch (e) {
             console.error("Download Error:", e);
-            Swal.fire('အမှားအယွင်း', 'ဒေါင်းလုဒ်လုပ်၍မရပါ။ အင်တာနက်ပြန်စစ်ပေးပါ။', 'error');
-        } finally {
-            showSyncStatus(false);
-            await renderLibrary();
+            Swal.fire('အမှားအယွင်း', 'ဒေါင်းလုဒ်လုပ်၍မရပါ။', 'error');
         }
+    }
+
+    async function processDownloadQueue() {
+        const queue = await db.downloadQueue.where('status').anyOf('queued', 'retrying').toArray();
+        for (const item of queue) {
+            await downloadAndSave(item.bookId, item.retryCount);
+        }
+    }
+
+    async function loadDownloadQueue() {
+        const queue = await db.downloadQueue.toArray();
+        queue.forEach(item => {
+            downloadQueue.set(item.bookId, item.status);
+        });
     }
 
     async function renderLibrary() {
         const grid = document.getElementById('library-grid');
         let books = await db.savedBooks.toArray();
 
-        // Offline Support: Filter only books with fileData when offline
+        // Offline Support: Filter only downloaded books
         if (isOffline) {
             books = books.filter(b => b.fileData !== null);
         }
 
         if (books.length === 0) {
-            grid.innerHTML = `<div class="empty-state"><i class="fas fa-cloud-download-alt fa-2x"></i><p>${isOffline ? 'အော့ဖ်လိုင်းဖတ်ရန် သိမ်းထားသောစာအုပ် မရှိပါ။' : 'စာအုပ်စာရင်း မရှိသေးပါ။'}</p></div>`;
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-cloud-download-alt"></i>
+                    <p>${isOffline ? 'အော့ဖ်လိုင်းဖတ်ရန် သိမ်းထားသောစာအုပ် မရှိပါ။' : 'စာအုပ်စာရင်း မရှိသေးပါ။'}</p>
+                </div>
+            `;
             return;
         }
 
         grid.innerHTML = books.map(book => {
             const isDownloaded = book.fileData !== null;
+            const queueStatus = downloadQueue.get(book.id);
+            const isDownloading = queueStatus === 'downloading' || queueStatus === 'retrying';
+
             return `
-                <div class="book-card ${isDownloaded ? 'offline' : ''}">
-                    <div class="download-badge"><i class="fas fa-check-circle"></i> Offline</div>
-                    <img src="${book.cover}" loading="lazy" onclick="${isDownloaded ? `openReader('${book.id}')` : `downloadAndSave('${book.id}')`}" alt="${book.title}">
+                <div class="book-card" data-book-id="${book.id}">
+                    ${isDownloaded ? '<div class="status-badge offline"><i class="fas fa-check-circle"></i> Offline</div>' : ''}
+                    ${isDownloading ? '<div class="status-badge downloading"><i class="fas fa-spinner fa-spin"></i> Downloading</div>' : ''}
+                    
+                    <div class="book-card-image-wrapper">
+                        <img src="${book.cover}" loading="lazy" onclick="${isDownloaded ? `openReader('${book.id}')` : `downloadAndSave('${book.id}')`}" alt="${book.title}">
+                        <div class="progress-container">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                    
                     <h3>${book.title}</h3>
+                    
                     <div class="actions">
                         ${isDownloaded 
                             ? `<button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> Read</button>`
-                            : `<button class="btn btn-download" onclick="downloadAndSave('${book.id}')"><i class="fas fa-download"></i> Download</button>`
+                            : `<button class="btn btn-download" onclick="downloadAndSave('${book.id}')" ${isDownloading ? 'disabled' : ''}><i class="fas fa-download"></i> Download</button>`
                         }
-                        <button class="btn btn-delete" onclick="confirmDelete('${book.id}', 'download')"><i class="fas fa-trash"></i> Remove</button>
+                        <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> Remove</button>
                     </div>
                 </div>
             `;
@@ -275,36 +806,61 @@
         let likedIds = JSON.parse(localStorage.getItem('my_likes') || '[]');
 
         if (likedIds.length === 0) {
-            favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+            favContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="far fa-heart"></i>
+                    <p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p>
+                </div>
+            `;
             return;
         }
 
         try {
-            const { data: favBooks, error } = await sb.from('books').select('*').in('id', likedIds);
-            if (error) throw error;
-
+            const { data: favBooks } = await sb.from('books').select('*').in('id', likedIds);
+            
             favContainer.innerHTML = favBooks.map(book => `
                 <div class="book-card">
-                    <img src="${book.cover}" onclick="window.location.href='detail.html?id=${book.id}'">
+                    <div class="book-card-image-wrapper">
+                        <img src="${book.cover}" onclick="window.location.href='book-details.html?id=${book.id}'" alt="${book.title}">
+                    </div>
                     <h3>${book.title}</h3>
                     <div class="actions">
-                        <button class="btn btn-info" onclick="window.location.href='detail.html?id=${book.id}'"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
+                        <button class="btn btn-read" onclick="window.location.href='book-details.html?id=${book.id}'"><i class="fas fa-info-circle"></i> Details</button>
                     </div>
                 </div>
             `).join('');
         } catch (e) {
-            favContainer.innerHTML = `<p style="text-align:center; color:red;">အမှားအယွင်းရှိနေပါသည်။</p>`;
+            console.error(e);
         }
     }
 
-    function openReader(id) {
+    async function openReader(id) {
+        // Update reading progress
+        const book = await db.savedBooks.get(id);
+        if (book) {
+            await db.savedBooks.update(id, { 
+                lastReadDate: new Date().toISOString()
+            });
+            
+            // Sync reading progress to Supabase
+            if (currentUser) {
+                await sb.from('user_reading_progress').upsert({
+                    user_id: currentUser.id,
+                    book_id: id,
+                    last_read_date: new Date().toISOString(),
+                    reading_progress: book.readingProgress || 0
+                }, { onConflict: 'user_id,book_id' });
+            }
+        }
+        
         window.location.href = `reader.html?id=${id}`;
     }
 
-    async function confirmDelete(id, type) {
+    async function confirmDelete(id) {
+        const book = await db.savedBooks.get(id);
         const result = await Swal.fire({
             title: 'ဖယ်ရှားမည်လား?',
-            text: "စက်ထဲမှ ဖယ်ရှားလိုက်သော်လည်း Cloud တွင် စာရင်းရှိနေပါမည်။",
+            text: isOffline ? "အော့ဖ်လိုင်းဖိုင်ကို ဖယ်ရှားလိုက်မည်။" : "စက်ထဲမှ ဖယ်ရှားလိုက်သော်လည်း Cloud တွင် စာရင်းရှိနေပါမည်။",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ea4335',
@@ -313,21 +869,20 @@
         });
 
         if (result.isConfirmed) {
-            if (type === 'download') {
-                // Keep metadata, only clear fileData to simulate "Remove Download" but keep in Library
-                await db.savedBooks.update(id, { fileData: null });
-                await renderLibrary();
-                Swal.fire('ဖယ်ရှားပြီးပါပြီ', 'စက်ထဲမှ ဖိုင်ကို ဖယ်ရှားလိုက်ပါပြီ။', 'success');
-            }
+            await db.savedBooks.update(id, { fileData: null });
+            await renderLibrary();
+            Swal.fire('ဖယ်ရှားပြီးပါပြီ', '', 'success');
         }
     }
 
     function showSyncStatus(show, text = "") {
         const el = document.getElementById('syncStatus');
         if (text) document.getElementById('syncText').textContent = text;
-        el.style.display = show ? 'flex' : 'none';
-        if (show) el.classList.add('active');
-        else el.classList.remove('active');
+        if (show) {
+            el.classList.add('active');
+        } else {
+            el.classList.remove('active');
+        }
     }
 
     async function handleLogout() {
