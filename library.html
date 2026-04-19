@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+    <script src="ai-enhanced.js" defer></script>
 
     <style>
         :root { 
@@ -491,6 +492,16 @@
             <!-- Skeleton Loaders -->
         </div>
 
+        <div class="section-title" style="border-left-color: #4285f4;">
+            <i class="fas fa-brain" style="color: #4285f4;"></i> AI အကြံပြုချက်များ
+        </div>
+        <div id="ai-recommendations" class="book-grid">
+            <p style="grid-column: 1/-1; text-align: center; color: #5f6368;">
+                <i class="fas fa-sparkles"></i> AI ကြီးမှူးက သင့်အကြိုက်အမြစ်အပေါ်အခြေခံပြီး အကြံပြုချက်များ ပေးပါ့မယ်။
+                <br><button class="btn btn-primary" onclick="getAIRecommendations()" style="margin-top: 12px; font-size: 12px;"><i class="fas fa-magic"></i> အကြံပြုချက်များ ရယူမည်</button>
+            </p>
+        </div>
+
         <div class="section-title fav">
             <i class="fas fa-heart" style="color: var(--heart);"></i> သင်ကြိုက်နှစ်သက်သောစာအုပ်များ
         </div>
@@ -791,9 +802,10 @@
                     
                     <div class="actions">
                         ${isDownloaded 
-                            ? `<button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> Read</button>`
+                            ? `<button class="btn btn-read" onclick="openReader('${book.id}')><i class="fas fa-book-open"></i> Read</button>`
                             : `<button class="btn btn-download" onclick="downloadAndSave('${book.id}')" ${isDownloading ? 'disabled' : ''}><i class="fas fa-download"></i> Download</button>`
                         }
+                        <button class="btn btn-info" onclick="getBookSummary('${book.title}', '${book.author}')"><i class="fas fa-lightbulb"></i> Summary</button>
                         <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> Remove</button>
                     </div>
                 </div>
@@ -821,11 +833,11 @@
             favContainer.innerHTML = favBooks.map(book => `
                 <div class="book-card">
                     <div class="book-card-image-wrapper">
-                        <img src="${book.cover}" onclick="window.location.href='detail.html?id=${book.id}'" alt="${book.title}">
+                        <img src="${book.cover}" onclick="window.location.href='book-details.html?id=${book.id}'" alt="${book.title}">
                     </div>
                     <h3>${book.title}</h3>
                     <div class="actions">
-                        <button class="btn btn-read" onclick="window.location.href='detail.html?id=${book.id}'"><i class="fas fa-info-circle"></i> Details</button>
+                        <button class="btn btn-read" onclick="window.location.href='book-details.html?id=${book.id}'"><i class="fas fa-info-circle"></i> Details</button>
                     </div>
                 </div>
             `).join('');
