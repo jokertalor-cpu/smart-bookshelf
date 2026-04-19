@@ -23,15 +23,19 @@
         .section-title.fav { border-left-color: var(--heart); }
 
         .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; min-height: 100px; }
-        .book-card { background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: 0.3s; display: flex; flex-direction: column; }
+        .book-card { background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: 0.3s; display: flex; flex-direction: column; position: relative; }
         .book-card img { width: 100%; height: 190px; object-fit: cover; border-radius: 8px; cursor: pointer; }
         .book-card h3 { font-size: 13px; margin: 10px 0; height: 38px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: #3c4043; }
 
         .actions { display: flex; flex-direction: column; gap: 5px; margin-top: auto; }
         .btn { border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; }
         .btn-read { background: var(--primary); color: white; }
+        .btn-download { background: #e8f0fe; color: #1a73e8; }
         .btn-delete { background: #feeef3; color: var(--danger); }
         .btn-info { background: #f1f3f4; color: #5f6368; }
+
+        .download-badge { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; display: none; }
+        .book-card.offline .download-badge { display: block; }
 
         .empty-state { text-align: center; padding: 40px; color: #70757a; grid-column: 1/-1; background: #fff; border-radius: 12px; }
         .auth-notice { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 12px; border-radius: 10px; margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; font-size: 13px; }
@@ -81,10 +85,10 @@
         </div>
 
         <div class="section-title">
-            <i class="fas fa-download"></i> အော့ဖ်လိုင်းဖတ်ရန် သိမ်းထားသည်များ
+            <i class="fas fa-cloud"></i> ကျွန်ုပ်၏ စာအုပ်များ
         </div>
         <div id="library-grid" class="book-grid">
-            <p style="grid-column: 1/-1; text-align: center;">ဒေါင်းလုဒ်များကို စစ်ဆေးနေသည်...</p>
+            <p style="grid-column: 1/-1; text-align: center;">စာအုပ်စာရင်းများကို စစ်ဆေးနေသည်...</p>
         </div>
 
         <div class="section-title fav">
@@ -97,7 +101,7 @@
 
     <div class="sync-status" id="syncStatus">
         <div class="spinner"></div>
-        <span>ဒေတာများ ညှိနှိုင်းနေသည်...</span>
+        <span id="syncText">ဒေတာများ ညှိနှိုင်းနေသည်...</span>
     </div>
 
 <script>
@@ -109,6 +113,10 @@
     db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
     let currentUser = null;
+    let isOffline = !navigator.onLine;
+
+    window.addEventListener('online', () => { isOffline = false; syncAll(); });
+    window.addEventListener('offline', () => { isOffline = true; renderLibrary(); });
 
     window.onload = async () => {
         const { data: { session } } = await sb.auth.getSession();
@@ -140,7 +148,6 @@
                 document.getElementById('login-reminder').style.display = 'flex';
                 document.getElementById('logout-btn').style.display = 'none';
                 localStorage.removeItem('my_likes');
-                // Clear Dexie on logout to ensure privacy and fresh start
                 await db.savedBooks.clear();
                 location.reload();
             }
@@ -148,45 +155,50 @@
     }
 
     async function syncAll() {
-        if (!currentUser) return;
-        showSyncStatus(true);
+        if (!currentUser || isOffline) {
+            await renderLibrary();
+            await renderFavorites();
+            return;
+        }
+
+        showSyncStatus(true, "စာရင်းများ ညှိနှိုင်းနေသည်...");
         try {
-            // 1. Sync Favorites (Supabase to Local)
-            const { data: likesData, error: likesError } = await sb
-                .from('user_likes')
-                .select('book_id')
-                .eq('user_id', currentUser.id);
-            
-            if (!likesError && likesData) {
-                const likedIds = likesData.map(i => i.book_id.toString());
-                localStorage.setItem('my_likes', JSON.stringify(likedIds));
+            // 1. Sync Favorites
+            const { data: likesData } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
+            if (likesData) {
+                localStorage.setItem('my_likes', JSON.stringify(likesData.map(i => i.book_id.toString())));
             }
 
-            // 2. Sync Downloads (Only Supabase data remains in Dexie)
+            // 2. Sync Downloads Metadata (Cloud-First UI)
             const { data: downloadsData, error: downloadsError } = await sb
                 .from('user_downloads')
                 .select('book_id, books:book_id(id, title, author, cover, download_link)')
                 .eq('user_id', currentUser.id);
 
             if (!downloadsError && downloadsData) {
-                const cloudIds = new Set(downloadsData.filter(d => d.books).map(d => d.books.id.toString()));
-                const localBooks = await db.savedBooks.toArray();
-                const localIds = new Set(localBooks.map(b => b.id.toString()));
-
-                // Step A: Remove any book from Dexie that is NOT in Supabase Account
-                for (const localBook of localBooks) {
-                    const localIdStr = localBook.id.toString();
-                    if (!cloudIds.has(localIdStr)) {
-                        await db.savedBooks.delete(localBook.id);
-                        if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
+                const cloudBooks = downloadsData.filter(d => d.books).map(d => d.books);
+                
+                // Silent Background Sync: Update metadata in Dexie without deleting fileData if exists
+                for (const book of cloudBooks) {
+                    const existing = await db.savedBooks.get(book.id.toString());
+                    if (!existing) {
+                        // Metadata Cache: Put basic info first
+                        await db.savedBooks.put({
+                            id: book.id.toString(),
+                            title: book.title,
+                            author: book.author,
+                            cover: book.cover,
+                            fileData: null // Mark as not downloaded yet
+                        });
                     }
                 }
 
-                // Step B: Add missing books from Supabase to Dexie (for new devices or cleared data)
-                for (const item of downloadsData) {
-                    const book = item.books;
-                    if (book && !localIds.has(book.id.toString())) {
-                        await downloadAndSave(book);
+                // Remove local books that are no longer in cloud
+                const cloudIds = new Set(cloudBooks.map(b => b.id.toString()));
+                const localBooks = await db.savedBooks.toArray();
+                for (const lb of localBooks) {
+                    if (!cloudIds.has(lb.id.toString())) {
+                        await db.savedBooks.delete(lb.id);
                     }
                 }
             }
@@ -199,42 +211,63 @@
         }
     }
 
-    async function downloadAndSave(book) {
+    async function downloadAndSave(bookId) {
+        const book = await db.savedBooks.get(bookId);
+        if (!book) return;
+
+        showSyncStatus(true, `"${book.title}" ကို ဒေါင်းလုဒ်လုပ်နေသည်...`);
         try {
-            const url = book.download_link;
-            if (!url) return;
+            // Get download link from Supabase if not in Dexie
+            const { data, error } = await sb.from('books').select('download_link').eq('id', bookId).single();
+            if (error || !data.download_link) throw new Error("Download link not found");
+
+            const res = await fetch(data.download_link);
+            if (!res.ok) throw new Error("Download failed");
             
-            const res = await fetch(url);
-            if (res.ok) {
-                const blob = await res.blob();
-                await db.savedBooks.put({
-                    id: book.id.toString(),
-                    title: book.title,
-                    author: book.author,
-                    cover: book.cover,
-                    fileData: blob
-                });
-            }
-        } catch (e) { console.error("Download Error:", e); }
+            const blob = await res.blob();
+            await db.savedBooks.update(bookId, { fileData: blob });
+            
+            Swal.fire({ title: 'အောင်မြင်ပါသည်', text: `"${book.title}" ကို ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ။`, icon: 'success', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+        } catch (e) {
+            console.error("Download Error:", e);
+            Swal.fire('အမှားအယွင်း', 'ဒေါင်းလုဒ်လုပ်၍မရပါ။ အင်တာနက်ပြန်စစ်ပေးပါ။', 'error');
+        } finally {
+            showSyncStatus(false);
+            await renderLibrary();
+        }
     }
 
     async function renderLibrary() {
         const grid = document.getElementById('library-grid');
-        const books = await db.savedBooks.toArray();
+        let books = await db.savedBooks.toArray();
+
+        // Offline Support: Filter only books with fileData when offline
+        if (isOffline) {
+            books = books.filter(b => b.fileData !== null);
+        }
+
         if (books.length === 0) {
-            grid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open fa-2x"></i><p>သိမ်းထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
+            grid.innerHTML = `<div class="empty-state"><i class="fas fa-cloud-download-alt fa-2x"></i><p>${isOffline ? 'အော့ဖ်လိုင်းဖတ်ရန် သိမ်းထားသောစာအုပ် မရှိပါ။' : 'စာအုပ်စာရင်း မရှိသေးပါ။'}</p></div>`;
             return;
         }
-        grid.innerHTML = books.map(book => `
-            <div class="book-card">
-                <img src="${book.cover}" loading="lazy" onclick="openReader('${book.id}')" alt="${book.title}">
-                <h3>${book.title}</h3>
-                <div class="actions">
-                    <button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> ဆက်ဖတ်မည်</button>
-                    <button class="btn btn-delete" onclick="confirmDelete('${book.id}', 'download')"><i class="fas fa-trash"></i> ဖယ်ရှားမည်</button>
+
+        grid.innerHTML = books.map(book => {
+            const isDownloaded = book.fileData !== null;
+            return `
+                <div class="book-card ${isDownloaded ? 'offline' : ''}">
+                    <div class="download-badge"><i class="fas fa-check-circle"></i> Offline</div>
+                    <img src="${book.cover}" loading="lazy" onclick="${isDownloaded ? `openReader('${book.id}')` : `downloadAndSave('${book.id}')`}" alt="${book.title}">
+                    <h3>${book.title}</h3>
+                    <div class="actions">
+                        ${isDownloaded 
+                            ? `<button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> Read</button>`
+                            : `<button class="btn btn-download" onclick="downloadAndSave('${book.id}')"><i class="fas fa-download"></i> Download</button>`
+                        }
+                        <button class="btn btn-delete" onclick="confirmDelete('${book.id}', 'download')"><i class="fas fa-trash"></i> Remove</button>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     async function renderFavorites() {
@@ -247,75 +280,67 @@
         }
 
         try {
-            const numericIds = likedIds.map(id => parseInt(id)).filter(id => !isNaN(id));
-            if (numericIds.length === 0) {
-                favContainer.innerHTML = `<div class="empty-state"><i class="far fa-heart fa-2x"></i><p>အသဲပေးထားသောစာအုပ် မရှိသေးပါ။</p></div>`;
-                return;
-            }
-
-            const { data, error } = await sb.from('books').select('id, title, cover').in('id', numericIds);
+            const { data: favBooks, error } = await sb.from('books').select('*').in('id', likedIds);
             if (error) throw error;
 
-            if (data && data.length > 0) {
-                favContainer.innerHTML = data.map(item => `
-                    <div class="book-card">
-                        <img src="${item.cover}" alt="${item.title}" loading="lazy" onclick="location.href='detail.html?id=${item.id}'">
-                        <h3>${item.title}</h3>
-                        <div class="actions">
-                            <button class="btn btn-info" onclick="location.href='detail.html?id=${item.id}'"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
-                            <button class="btn btn-delete" onclick="confirmDelete('${item.id}', 'fav')"><i class="fas fa-heart-broken"></i> မကြိုက်တော့ပါ</button>
-                        </div>
+            favContainer.innerHTML = favBooks.map(book => `
+                <div class="book-card">
+                    <img src="${book.cover}" onclick="window.location.href='detail.html?id=${book.id}'">
+                    <h3>${book.title}</h3>
+                    <div class="actions">
+                        <button class="btn btn-info" onclick="window.location.href='detail.html?id=${book.id}'"><i class="fas fa-info-circle"></i> အသေးစိတ်</button>
                     </div>
-                `).join('');
-            } else {
-                favContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#888;">စာအုပ်အချက်အလက်များ ရှာမတွေ့ပါ။</p>`;
-            }
-        } catch (err) {
-            console.error("Fetch Favorites Error:", err);
-            favContainer.innerHTML = `<p style="text-align:center; color:#888;">ဒေတာများ ဆွဲယူရာတွင် အမှားရှိနေပါသည်။</p>`;
+                </div>
+            `).join('');
+        } catch (e) {
+            favContainer.innerHTML = `<p style="text-align:center; color:red;">အမှားအယွင်းရှိနေပါသည်။</p>`;
         }
     }
 
-    function openReader(id) { window.location.href = `reader.html?id=${id}&mode=offline`; }
-
-    function confirmDelete(id, type) {
-        const msg = type === 'download' ? "အော့ဖ်လိုင်းစာရင်းမှ ဖျက်မှာလား?" : "အသဲပေးစာရင်းမှ ဖယ်မှာလား?";
-        Swal.fire({
-            title: msg, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ea4335',
-            confirmButtonText: 'သေချာသည်', cancelButtonText: 'မလုပ်တော့ပါ'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                if (type === 'download') {
-                    // Local Delete
-                    await db.savedBooks.delete(id);
-                    await db.savedBooks.delete(Number(id));
-                    // Cloud Delete
-                    if (currentUser) {
-                        await sb.from('user_downloads').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
-                    }
-                    await renderLibrary();
-                } else {
-                    // Local Delete
-                    let likes = JSON.parse(localStorage.getItem('my_likes') || '[]');
-                    likes = likes.filter(item => item != id);
-                    localStorage.setItem('my_likes', JSON.stringify(likes));
-                    // Cloud Delete
-                    if (currentUser) {
-                        await sb.from('user_likes').delete().eq('user_id', currentUser.id).eq('book_id', parseInt(id));
-                    }
-                    await renderFavorites();
-                }
-                Swal.fire({ title: "ဖယ်ရှားပြီးပါပြီ", icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-            }
-        });
+    function openReader(id) {
+        window.location.href = `reader.html?id=${id}`;
     }
 
-    function showSyncStatus(show) {
-        document.getElementById('syncStatus').classList.toggle('active', show);
+    async function confirmDelete(id, type) {
+        const result = await Swal.fire({
+            title: 'ဖယ်ရှားမည်လား?',
+            text: "စက်ထဲမှ ဖယ်ရှားလိုက်သော်လည်း Cloud တွင် စာရင်းရှိနေပါမည်။",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ea4335',
+            confirmButtonText: 'ဖယ်ရှားမည်',
+            cancelButtonText: 'မလုပ်တော့ပါ'
+        });
+
+        if (result.isConfirmed) {
+            if (type === 'download') {
+                // Keep metadata, only clear fileData to simulate "Remove Download" but keep in Library
+                await db.savedBooks.update(id, { fileData: null });
+                await renderLibrary();
+                Swal.fire('ဖယ်ရှားပြီးပါပြီ', 'စက်ထဲမှ ဖိုင်ကို ဖယ်ရှားလိုက်ပါပြီ။', 'success');
+            }
+        }
+    }
+
+    function showSyncStatus(show, text = "") {
+        const el = document.getElementById('syncStatus');
+        if (text) document.getElementById('syncText').textContent = text;
+        el.style.display = show ? 'flex' : 'none';
+        if (show) el.classList.add('active');
+        else el.classList.remove('active');
     }
 
     async function handleLogout() {
-        await sb.auth.signOut();
+        const result = await Swal.fire({
+            title: 'ထွက်မည်လား?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'ထွက်မည်',
+            cancelButtonText: 'မထွက်ပါ'
+        });
+        if (result.isConfirmed) {
+            await sb.auth.signOut();
+        }
     }
 </script>
 </body>

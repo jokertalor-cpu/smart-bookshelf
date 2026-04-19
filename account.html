@@ -360,111 +360,82 @@
     </nav>
 
     <div class="container">
-        <!-- User Header -->
-        <div class="account-header" id="accountHeader">
-            <div class="avatar">
+        <div class="account-header">
+            <div class="avatar" id="userAvatar">
                 <i class="fas fa-user"></i>
             </div>
             <div class="user-info">
                 <h1 id="userName">Loading...</h1>
-                <p id="userEmail">-</p>
-                <p id="userCreated">-</p>
-                <div class="user-status">
-                    <i class="fas fa-check-circle"></i> အကောင့်သည် ရှင်းလင်းပါသည်
-                </div>
+                <p id="userEmail">...</p>
+                <p id="userCreated">...</p>
+                <span class="user-status"><i class="fas fa-check-circle"></i> Active Member</span>
             </div>
         </div>
 
-        <!-- Statistics -->
-        <div class="section">
-            <h2><i class="fas fa-chart-bar"></i> အကျဉ်းချုပ်စာရင်းအင်း</h2>
-            <div class="stats-grid" id="statsGrid">
-                <div class="stat-card">
-                    <div class="number" id="downloadCount">0</div>
-                    <div class="label">ဒေါင်းလုဒ်စာအုပ်များ</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="favoriteCount">0</div>
-                    <div class="label">အသဲပေးစာအုပ်များ</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="readingCount">0</div>
-                    <div class="label">ဖတ်လက်စစာအုပ်များ</div>
-                </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number" id="downloadCount">0</div>
+                <div class="label">MY BOOKS</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="readingCount">0</div>
+                <div class="label">OFFLINE BOOKS</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="favoriteCount">0</div>
+                <div class="label">FAVORITES</div>
             </div>
         </div>
 
-        <!-- Profile Settings -->
         <div class="section">
             <h2><i class="fas fa-user-edit"></i> ကိုယ်ရေးအချက်အလက် ပြင်ဆင်ရန်</h2>
-            <div id="profileForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="nameInput">အမည်</label>
-                        <input type="text" id="nameInput" placeholder="သင့်အမည်">
-                    </div>
-                    <div class="form-group">
-                        <label for="phoneInput">ဖုန်းနံပါတ်</label>
-                        <input type="text" id="phoneInput" placeholder="၀၉xxxxxxxxx">
-                    </div>
+            <div class="form-group">
+                <label>အမည်</label>
+                <input type="text" id="nameInput" placeholder="သင့်အမည်">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ဖုန်းနံပါတ်</label>
+                    <input type="tel" id="phoneInput" placeholder="၀၉xxxxxxxxx">
                 </div>
                 <div class="form-group">
-                    <label for="bioInput">ကိုယ်ရေးအကျဉ်း (Bio)</label>
-                    <textarea id="bioInput" placeholder="သင့်အကြောင်း အနည်းငယ်ဖော်ပြပါ"></textarea>
+                    <label>Bio</label>
+                    <textarea id="bioInput" placeholder="သင့်အကြောင်း အနည်းငယ်..."></textarea>
                 </div>
-                <button class="btn btn-primary" onclick="saveProfile()">
-                    <i class="fas fa-save"></i> သိမ်းဆည်းမည်
-                </button>
             </div>
+            <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> သိမ်းဆည်းမည်</button>
         </div>
 
-        <!-- Security -->
         <div class="section">
-            <h2><i class="fas fa-shield-alt"></i> လုံခြုံရေး</h2>
-            <div id="passwordForm">
+            <h2><i class="fas fa-lock"></i> စကားဝှက် ပြောင်းလဲရန်</h2>
+            <div class="form-row">
                 <div class="form-group">
-                    <label for="currentPassword">လက်ရှိ စကားဝှက်</label>
-                    <input type="password" id="currentPassword" placeholder="••••••••">
+                    <label>စကားဝှက်အသစ်</label>
+                    <input type="password" id="newPassword" placeholder="Password အသစ်">
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newPassword">စကားဝှက်သစ်</label>
-                        <input type="password" id="newPassword" placeholder="••••••••">
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">စကားဝှက်သစ်ကို အတည်ပြုပါ</label>
-                        <input type="password" id="confirmPassword" placeholder="••••••••">
-                    </div>
-                </div>
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="changePassword()">
-                        <i class="fas fa-key"></i> စကားဝှက်ပြောင်းလဲမည်
-                    </button>
-                    <button class="btn btn-danger" onclick="confirmDeleteAccount()">
-                        <i class="fas fa-user-times"></i> အကောင့်ဖျက်သိမ်းမည်
-                    </button>
+                <div class="form-group">
+                    <label>စကားဝှက်ကို အတည်ပြုပါ</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password">
                 </div>
             </div>
+            <button class="btn btn-primary" onclick="changePassword()"><i class="fas fa-key"></i> စကားဝှက်ပြောင်းမည်</button>
         </div>
 
-        <!-- Activity Log -->
         <div class="section">
-            <h2><i class="fas fa-history"></i> လုပ်ဆောင်ချက်မှတ်တမ်း</h2>
+            <h2><i class="fas fa-history"></i> လတ်တလော လုပ်ဆောင်ချက်များ</h2>
             <div id="activityLog">
-                <p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်းများကို ဆွဲယူနေသည်...</p>
+                <p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်များကို ရယူနေသည်...</p>
             </div>
         </div>
 
-        <!-- Logout Button -->
-        <div style="text-align: center; margin-bottom: 50px;">
-            <button class="btn btn-secondary" onclick="handleLogout()" style="width: 200px; justify-content: center;">
-                <i class="fas fa-sign-out-alt"></i> အကောင့်မှ ထွက်မည်
-            </button>
+        <div class="button-group">
+            <button class="btn btn-secondary" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> အကောင့်မှ ထွက်မည်</button>
+            <button class="btn btn-danger" onclick="confirmDeleteAccount()"><i class="fas fa-user-slash"></i> အကောင့်ဖျက်သိမ်းမည်</button>
         </div>
     </div>
 
     <script>
-        const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co";
+        const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
         const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
         const sb = supabase.createClient(SB_URL, SB_KEY);
 
@@ -478,45 +449,46 @@
             if (session) {
                 currentUser = session.user;
                 updateUI();
-                await syncAndLoadData();
+                await syncAll();
             } else {
                 window.location.href = 'auth.html';
             }
         };
 
-        async function syncAndLoadData() {
+        async function syncAll() {
+            if (!currentUser) return;
             document.getElementById('syncOverlay').style.display = 'flex';
             try {
-                // 1. Sync Favorites (Supabase First)
-                const { data: likesData } = await sb.from('user_likes').select('book_id').eq('user_id', currentUser.id);
-                if (likesData) {
-                    const likedIds = likesData.map(i => i.book_id.toString());
-                    localStorage.setItem('my_likes', JSON.stringify(likedIds));
-                }
-
-                // 2. Sync Downloads (Supabase First - Exact Sync)
+                // Silent Background Sync: Check cloud downloads and sync metadata to Dexie
                 const { data: downloadsData } = await sb
                     .from('user_downloads')
-                    .select('book_id, books:book_id(id, title, author, cover, download_link)')
+                    .select('book_id, books:book_id(id, title, author, cover)')
                     .eq('user_id', currentUser.id);
 
                 if (downloadsData) {
-                    const cloudIds = new Set(downloadsData.filter(d => d.books).map(d => d.books.id.toString()));
-                    const localBooks = await db.savedBooks.toArray();
-                    const localIds = new Set(localBooks.map(b => b.id.toString()));
-
-                    // Step A: Remove any book from Dexie that is NOT in Supabase Account
-                    for (const localBook of localBooks) {
-                        if (!cloudIds.has(localBook.id.toString())) {
-                            await db.savedBooks.delete(localBook.id);
-                            if (!isNaN(localBook.id)) await db.savedBooks.delete(Number(localBook.id));
+                    const cloudBooks = downloadsData.filter(d => d.books).map(d => d.books);
+                    
+                    // Update Dexie metadata (Metadata Cache logic)
+                    for (const book of cloudBooks) {
+                        const existing = await db.savedBooks.get(book.id.toString());
+                        if (!existing) {
+                            // If not in Dexie, put metadata only (Cloud-First)
+                            await db.savedBooks.put({
+                                id: book.id.toString(),
+                                title: book.title,
+                                author: book.author,
+                                cover: book.cover,
+                                fileData: null
+                            });
                         }
                     }
 
-                    // Step B: Add missing books from Supabase to Dexie
-                    for (const item of downloadsData) {
-                        if (item.books && !localIds.has(item.books.id.toString())) {
-                            await downloadAndSave(item.books);
+                    // Remove local metadata if no longer in cloud
+                    const cloudIds = new Set(cloudBooks.map(b => b.id.toString()));
+                    const localBooks = await db.savedBooks.toArray();
+                    for (const lb of localBooks) {
+                        if (!cloudIds.has(lb.id.toString())) {
+                            await db.savedBooks.delete(lb.id);
                         }
                     }
                 }
@@ -528,23 +500,6 @@
             } finally {
                 document.getElementById('syncOverlay').style.display = 'none';
             }
-        }
-
-        async function downloadAndSave(book) {
-            try {
-                if (!book.download_link) return;
-                const res = await fetch(book.download_link);
-                if (res.ok) {
-                    const blob = await res.blob();
-                    await db.savedBooks.put({
-                        id: book.id.toString(),
-                        title: book.title,
-                        author: book.author,
-                        cover: book.cover,
-                        fileData: blob
-                    });
-                }
-            } catch (e) { console.error(e); }
         }
 
         function updateUI() {
@@ -612,7 +567,8 @@
                 document.getElementById('favoriteCount').textContent = favoriteCount || 0;
                 
                 const localBooks = await db.savedBooks.toArray();
-                document.getElementById('readingCount').textContent = localBooks.length;
+                const offlineCount = localBooks.filter(b => b.fileData !== null).length;
+                document.getElementById('readingCount').textContent = offlineCount;
             } catch (err) { console.error(err); }
         }
 
@@ -631,9 +587,18 @@
         }
 
         async function handleLogout() {
-            await sb.auth.signOut();
-            await db.savedBooks.clear();
-            window.location.href = 'auth.html';
+            const result = await Swal.fire({
+                title: 'ထွက်မည်လား?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ထွက်မည်',
+                cancelButtonText: 'မထွက်ပါ'
+            });
+            if (result.isConfirmed) {
+                await sb.auth.signOut();
+                await db.savedBooks.clear();
+                window.location.href = 'auth.html';
+            }
         }
 
         async function confirmDeleteAccount() {
