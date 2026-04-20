@@ -821,11 +821,11 @@
             favContainer.innerHTML = favBooks.map(book => `
                 <div class="book-card">
                     <div class="book-card-image-wrapper">
-                        <img src="${book.cover}" onclick="window.location.href='book-details.html?id=${book.id}'" alt="${book.title}">
+                        <img src="${book.cover}" onclick="window.location.href='detail.html?id=${book.id}'" alt="${book.title}">
                     </div>
                     <h3>${book.title}</h3>
                     <div class="actions">
-                        <button class="btn btn-read" onclick="window.location.href='book-details.html?id=${book.id}'"><i class="fas fa-info-circle"></i> Details</button>
+                        <button class="btn btn-read" onclick="window.location.href='detail.html?id=${book.id}'"><i class="fas fa-info-circle"></i> Details</button>
                     </div>
                 </div>
             `).join('');
