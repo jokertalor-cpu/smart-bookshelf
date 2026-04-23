@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Smart Bookshelf</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #f9f9f9; }
+        .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1 { color: #1a73e8; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #202124; margin-top: 30px; }
+        p, li { font-size: 15px; color: #5f6368; }
+        ul { padding-left: 20px; }
+        .back-btn { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px;
+            margin-bottom: 20px; 
+            color: #1a73e8; 
+            text-decoration: none; 
+            font-weight: 600; 
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            font-size: 16px;
+        }
+        .back-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="goBack()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> ရှေ့သို့ပြန်သွားရန်
+        </button>
+
+        <h1>ကိုယ်ရေးအချက်အလက်မူဝါဒ (Privacy Policy)</h1>
+        <p>နောက်ဆုံးပြင်ဆင်သည့်ရက်စွဲ - ဧပြီ ၂၃၊ ၂၀၂၆</p>
+
+        <h2>၁။ ကျွန်ုပ်တို့ စုဆောင်းသော အချက်အလက်များ</h2>
+        <p>သင် ဝန်ဆောင်မှုကို အသုံးပြုသည့်အခါ အောက်ပါ အချက်အလက်များကို စုဆောင်းနိုင်ပါသည် -</p>
+        <ul>
+            <li>အကောင့်ဖွင့်ရာတွင် အသုံးပြုသော အီးမေးလ်လိပ်စာ။</li>
+            <li>Google Login အသုံးပြုပါက သင်၏ အမည်နှင့် ပရိုဖိုင်ပုံ။</li>
+            <li>စနစ်အတွင်း သင် သိမ်းဆည်းထားသော စာအုပ်များနှင့် မှတ်တမ်းများ။</li>
+        </ul>
+
+        <h2>၂။ အချက်အလက်များကို အသုံးပြုပုံ</h2>
+        <ul>
+            <li>ဝန်ဆောင်မှုကို ကောင်းမွန်စွာ ပေးဆောင်နိုင်ရန်။</li>
+            <li>အကောင့်လုံခြုံရေးနှင့် မမှန်မကန် အသုံးပြုမှုများကို တားဆီးရန်။</li>
+        </ul>
+
+        <h2>၃။ အချက်အလက် မျှဝေခြင်း</h2>
+        <p>သင်၏ ကိုယ်ရေးအချက်အလက်များကို အခြား ပြင်ပအဖွဲ့အစည်းများထံ ရောင်းချခြင်း သို့မဟုတ် မျှဝေခြင်း လုံးဝ ပြုလုပ်မည် မဟုတ်ပါ။</p>
+
+        <h2>၄။ အချက်အလက် ကာကွယ်ရေး</h2>
+        <p>ကျွန်ုပ်တို့သည် သင်၏ အချက်အလက်များကို ခေတ်မီ နည်းပညာများ အသုံးပြု၍ လုံခြုံစွာ သိမ်းဆည်းထားပါသည်။</p>
+    </div>
+
+    <script>
+       function goBack() {
+    // URL ထဲမှာပါတဲ့ Parameter တွေကို ဖတ်မယ်
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from');
+
+    if (from === 'auth') {
+        // အကယ်၍ auth page က လာတာဆိုရင် auth.html ကို ပြန်သွားမယ်
+        window.location.href = 'auth.html';
+    } else if (from === 'home') {
+        // အကယ်၍ home page က လာတာဆိုရင် index.html ကို ပြန်သွားမယ်
+        window.location.href = 'index.html';
+    } else {
+        // အကယ်၍ parameter မပါဘဲ တိုက်ရိုက်ဝင်လာတာဆိုရင် (ဥပမာ- link ကို copy ကူးပြီး ဝင်တာမျိုး)
+        // index.html ကို default အနေနဲ့ ပြန်ပို့ပေးမယ်
+        window.location.href = 'index.html';
+    }
+}
+    </script>
+</body>
+</html>

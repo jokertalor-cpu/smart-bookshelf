@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Smart Bookshelf</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #f9f9f9; }
+        .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1 { color: #1a73e8; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #202124; margin-top: 30px; }
+        p, li { font-size: 15px; color: #5f6368; }
+        ul { padding-left: 20px; }
+        .back-btn { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px;
+            margin-bottom: 20px; 
+            color: #1a73e8; 
+            text-decoration: none; 
+            font-weight: 600; 
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            font-size: 16px;
+        }
+        .back-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="goBack()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> ရှေ့သို့ပြန်သွားရန်
+        </button>
+        
+        <h1>အသုံးပြုမှုစည်းမျဉ်းများ (Terms of Service)</h1>
+        <p>နောက်ဆုံးပြင်ဆင်သည့်ရက်စွဲ - ဧပြီ ၂၃၊ ၂၀၂၆</p>
+
+        <h2>၁။ ဝန်ဆောင်မှုဆိုင်ရာ သဘောတူညီချက်</h2>
+        <p>Smart Bookshelf ဝန်ဆောင်မှုကို အသုံးပြုခြင်းဖြင့် သင်သည် ဤစည်းမျဉ်းများကို လိုက်နာရန် သဘောတူညီပြီး ဖြစ်ပါသည်။ ဤစည်းမျဉ်းများကို သဘောမတူပါက ဝန်ဆောင်မှုကို အသုံးပြုခြင်း မပြုပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။</p>
+
+        <h2>၂။ အကောင့်ဖွင့်လှစ်ခြင်းနှင့် လုံခြုံရေး</h2>
+        <ul>
+            <li>အကောင့်တစ်ခုလျှင် အီးမေးလ်လိပ်စာ တစ်ခုသာ အသုံးပြုခွင့်ရှိပါသည်။</li>
+            <li>သင်၏ အကောင့်ဝင်ရောက်ခွင့် အချက်အလက်များကို လုံခြုံစွာ ထိန်းသိမ်းရန်မှာ သင်၏ တာဝန်ဖြစ်ပါသည်။</li>
+            <li>အကောင့်ကို အခြားသူများအား မျှဝေသုံးစွဲခြင်း မပြုလုပ်ရပါ။</li>
+        </ul>
+
+        <h2>၃။ အသုံးပြုသူ၏ တာဝန်ဝတ္တရားများ</h2>
+        <p>ဝန်ဆောင်မှုကို အသုံးပြုရာတွင် အောက်ပါအချက်များကို ရှောင်ကြဉ်ရပါမည် -</p>
+        <ul>
+            <li>မူပိုင်ခွင့် ချိုးဖောက်ထားသော စာအုပ်များနှင့် အချက်အလက်များကို တင်ပြခြင်း။</li>
+            <li>စနစ်၏ လုံခြုံရေးကို ထိခိုက်စေမည့် လုပ်ဆောင်ချက်များ ပြုလုပ်ခြင်း။</li>
+        </ul>
+
+        <h2>၄။ ဝန်ဆောင်မှု ရပ်စဲခြင်း</h2>
+        <p>အသုံးပြုမှုစည်းမျဉ်းများကို ချိုးဖောက်ကြောင်း တွေ့ရှိပါက ကျွန်ုပ်တို့သည် မည်သည့် ကြိုတင်အကြောင်းကြားမှုမျှ မပြုလုပ်ဘဲ သင်၏ အကောင့်ကို ယာယီ သို့မဟုတ် အပြီးအပိုင် ပိတ်သိမ်းပိုင်ခွင့် ရှိပါသည်။</p>
+    </div>
+
+    <script>
+       function goBack() {
+    // URL ထဲမှာပါတဲ့ Parameter တွေကို ဖတ်မယ်
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from');
+
+    if (from === 'auth') {
+        // အကယ်၍ auth page က လာတာဆိုရင် auth.html ကို ပြန်သွားမယ်
+        window.location.href = 'auth.html';
+    } else if (from === 'home') {
+        // အကယ်၍ home page က လာတာဆိုရင် index.html ကို ပြန်သွားမယ်
+        window.location.href = 'index.html';
+    } else {
+        // အကယ်၍ parameter မပါဘဲ တိုက်ရိုက်ဝင်လာတာဆိုရင် (ဥပမာ- link ကို copy ကူးပြီး ဝင်တာမျိုး)
+        // index.html ကို default အနေနဲ့ ပြန်ပို့ပေးမယ်
+        window.location.href = 'index.html';
+    }
+}
+    </script>
+</body>
+</html>
