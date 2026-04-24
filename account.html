@@ -444,18 +444,48 @@
             background: #feeef3;
             color: var(--danger);
         }
-        @media (max-width: 768px) {
-    nav {
-        padding: 10px 3%;
+        /* Responsive adjustments */
+@media (max-width: 768px) {
+    /* Navbar links ထဲက စာသားတွေကို ဖျောက်ပြီး Icon သီးသန့်ပြခြင်း */
+    .nav-links a {
+        font-size: 18px; /* Icon ဆိုဒ်ကို နည်းနည်းကြီးအောင် ထားပါ */
+        padding: 5px;
     }
-    .nav-links a span {
-        display: none; /* စာသားကို ဖျောက်ပြီး Icon ပဲ ပြထားမယ် */
+
+    /* Anchor tag ထဲက စာသားတွေကိုပဲ ရွေးပြီး ဖျောက်လိုက်တာပါ */
+    .nav-links a {
+        display: flex;
+        flex-direction: column;
+        font-size: 0; /* စာသား size ကို 0 ထားပြီး ဖျောက်ထားပါ */
     }
-    .nav-links {
-        gap: 15px;
+
+    /* Font Awesome Icon တွေကို ပြန်ဖော်ပေးပါ */
+    .nav-links a i {
+        font-size: 20px; /* Icon size ကို သတ်မှတ်ပါ */
+        margin: 0;
     }
+
+    /* Logo စာသားကိုပါ ဖျောက်ပြီး Icon ပဲ ပြချင်ရင် ဒါကိုသုံးပါ */
     .logo {
-        font-size: 16px;
+        font-size: 0;
+    }
+    .logo i {
+        font-size: 24px;
+    }
+
+    /* အကောင့် Header နဲ့ တခြားအပိုင်းတွေအတွက် မူလရှိပြီးသား code */
+    .account-header { 
+        flex-direction: column; 
+        text-align: center;
+    }
+    .form-row { 
+        grid-template-columns: 1fr; 
+    }
+    .nav-links { 
+        gap: 15px; 
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
 }
     </style>
