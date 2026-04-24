@@ -526,8 +526,26 @@
                     <input type="text" id="bioInput" placeholder="သင့်အကြောင်း အနည်းငယ်...">
                 </div>
             </div>
+             <!-- Gemini API Key Section -->
+            <div class="section" style="border: 1px solid #e0e0e0; background: #fcfcfc; padding: 20px; margin-top: 20px;">
+                <h2 style="border-bottom-color: var(--warning);"><i class="fas fa-robot" style="color: var(--warning);"></i> AI Assistant Settings</h2>
+                <div class="form-group">
+                    <label>Gemini API Key</label>
+                    <div style="position: relative;">
+                        <input type="password" id="geminiApiKey" placeholder="AI အသုံးပြုရန် API Key ထည့်ပါ">
+                        <button onclick="toggleApiKeyVisibility()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #5f6368;">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                    <p style="font-size: 11px; color: #5f6368; margin-top: 8px;">
+                        <i class="fas fa-info-circle"></i> AI စနစ်ကို အသက်သွင်းရန် Gemini API Key လိုအပ်ပါသည်။ <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--primary);">ဤနေရာတွင်</a> အခမဲ့ ရယူနိုင်ပါသည်။
+                    </p>
+                </div>
+            </div>
+
             <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> သိမ်းဆည်းမည်</button>
         </div>
+
 
         <!-- Password Section -->
         <div class="section">
@@ -665,6 +683,17 @@
             document.getElementById('nameInput').value = metadata.name || '';
             document.getElementById('phoneInput').value = metadata.phone || '';
             document.getElementById('bioInput').value = metadata.bio || '';
+        }
+         function toggleApiKeyVisibility() {
+            const input = document.getElementById('geminiApiKey');
+            const icon = document.getElementById('toggleIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
         }
 
         async function saveProfile() {
@@ -816,7 +845,6 @@
                 document.getElementById('activityLog').innerHTML = logHtml;
             } catch (err) { console.error(err); }
         }
-
         async function handleLogout() {
             const result = await Swal.fire({
                 title: 'ထွက်မည်လား?',
