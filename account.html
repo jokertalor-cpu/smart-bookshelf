@@ -458,6 +458,7 @@
             <i class="fas fa-book"></i> SMART BOOKSHELF
         </a>
         <div class="nav-links">
+            <a href="ai-assistant.html" style="color: #8e44ad;"><i class="fas fa-robot"></i> AI Assistant</a>
             <a href="index.html"><i class="fas fa-home"></i> ပင်မစာမျက်နှာ</a>
             <a href="library.html"><i class="fas fa-book"></i> စာကြည့်တိုက်</a>
             <a href="account.html"><i class="fas fa-user"></i> အကောင့်</a>
@@ -696,28 +697,32 @@
             }
         }
 
-        async function saveProfile() {
-            const btn = event.target;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> သိမ်းဆည်းနေသည်...';
+      async function saveProfile() {
+    const btn = event.target;
+    btn.disabled = true;
+    
+    const name = document.getElementById('nameInput').value;
+    const phone = document.getElementById('phoneInput').value;
+    const bio = document.getElementById('bioInput').value;
+    const apiKey = document.getElementById('geminiApiKey').value; // API Key ယူရန်
 
-            try {
-                const { error } = await sb.auth.updateUser({
-                    data: {
-                        name: document.getElementById('nameInput').value,
-                        phone: document.getElementById('phoneInput').value,
-                        bio: document.getElementById('bioInput').value
-                    }
-                });
-                if (error) throw error;
-                Swal.fire('အောင်မြင်ပါသည်', 'ကိုယ်ရေးအချက်အလက်များကို သိမ်းဆည်းပြီးပါပြီ။', 'success');
-            } catch (err) {
-                Swal.fire('မှားယွင်းမှု', err.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> သိမ်းဆည်းမည်';
+    try {
+        const { error } = await sb.auth.updateUser({
+            data: {
+                name: name,
+                phone: phone,
+                bio: bio,
+                gemini_api_key: apiKey // ဤနေရာတွင် API key ကို metadata ထဲ ထည့်သိမ်းပါ
             }
-        }
+        });
+        if (error) throw error;
+        Swal.fire('အောင်မြင်ပါသည်', 'အချက်အလက်များကို သိမ်းဆည်းပြီးပါပြီ။', 'success');
+    } catch (err) {
+        Swal.fire('မှားယွင်းမှု', err.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
 
         async function changePassword() {
             const newPassword = document.getElementById('newPassword').value;
