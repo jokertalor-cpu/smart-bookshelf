@@ -803,7 +803,7 @@
 
         async function loadActivityLog() {
             try {
-                const { data: downloads, error } = await sb.from('user_downloads').select('downloated_at, books:book_id(title)').eq('user_id', currentUser.id).order('downloated_at', { ascending: false }).limit(15);
+                const { data: downloads, error } = await sb.from('user_downloads').select('downloaded_at, books:book_id(title)').eq('user_id', currentUser.id).order('downloaded_at', { ascending: false }).limit(15);
                 if (error) throw error;
                 
                 const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
