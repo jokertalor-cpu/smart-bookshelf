@@ -17,6 +17,7 @@
             --bg: #f8f9fa;
             --success: #34a853;
             --warning: #fbbc04;
+            --ai-primary: #8e44ad;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,43 +30,48 @@
             overflow-x: hidden;
         }
         
-        .nav-header { 
+        /* Navigation (Match aiassistant.html) */
+        nav { 
             background: white; 
-            padding: 15px 20px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        
-        .nav-container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
+            padding: 15px 5%; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
+            backdrop-filter: blur(10px);
         }
         
-        .nav-container h2 { 
-            font-size: 1.2rem; 
-            color: var(--primary);
+        .logo { 
+            font-size: 20px; 
+            font-weight: 700; 
+            color: var(--primary); 
+            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         
-        .nav-container a { 
-            text-decoration: none; 
-            color: var(--primary); 
-            font-weight: 600; 
-            font-size: 14px; 
-            margin-left: 20px;
-            transition: color 0.3s;
+        .nav-links { 
+            display: flex; 
+            gap: 20px; 
         }
         
-        .nav-container a:hover { 
-            color: #1a73e8; 
+        .nav-links a { 
+            text-decoration: none; 
+            color: #5f6368; 
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        
+        .nav-links a:hover { 
+            color: var(--ai-primary); 
         }
 
         .container { 
@@ -332,23 +338,6 @@
             font-size: 13px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        
-        #logout-btn { 
-            display: none; 
-            background: #f1f3f4; 
-            border: none; 
-            padding: 6px 14px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            color: #5f6368;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        #logout-btn:hover {
-            background: #e8eaed;
-        }
 
         /* Sync Status */
         .sync-status {
@@ -366,98 +355,59 @@
         }
 
         @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
-        .sync-status.active { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
+        .sync-status.active {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .sync-status .spinner { 
-            display: inline-block; 
-            width: 14px; 
-            height: 14px; 
-            border: 2px solid #f3f3f3; 
-            border-top: 2px solid #1a73e8; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        /* Pull to Refresh */
         .pull-to-refresh {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
+            height: 0;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transform: translateY(-100%);
-            transition: transform 0.3s;
-            z-index: 50;
+            transition: height 0.3s;
+            background: #f1f3f4;
         }
 
         .pull-to-refresh.active {
-            transform: translateY(0);
+            height: 60px;
         }
 
-        .pull-to-refresh .spinner {
-            width: 20px;
-            height: 20px;
-            border-width: 2px;
-        }
-
+        /* Responsive adjustments (Match aiassistant.html) */
         @media (max-width: 768px) {
-            .book-grid { 
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-                gap: 12px; 
+            nav { padding: 15px 5%; }
+            .nav-links a {
+                font-size: 0;
+                padding: 5px;
             }
-
-            .book-card img { 
-                height: 160px; 
+            .nav-links a i {
+                font-size: 20px;
+                margin: 0;
             }
-
-            .nav-container {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .nav-container a {
-                margin-left: 0;
-                font-size: 12px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .book-grid { 
-                grid-template-columns: repeat(2, 1fr); 
-                gap: 10px; 
-            }
-
-            .book-card img { 
-                height: 140px; 
-            }
-
-            .section-title {
-                font-size: 1rem;
-            }
+            .logo { font-size: 0; }
+            .logo i { font-size: 24px; }
+            .book-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+            .section-title { font-size: 1.1rem; }
         }
     </style>
 </head>
@@ -467,17 +417,17 @@
         <div class="spinner"></div>
     </div>
 
-    <div class="nav-header">
-        <div class="nav-container">
-            <h2><i class="fas fa-bookmark"></i> စာကြည့်တိုက်</h2>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <a href="ai-assistant.html" style="color: #8e44ad;"><i class="fas fa-robot"></i> AI Assistant</a>
-                <a href="account.html"><i class="fas fa-user"></i> အကောင့်</a>
-                <button id="logout-btn" onclick="handleLogout()" style="background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-sign-out-alt"></i> ထွက်မည်</button>
-                <a href="index.html"><i class="fa-solid fa-house"></i> ပင်မစာမျက်နှာ</a>
-            </div>
+    <nav>
+        <a href="index.html" class="logo">
+            <i class="fas fa-book"></i> SMART BOOKSHELF
+        </a>
+        <div class="nav-links">
+            <a href="ai-assistant.html" style="color: #8e44ad;"><i class="fas fa-robot"></i> AI Assistant</a>
+            <a href="index.html"><i class="fas fa-home"></i> ပင်မစာမျက်နှာ</a>
+            <a href="library.html"><i class="fas fa-book"></i> စာကြည့်တိုက်</a>
+            <a href="account.html"><i class="fas fa-user"></i> အကောင့်</a>
         </div>
-    </div>
+    </nav>
 
     <div class="container">
         <div id="login-reminder" class="auth-notice">
@@ -552,12 +502,10 @@
         if (session) {
             currentUser = session.user;
             document.getElementById('login-reminder').style.display = 'none';
-            document.getElementById('logout-btn').style.display = 'block';
             showSkeletonLoaders();
             await syncAll();
         } else {
             document.getElementById('login-reminder').style.display = 'flex';
-            document.getElementById('logout-btn').style.display = 'none';
             await renderLibrary();
             await renderFavorites();
         }
@@ -566,22 +514,23 @@
     };
 
     function setupAuthListener() {
+        // Auth Listener ကို တစ်ကြိမ်ပဲ initialize လုပ်ဖို့နဲ့ event trigger ဖြစ်တိုင်း reload မဖြစ်အောင် ထိန်းညှိထားပါတယ်
         sb.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-                if (session) {
+            if (event === 'SIGNED_IN') {
+                if (session && (!currentUser || currentUser.id !== session.user.id)) {
                     currentUser = session.user;
                     document.getElementById('login-reminder').style.display = 'none';
-                    document.getElementById('logout-btn').style.display = 'block';
                     showSkeletonLoaders();
                     await syncAll();
                 }
             } else if (event === 'SIGNED_OUT') {
-                currentUser = null;
-                document.getElementById('login-reminder').style.display = 'flex';
-                document.getElementById('logout-btn').style.display = 'none';
-                localStorage.removeItem('my_likes');
-                await db.savedBooks.clear();
-                location.reload();
+                if (currentUser) {
+                    currentUser = null;
+                    document.getElementById('login-reminder').style.display = 'flex';
+                    localStorage.removeItem('my_likes');
+                    await db.savedBooks.clear();
+                    location.reload();
+                }
             }
         });
     }
@@ -665,7 +614,6 @@
         if (!book) return;
 
         try {
-            // Get download link from Supabase
             const { data, error } = await sb.from('books').select('download_link').eq('id', bookId).single();
             if (error || !data.download_link) throw new Error("Download link not found");
 
@@ -692,7 +640,6 @@
                         lastReadDate: new Date().toISOString()
                     });
                     
-                    // Remove from queue
                     await db.downloadQueue.delete(bookId);
                     downloadQueue.delete(bookId);
                     
@@ -707,7 +654,6 @@
 
             xhr.addEventListener('error', async () => {
                 if (retryCount < MAX_RETRIES) {
-                    console.log(`Retrying download for book ${bookId}... (${retryCount + 1}/${MAX_RETRIES})`);
                     await db.downloadQueue.update(bookId, { 
                         retryCount: retryCount + 1,
                         status: 'retrying'
@@ -723,14 +669,13 @@
             xhr.responseType = 'arraybuffer';
             xhr.send();
 
-            // Add to queue
             await db.downloadQueue.put({
                 id: bookId,
                 bookId: bookId,
                 status: 'downloading',
-                retryCount: retryCount,
-                createdAt: new Date().toISOString()
+                retryCount: retryCount
             });
+            downloadQueue.set(bookId, 'downloading');
 
         } catch (e) {
             console.error("Download Error:", e);
@@ -756,7 +701,6 @@
         const grid = document.getElementById('library-grid');
         let books = await db.savedBooks.toArray();
 
-        // Offline Support: Filter only downloaded books
         if (isOffline) {
             books = books.filter(b => b.fileData !== null);
         }
@@ -836,14 +780,12 @@
     }
 
     async function openReader(id) {
-        // Update reading progress
         const book = await db.savedBooks.get(id);
         if (book) {
             await db.savedBooks.update(id, { 
                 lastReadDate: new Date().toISOString()
             });
             
-            // Sync reading progress to Supabase
             if (currentUser) {
                 await sb.from('user_reading_progress').upsert({
                     user_id: currentUser.id,
@@ -886,18 +828,6 @@
         }
     }
 
-    async function handleLogout() {
-        const result = await Swal.fire({
-            title: 'ထွက်မည်လား?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'ထွက်မည်',
-            cancelButtonText: 'မထွက်ပါ'
-        });
-        if (result.isConfirmed) {
-            await sb.auth.signOut();
-        }
-    }
 </script>
 </body>
 </html>
