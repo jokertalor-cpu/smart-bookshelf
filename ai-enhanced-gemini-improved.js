@@ -63,24 +63,30 @@ function analyzeUserPreferences(books) {
         favoriteGenres: Object.entries(genres).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => e[0]),
     };
 }
-
 // ============================================
-// 2. SSE Parser (Improved)
+// 2. SSE Parser (Fixed)
 // ============================================
 function parseGeminiSSELine(line) {
+    // "data: " ဆိုတဲ့ စာသားကို အရင်ဖြုတ်
     if (!line.startsWith('data: ')) return null;
-    const jsonStr = line.replace('data: ', '').trim();
+    let jsonStr = line.replace('data: ', '').trim();
+    
     if (!jsonStr || jsonStr === '[DONE]') return null;
+
     try {
         const json = JSON.parse(jsonStr);
-        return json.candidates?.[0]?.content?.parts?.[0]?.text || 
-               (json.error ? `Error: ${json.error}` : null);
+        
+        // 1. Worker ကနေ {text: "..."} ဆိုပြီး ပို့လာရင်
+        if (json.text) return json.text;
+        
+        // 2. မူရင်း Gemini Streaming format (candidates...) အတွက်
+        return json.candidates?.[0]?.content?.parts?.[0]?.text || null;
+        
     } catch (e) {
-        console.error("SSE JSON Parsing Error:", e, "String:", jsonStr);
-        return null;
+        // အကယ်၍ JSON မဟုတ်ဘဲ စာသားသက်သက် ဖြစ်နေရင်
+        return jsonStr; 
     }
 }
-
 // ============================================
 // 3. Chat Window Toggle (အရင်ကုဒ်မှ ထိန်းထားတယ်)
 // ============================================
