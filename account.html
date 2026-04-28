@@ -637,16 +637,17 @@
         let currentUser = null;
         let readingChart = null;
 
-        window.onload = async () => {
-            const { data: { session } } = await sb.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                updateUI();
-                await syncAll();
-            } else {
-                window.location.href = 'auth.html';
-            }
-        };
+      window.onload = async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+        currentUser = session.user;
+        updateUI();
+        await loadGeminiApiKey();   // ← ဒီနေရာ ထည့်ပါ
+        await syncAll();
+    } else {
+        window.location.href = 'auth.html';
+    }
+};
 
         async function syncAll() {
             if (!currentUser) return;
@@ -740,34 +741,71 @@
                 icon.className = 'fas fa-eye';
             }
         }
-
-      async function saveProfile() {
-    const btn = event.target;
-    btn.disabled = true;
-    
-    const name = document.getElementById('nameInput').value;
-    const phone = document.getElementById('phoneInput').value;
-    const bio = document.getElementById('bioInput').value;
-    const apiKey = document.getElementById('geminiApiKey').value; // API Key ယူရန်
+async function loadGeminiApiKey() {
+    if (!currentUser?.id) return;
 
     try {
-        const { error } = await sb.auth.updateUser({
-            data: {
-                name: name,
-                phone: phone,
-                bio: bio,
-                gemini_api_key: apiKey // ဤနေရာတွင် API key ကို metadata ထဲ ထည့်သိမ်းပါ
-            }
-        });
-        if (error) throw error;
-        Swal.fire('အောင်မြင်ပါသည်', 'အချက်အလက်များကို သိမ်းဆည်းပြီးပါပြီ။', 'success');
+        const { data, error } = await sb
+            .from('user_settings')
+            .select('gemini_api_key')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        const input = document.getElementById('geminiApiKey');
+        if (data && data.gemini_api_key) {
+            input.value = data.gemini_api_key;
+        } else {
+            input.value = '';
+        }
     } catch (err) {
-        Swal.fire('မှားယွင်းမှု', err.message, 'error');
-    } finally {
-        btn.disabled = false;
+        console.error("Failed to load API key:", err);
+        document.getElementById('geminiApiKey').value = '';
     }
 }
 
+async function saveProfile() {
+    const btn = document.querySelector('button[onclick="saveProfile()"]');
+    if (btn) btn.disabled = true;
+
+    const name = document.getElementById('nameInput').value.trim();
+    const phone = document.getElementById('phoneInput').value.trim();
+    const bio = document.getElementById('bioInput').value.trim();
+    const geminiApiKey = document.getElementById('geminiApiKey').value.trim();
+
+    try {
+        // Profile Metadata သိမ်း
+        const { error: metadataError } = await sb.auth.updateUser({
+            data: { name, phone, bio }
+        });
+        if (metadataError) throw metadataError;
+
+        // Gemini API Key သိမ်း
+        const { error: settingsError } = await sb
+            .from('user_settings')
+            .upsert({
+                user_id: currentUser.id,
+                gemini_api_key: geminiApiKey || null
+            }, { onConflict: 'user_id' });
+
+        if (settingsError) throw settingsError;
+
+        Swal.fire({
+            icon: 'success',
+            title: 'အောင်မြင်ပါသည်',
+            text: 'ပရိုဖိုင်နှင့် API Key ကို သိမ်းဆည်းပြီးပါပြီ။',
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+        await loadGeminiApiKey();
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire('မှားယွင်းမှု', err.message || 'မသိရှိနိုင်သော အမှား', 'error');
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
         async function changePassword() {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
@@ -879,21 +917,37 @@
             } catch (err) { console.error(err); }
         }
 
-        async function loadActivityLog() {
-            try {
-                const { data: downloads, error } = await sb.from('user_downloads').select('downloaded_at, books:book_id(title)').eq('user_id', currentUser.id).order('downloaded_at', { ascending: false }).limit(15);
-                if (error) throw error;
-                
-                const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
-                    <div class="activity-item success">
-                        <div class="activity-time"><i class="fas fa-clock"></i> ${new Date(item.created_at).toLocaleString('my-MM')}</div>
-                        <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်</div>
-                    </div>
-                `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
-                
-                document.getElementById('activityLog').innerHTML = logHtml;
-            } catch (err) { console.error(err); }
-        }
+      // loadActivityLog() ကို ဒီလို ပြင်ပါ
+async function loadActivityLog() {
+    try {
+        const { data: downloads, error } = await sb
+            .from('user_downloads')
+            .select('downloaded_at, created_at, books:book_id(title)')   // created_at ထည့်ပါ
+            .eq('user_id', currentUser.id)
+            .order('downloaded_at', { ascending: false })
+            .limit(15);
+
+        if (error) throw error;
+        
+        const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
+            <div class="activity-item success">
+                <div class="activity-time">
+                    <i class="fas fa-clock"></i> 
+                    ${new Date(item.downloaded_at || item.created_at).toLocaleString('my-MM')}
+                </div>
+                <div class="activity-desc">
+                    <i class="fas fa-download"></i> 
+                    "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်
+                </div>
+            </div>
+        `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
+        
+        document.getElementById('activityLog').innerHTML = logHtml;
+    } catch (err) { 
+        console.error(err); 
+        document.getElementById('activityLog').innerHTML = '<p style="color: #ea4335;">မှတ်တမ်း ရယူရန် မအောင်မြင်ပါ။</p>';
+    }
+}
         async function handleLogout() {
             const result = await Swal.fire({
                 title: 'ထွက်မည်လား?',

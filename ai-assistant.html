@@ -799,7 +799,7 @@
         function quickAction(type) {
             let prompt = "";
             if (type === 'translate') {
-                prompt = "ဒီစာသားကို အင်္ဂလိပ်သို့ ဘာသာပြန်ပါ: ";
+                prompt = "ဒီစာသားကို မြန်မာသို့ ဘာသာပြန်ပါ: ";
             } else if (type === 'summarize') {
                 prompt = "ဒီစာသားကို အကျဉ်းချုပ်ပြုလုပ်ပါ: ";
             } else if (type === 'explain') {
@@ -864,8 +864,9 @@ async function sendMessage() {
     document.getElementById('stopBtn').style.display = 'flex';
 
     const messagesDiv = document.getElementById('messagesContainer');
+    const workerUrl = "https://my-ai-proxy.jokertalor.workers.dev/";
 
-    // User Message (wrapper နဲ့ မှန်မှန်ကန်ကန် ထည့်ပါ)
+    // User Message ပြပါ
     messagesDiv.innerHTML += `
         <div class="message-wrapper fade-in">
             <div class="message user">
@@ -903,40 +904,33 @@ async function sendMessage() {
             systemInstruction = {
                 parts: [{
                     text: `You are a helpful AI assistant for a Burmese digital library app.\n\n` +
-                          `You MUST use the following glossary consistently and accurately in ALL your responses:\n` +
-                          `${terms}\n\n` +
-                          `Do not translate these terms differently. Always follow this glossary exactly.`
+                          `You MUST use the following glossary consistently:\n${terms}\n\n` +
+                          `Always follow this glossary exactly.`
                 }]
             };
         }
 
-        let contents = conversationHistory.slice(-20);
-      // model ကို payload အပြင်မှာ သီးသန့် ထုတ်ယူပါ
-const selectedModel = document.getElementById('modelSelect').value || 'gemini-2.5-flash';
+        const selectedModel = document.getElementById('modelSelect').value || 'gemini-2.5-flash';
 
-const payload = {
-    contents: contents
-};
+        const payload = {
+            model: selectedModel,
+            contents: conversationHistory.slice(-20)
+        };
 
-// model parameter ကို fetch ရဲ့ body ထဲမှာ တိုက်ရိုက်ပါဝင်အောင် လုပ်ပါ
-const requestBody = {
-    ...payload,
-    model: selectedModel // ဤနေရာတွင် model ကို ထည့်ပါ
-};
+        if (systemInstruction) {
+            payload.system_instruction = systemInstruction;
+        }
 
-if (systemInstruction) {
-    requestBody.system_instruction = systemInstruction;
-}
+        const response = await fetch(workerUrl, { 
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+            signal: abortController.signal
+        });
 
-const response = await fetch(workerUrl, { 
-    method: 'POST',
-    headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody), // ပြင်ဆင်ထားသော body ကို ပို့ပါ
-    signal: abortController.signal
-});
         if (!response.ok) {
             let errorMsg = `Proxy Error: ${response.status}`;
             try {
@@ -946,7 +940,7 @@ const response = await fetch(workerUrl, {
             throw new Error(errorMsg);
         }
 
-        // Streaming
+        // Streaming Logic
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullAiResponse = "";
@@ -981,15 +975,11 @@ const response = await fetch(workerUrl, {
 
         conversationHistory.push({ role: "model", parts: [{ text: fullAiResponse }] });
 
-        // Export Buttons — ဒီနေရာ မှန်အောင် ပြင်ပါ
+        // Export Buttons
         const actionsHtml = `
             <div class="message-actions">
-                <button class="export-btn" onclick="exportAsText('${typingId}')">
-                    <i class="fas fa-file-alt"></i> .txt
-                </button>
-                <button class="export-btn" onclick="copyToClipboard('${typingId}')">
-                    <i class="fas fa-copy"></i> Copy
-                </button>
+                <button class="export-btn" onclick="exportAsText('${typingId}')"><i class="fas fa-file-alt"></i> .txt</button>
+                <button class="export-btn" onclick="copyToClipboard('${typingId}')"><i class="fas fa-copy"></i> Copy</button>
             </div>
         `;
         aiMessageDiv.innerHTML += actionsHtml;
@@ -1009,12 +999,27 @@ const response = await fetch(workerUrl, {
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 }
-      // ===== EXPORT FUNCTIONS =====
      function exportAsText(messageId) {
-    const contentDiv = document.getElementById(messageId); // content- ရှေ့ဆက် မလိုတော့ပါ
-    const text = contentDiv.innerText;
+    const contentDiv = document.getElementById(`content-${messageId}`);
+    if (!contentDiv) return;
+    const text = contentDiv.innerText || contentDiv.textContent;
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     saveAs(blob, `ai-response-${Date.now()}.txt`);
+}
+
+function copyToClipboard(messageId) {
+    const contentDiv = document.getElementById(`content-${messageId}`);
+    if (!contentDiv) return;
+    const text = contentDiv.innerText || contentDiv.textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied!',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    });
 }
 
         // ===== UTILITY FUNCTIONS =====
@@ -1031,20 +1036,7 @@ const response = await fetch(workerUrl, {
             div.textContent = text;
             return div.innerHTML;
         }
-function copyToClipboard(messageId) {
-    // messageId သည် typingId ဖြစ်သဖြင့် content- ရှေ့ဆက် ထည့်ပေးရမည်
-    const contentDiv = document.getElementById(`content-${messageId}`);
-    const text = contentDiv.innerText; // အဖြေစာသား သီးသန့်ပဲ ရပါလိမ့်မည်
-    
-    navigator.clipboard.writeText(text).then(() => {
-        Swal.fire({
-            icon: 'success',
-            title: 'Copied!',
-            timer: 1000,
-            showConfirmButton: false
-        });
-    });
-}
+
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f332ab28f27c9dc',t:'MTc3NzM0ODg5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
