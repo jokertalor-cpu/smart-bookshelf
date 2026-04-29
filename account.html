@@ -917,37 +917,21 @@ async function saveProfile() {
             } catch (err) { console.error(err); }
         }
 
-      // loadActivityLog() ကို ဒီလို ပြင်ပါ
-async function loadActivityLog() {
-    try {
-        const { data: downloads, error } = await sb
-            .from('user_downloads')
-            .select('downloaded_at, created_at, books:book_id(title)')   // created_at ထည့်ပါ
-            .eq('user_id', currentUser.id)
-            .order('downloaded_at', { ascending: false })
-            .limit(15);
-
-        if (error) throw error;
-        
-        const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
-            <div class="activity-item success">
-                <div class="activity-time">
-                    <i class="fas fa-clock"></i> 
-                    ${new Date(item.downloaded_at || item.created_at).toLocaleString('my-MM')}
-                </div>
-                <div class="activity-desc">
-                    <i class="fas fa-download"></i> 
-                    "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်
-                </div>
-            </div>
-        `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
-        
-        document.getElementById('activityLog').innerHTML = logHtml;
-    } catch (err) { 
-        console.error(err); 
-        document.getElementById('activityLog').innerHTML = '<p style="color: #ea4335;">မှတ်တမ်း ရယူရန် မအောင်မြင်ပါ။</p>';
-    }
-}
+        async function loadActivityLog() {
+            try {
+                const { data: downloads, error } = await sb.from('user_downloads').select('downloaded_at, books:book_id(title)').eq('user_id', currentUser.id).order('downloaded_at', { ascending: false }).limit(15);
+                if (error) throw error;
+                
+                const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
+                    <div class="activity-item success">
+                        <div class="activity-time"><i class="fas fa-clock"></i> ${new Date(item.created_at).toLocaleString('my-MM')}</div>
+                        <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်</div>
+                    </div>
+                `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
+                
+                document.getElementById('activityLog').innerHTML = logHtml;
+            } catch (err) { console.error(err); }
+        }
         async function handleLogout() {
             const result = await Swal.fire({
                 title: 'ထွက်မည်လား?',
