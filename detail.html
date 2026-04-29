@@ -54,6 +54,48 @@
         .description-box { margin-top: 30px; padding-top: 25px; border-top: 1px solid #eee; }
         .description-box h3 { font-size: 20px; color: #202124; margin-bottom: 15px; }
         .description-text { font-size: 16px; line-height: 1.8; color: #5f6368; white-space: pre-line; }
+        @media (max-width: 600px) {
+    /* 1. Logo စာသားကို Smart လို့ပဲပြမယ် */
+    .logo {
+        font-size: 18px;
+        visibility: hidden;
+        position: relative;
+    }
+    .logo::after {
+        content: "SMART";
+        visibility: visible;
+        position: absolute;
+        left: 0;
+    }
+
+    /* 2. Menu တွေကို အတိုချုံ့ပြီး English လိုပြမယ် */
+    .nav-links a {
+        margin-left: 15px;
+        font-size: 0; /* မူလစာသား (မြန်မာစာ) ကို ဖျောက်ထားမယ် */
+    }
+    
+    .nav-links a i {
+        font-size: 16px; /* Icon ကို ပြန်ဖော်မယ် */
+        margin-right: 5px;
+    }
+
+    /* Home menu အတွက် */
+    .nav-links a[href="index.html"]::after {
+        content: "Home";
+        font-size: 14px;
+    }
+
+    /* Library menu အတွက် */
+    .nav-links a[href="library.html"]::after {
+        content: "Library";
+        font-size: 14px;
+    }
+
+    /* မူလ Actions နဲ့ Buttons တွေအတွက် code */
+    .actions { gap: 10px; }
+    .btn { padding: 14px 15px; font-size: 14px; flex: 1 1 45%; }
+    #like-btn { flex: 1 1 100%; margin-top: 5px; }
+}
     </style>
 </head>
 <body>
@@ -61,7 +103,7 @@
     <nav>
         <a href="index.html" class="logo">SMART BOOKSHELF</a>
         <div class="nav-links">
-            <a href="index.html">ပင်မစာမျက်နှာ</a>
+            <a href="index.html"><i class="fa-solid fa-house"></i> ပင်မစာမျက်နှာ</a>
             <a href="library.html"><i class="fas fa-book"></i> ကျွန်ုပ်၏စာကြည့်တိုက်</a>
         </div>
     </nav>
