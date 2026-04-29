@@ -5,7 +5,7 @@ const itemsLimit = 4;
 let isFetchingHome = false;
 let isFetchingPopular = false;
 
-// Swiper Init (Mouse over pause & PC fix included)
+// Swiper Init
 const swiper = new Swiper('.main-slider', {
     speed: 800,
     autoplay: { delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true },
@@ -14,7 +14,7 @@ const swiper = new Swiper('.main-slider', {
     navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
 });
 
-// Loading Placeholder ထုတ်ပေးမည့် Function
+// Loading Skeleton
 function getSkeletons(count) {
     let skeletons = '';
     for (let i = 0; i < count; i++) {
@@ -33,8 +33,69 @@ function getSkeletons(count) {
     }
     return skeletons;
 }
+// === DYNAMIC BANNER LOADER (Fixed & Improved) ===
+async function loadDynamicBanners() {
+    console.log("🚀 Starting to load banners...");
 
-// ၁။ နောက်ဆုံးတင်ထားသော စာအုပ်များ ဆွဲယူခြင်း
+    const swiperWrapper = document.querySelector('.main-slider .swiper-wrapper');
+    if (!swiperWrapper) {
+        console.error("Swiper wrapper not found!");
+        return;
+    }
+
+    try {
+        const { data: banners, error } = await supabase
+            .from('banners')
+            .select('*')
+            .order('id', { ascending: false });
+
+        console.log("📊 Banners data received:", banners);
+
+        if (error) {
+            console.error("❌ Supabase Error:", error);
+            swiperWrapper.innerHTML = `
+                <div class="swiper-slide">
+                    <img src="https://via.placeholder.com/1200x400/ff0000/ffffff?text=Supabase+Error" alt="Error">
+                </div>`;
+            swiper.update();
+            return;
+        }
+
+        if (!banners || banners.length === 0) {
+            console.log("⚠️ No banners found in database");
+            swiperWrapper.innerHTML = `
+                <div class="swiper-slide">
+                    <img src="https://via.placeholder.com/1200x400/4f46e5/ffffff?text=No+Banners+Found" alt="No Banners">
+                </div>`;
+            swiper.update();
+            return;
+        }
+
+        // ဒေတာ ရှိရင် ပုံတွေ ပြမယ်
+        swiperWrapper.innerHTML = banners.map(bn => `
+            <div class="swiper-slide">
+                <img src="${bn.image_url}" 
+                     alt="Banner" 
+                     loading="lazy"
+                     onerror="this.src='https://via.placeholder.com/1200x400/ff8800/ffffff?text=Image+Load+Error'">
+            </div>
+        `).join('');
+
+        console.log(`✅ Successfully loaded ${banners.length} banner(s)`);
+
+        // Swiper ကို ပြန်နှိုးပေး
+        swiper.update();
+        if (swiper.autoplay) swiper.autoplay.start();
+
+    } catch (err) {
+        console.error("💥 Unexpected error in loadDynamicBanners:", err);
+        swiperWrapper.innerHTML = `
+            <div class="swiper-slide">
+                <img src="https://via.placeholder.com/1200x400/ff0000/ffffff?text=JS+Error" alt="JS Error">
+            </div>`;
+        swiper.update();
+    }
+}
 async function loadHomeBooks() {
     if (isFetchingHome) return;
     isFetchingHome = true;
@@ -110,9 +171,11 @@ function displayBooks(books, containerId) {
         </div>
     `).join('');
 }
-// Start function ထဲမှာ ခေါ်ပေးဖို့ မမေ့ပါနဲ့
+
+// DOMContentLoaded ထဲမှာ ထည့်ခေါ်ပါ
 document.addEventListener('DOMContentLoaded', () => {
-    loadHomeBooks();     // Latest
-    loadPopularBooks();  // Likes
-    loadDownloadBooks(); // Downloads
+    loadDynamicBanners(); // ဒါကို ထပ်ထည့်ပါ
+    loadHomeBooks();
+    loadPopularBooks();
+    loadDownloadBooks();
 });

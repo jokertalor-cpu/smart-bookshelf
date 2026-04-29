@@ -426,20 +426,6 @@ body {
         margin-bottom: 20px;
     }
 }
-/* --- Swiper PC Full Width Fix --- */
-.main-slider {
-    width: 100%;
-    max-width: 100%; /* Screen အပြည့် ဖြစ်စေရန် */
-    height: 450px; /* PC အတွက် height တိုးပေးထားသည် */
-    margin-bottom: 30px;
-}
-
-.swiper-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* ပုံမပျက်ဘဲ အပြည့်ဖြည့်ရန် */
-}
-/* --- Skeleton Loading & Jump Bars --- */
 .skeleton-card {
     pointer-events: none;
 }
@@ -485,14 +471,6 @@ body {
 .skeleton-text.title { width: 80%; height: 15px; }
 .skeleton-text.author { width: 50%; height: 12px; }
 
-/* PC Slider Fix */
-.main-slider {
-    width: 100%;
-    height: 400px;
-}
-.swiper-slide img {
-    object-fit: cover;
-}
 
 @media screen and (max-width: 768px) {
     .main-slider { height: 200px; }
@@ -560,4 +538,33 @@ body {
 
 .category-item:hover i {
     color: #fff;
+}
+/* ==================== MAIN SLIDER (Fixed) ==================== */
+.main-slider {
+    width: 100%;
+    max-width: 100%;
+    height: 500px;           /* PC အတွက် သင့်တော်တဲ့ အမြင့် */
+    margin-bottom: 30px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.main-slider .swiper-slide {
+    width: 100%;
+    height: 100%;
+    background: #111;
+}
+
+.main-slider .swiper-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;        /* ပုံ အပြည့်ပေါ်စေရန် */
+    object-position: center;
+}
+
+/* Mobile အတွက် */
+@media screen and (max-width: 768px) {
+    .main-slider {
+        height: 220px;        /* ဖုန်းမှာ ပိုတိုအောင် */
+    }
 }
