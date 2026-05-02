@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="config.js"></script>
     
     <style>
         :root { 
@@ -651,10 +652,7 @@
     </div>
 
     <script>
-        const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
-        const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
-        const sb = supabase.createClient(SB_URL, SB_KEY);
-
+           const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const db = new Dexie("MyDigitalLibrary");
         db.version(3).stores({ 
             savedBooks: "id, title, author, cover, fileData, lastPage, lastReadDate, readingProgress",

@@ -210,13 +210,12 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="config.js"></script>
 <script>
     const db = new Dexie("MyDigitalLibrary");
     db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
-    const _U = 'https://mituedqotwbmporkwbqf.supabase.co';
-    const _K = 'sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc';
-    const sb = window.supabase.createClient(_U, _K);
+     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let activeBook = null;
     let currentUser = null;

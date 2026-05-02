@@ -1,8 +1,8 @@
 /**
  * Global Script - Navbar, Search & Supabase Initialization
  */
-const supabaseUrl = 'https://mituedqotwbmporkwbqf.supabase.co';
-const supabaseKey = 'sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc';
+const supabaseUrl = SUPABASE_URL;
+const supabaseKey = SUPABASE_KEY;
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 // --- Search Toggle Logic ---
 const searchTrigger = document.getElementById('search-trigger');
