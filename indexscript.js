@@ -11,7 +11,7 @@ const swiper = new Swiper('.main-slider', {
         disableOnInteraction: false,
         pauseOnMouseEnter: true
     },
-    loop: false,   // ❗ loop ပိတ်ထား
+    loop: true,   // ✅ ဒီမှာ true ပြောင်းပါ
     pagination: { el: '.swiper-pagination', clickable: true },
     navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
 });
@@ -81,25 +81,24 @@ async function loadDynamicBanners() {
 
         console.log(`✅ Loaded ${banners.length} banner(s)`);
 
-        // 3. Loop + Swiper ကို လုံးဝ ပြန်ဆောက်ပေး (အရေးကြီးဆုံး)
         setTimeout(() => {
-            swiper.updateSize();
-            swiper.updateSlides();
-            swiper.update();
+    swiper.updateSize();
+    swiper.updateSlides();
 
-            if (swiper.params.loop && banners.length > 1) {
-                swiper.loopDestroy();   // ဟောင်း loop ဖျက်
-                swiper.loopCreate();    // အသစ် loop ပြန်ဆောက်
-            }
+    if (banners.length > 1) {
+        swiper.loopDestroy();
+        swiper.loopCreate();
+    }
 
-            if (swiper.autoplay) {
-                swiper.autoplay.stop();
-                swiper.autoplay.start();
-            }
+    swiper.update();
 
-            // နောက်ဆုံး တည်ငြိမ်စေရန်
-            setTimeout(() => swiper.update(), 200);
-        }, 250);
+    if (swiper.autoplay) {
+        swiper.autoplay.stop();
+        swiper.autoplay.start();
+    }
+
+    setTimeout(() => swiper.update(), 200);
+}, 250);
 
     } catch (err) {
         console.error("💥 Unexpected error:", err);
@@ -180,7 +179,6 @@ function displayBooks(books, containerId) {
         </div>
     `).join('');
 }
-
 // DOMContentLoaded ထဲမှာ ထည့်ခေါ်ပါ
 document.addEventListener('DOMContentLoaded', () => {
     loadDynamicBanners(); // ဒါကို ထပ်ထည့်ပါ
@@ -188,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPopularBooks();
     loadDownloadBooks();
 });
-// Resize နဲ့ Orientation ပြောင်းရင် ပိုတည်ငြိမ်အောင်
 let resizeTimeout;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
@@ -197,12 +194,25 @@ window.addEventListener('resize', () => {
             swiper.updateSize();
             swiper.updateSlides();
             swiper.update();
+
+            // ✅ ဒါပေါင်းထည့်ပါ - autoplay ပြန်စပေးရန်
+            if (swiper.autoplay && !swiper.autoplay.running) {
+                swiper.autoplay.stop();
+                swiper.autoplay.start();
+            }
         }
-    }, 200);
+    }, 300); // 200 → 300 အနည်းငယ် delay တိုးပါ
 });
 
 window.addEventListener('orientationchange', () => {
     setTimeout(() => {
-        if (swiper) swiper.update();
-    }, 300);
+        if (swiper) {
+            swiper.update();
+            // ✅ ဒါပေါင်းထည့်ပါ
+            if (swiper.autoplay && !swiper.autoplay.running) {
+                swiper.autoplay.stop();
+                swiper.autoplay.start();
+            }
+        }
+    }, 400); // 300 → 400
 });
