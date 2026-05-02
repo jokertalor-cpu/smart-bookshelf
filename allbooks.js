@@ -5,13 +5,32 @@ const itemsPerPage = 20;
 let currentPage = 1;
 const urlParams = new URLSearchParams(window.location.search);
 const sortType = urlParams.get('sort') || 'latest'; // Default က နောက်ဆုံးတင်တာပြမယ်
+// စာအုပ်တစ်အုပ်ချင်းစီအတွက် Loading Skeleton ထုတ်ပေးမည့် function
+function getSkeletons(count) {
+    let skeletons = '';
+    for (let i = 0; i < count; i++) {
+        skeletons += `
+            <div class="book-card skeleton-card">
+                <div class="skeleton-img">
+                    <div class="jump-bar-container">
+                        <div class="jump-bar"></div>
+                        <div class="jump-bar"></div>
+                        <div class="jump-bar"></div>
+                    </div>
+                </div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text short"></div>
+            </div>`;
+    }
+    return skeletons;
+}
 
 async function loadAllBooks(page) {
     const container = document.getElementById('all-books-container');
     const sortText = document.getElementById('sort-display-text');
     
-    // Skeleton loading ပြရန် (indexscript.js ထဲက getSkeletons ကို သုံးနိုင်သည်)
-    container.innerHTML = typeof getSkeletons === 'function' ? getSkeletons(8) : 'Loading...';
+    // --- Skeleton loading ကို Jump Bar animation နဲ့ ပြခြင်း ---
+    container.innerHTML = getSkeletons(itemsPerPage);
 
     // Sort Logic သတ်မှတ်ခြင်း
     let orderBy = 'id';
@@ -26,12 +45,11 @@ async function loadAllBooks(page) {
     }
     sortText.innerText = label;
 
-    // Range တွက်ချက်ခြင်း (0-19, 20-39, ...)
+    // Range တွက်ချက်ခြင်း (0-19, 20-39, ...)[cite: 5]
     const from = (page - 1) * itemsPerPage;
     const to = from + itemsPerPage - 1;
 
     try {
-        // Data နဲ့ Total Count ကို တစ်ခါတည်း ဆွဲယူခြင်း
         const { data, error, count } = await supabase
             .from('books')
             .select('*', { count: 'exact' })
@@ -40,14 +58,14 @@ async function loadAllBooks(page) {
 
         if (error) throw error;
 
+        // ဒေတာ ရလာပြီဆိုရင် Skeleton များကို ဖျက်ပြီး စာအုပ်အစစ်များ ပြပါမည်[cite: 5]
         renderBooks(data);
         renderPagination(count, page);
     } catch (err) {
         console.error("Error loading books:", err);
-        container.innerHTML = "Error loading data.";
+        container.innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>Error loading data.</p>";
     }
 }
-
 function renderBooks(books) {
     const container = document.getElementById('all-books-container');
     if (!books || books.length === 0) {

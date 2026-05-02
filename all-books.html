@@ -50,6 +50,33 @@
             font-weight: bold;
             color: var(--dark-blue);
         }
+        /* Individual Book Card Skeleton */
+.skeleton-card {
+    background: #fff;
+    pointer-events: none; /* Loading ဖြစ်နေစဉ် နှိပ်လို့မရအောင် */
+}
+
+.skeleton-img {
+    width: 100%;
+    aspect-ratio: 2/3; /* စာအုပ်ဆိုဒ်အတိုင်း */
+    background: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+}
+
+.skeleton-text {
+    width: 80%;
+    height: 15px;
+    background: #eee;
+    margin: 10px auto 5px;
+    border-radius: 4px;
+}
+
+.skeleton-text.short {
+    width: 50%;
+}
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
 </head>

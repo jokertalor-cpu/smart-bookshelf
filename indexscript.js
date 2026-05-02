@@ -4,16 +4,17 @@
 const itemsLimit = 4; 
 let isFetchingHome = false;
 let isFetchingPopular = false;
-
-// Swiper Init
 const swiper = new Swiper('.main-slider', {
     speed: 800,
-    autoplay: { delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true },
-    loop: true,
+    autoplay: {
+        delay: 3000,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true
+    },
+    loop: false,   // ❗ loop ပိတ်ထား
     pagination: { el: '.swiper-pagination', clickable: true },
     navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
 });
-
 // Loading Skeleton
 function getSkeletons(count) {
     let skeletons = '';
@@ -33,67 +34,75 @@ function getSkeletons(count) {
     }
     return skeletons;
 }
-// === DYNAMIC BANNER LOADER (Fixed & Improved) ===
 async function loadDynamicBanners() {
     console.log("🚀 Starting to load banners...");
 
     const swiperWrapper = document.querySelector('.main-slider .swiper-wrapper');
-    if (!swiperWrapper) {
-        console.error("Swiper wrapper not found!");
-        return;
-    }
+    if (!swiperWrapper) return;
+
+    // 1. Loading Skeleton ပြပါ
+    swiperWrapper.innerHTML = `
+        <div class="swiper-slide banner-skeleton">
+            <div class="jump-bar-container">
+                <div class="jump-bar"></div>
+                <div class="jump-bar"></div>
+                <div class="jump-bar"></div>
+            </div>
+        </div>`;
+
+    swiper.update();
 
     try {
+        // အကောင်းဆုံး အစဉ်လိုက် ဆွဲထုတ်ပါ (created_at အဟောင်းကနေ အသစ်ဆုံး)
         const { data: banners, error } = await supabase
             .from('banners')
             .select('*')
-            .order('id', { ascending: false });
+            .order('created_at', { ascending: true });   // ← ဒီနေရာ အရေးကြီးတယ်
 
-        console.log("📊 Banners data received:", banners);
-
-        if (error) {
-            console.error("❌ Supabase Error:", error);
-            swiperWrapper.innerHTML = `
-                <div class="swiper-slide">
-                    <img src="https://via.placeholder.com/1200x400/ff0000/ffffff?text=Supabase+Error" alt="Error">
-                </div>`;
+        if (error || !banners || banners.length === 0) {
+            console.error("Banner error:", error);
+            swiperWrapper.innerHTML = `<div class="swiper-slide banner-skeleton" style="background:#ffebee;color:#c62828;display:flex;align-items:center;justify-content:center;">
+                No Banners Available
+            </div>`;
             swiper.update();
             return;
         }
 
-        if (!banners || banners.length === 0) {
-            console.log("⚠️ No banners found in database");
-            swiperWrapper.innerHTML = `
-                <div class="swiper-slide">
-                    <img src="https://via.placeholder.com/1200x400/4f46e5/ffffff?text=No+Banners+Found" alt="No Banners">
-                </div>`;
-            swiper.update();
-            return;
-        }
-
-        // ဒေတာ ရှိရင် ပုံတွေ ပြမယ်
+        // 2. Real banners ထည့်ပါ
         swiperWrapper.innerHTML = banners.map(bn => `
             <div class="swiper-slide">
                 <img src="${bn.image_url}" 
                      alt="Banner" 
+                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
                      loading="lazy"
-                     onerror="this.src='https://via.placeholder.com/1200x400/ff8800/ffffff?text=Image+Load+Error'">
+                     onerror="this.src='https://via.placeholder.com/1200x500?text=Image+Load+Error'">
             </div>
         `).join('');
 
-        console.log(`✅ Successfully loaded ${banners.length} banner(s)`);
+        console.log(`✅ Loaded ${banners.length} banner(s)`);
 
-        // Swiper ကို ပြန်နှိုးပေး
-        swiper.update();
-        if (swiper.autoplay) swiper.autoplay.start();
+        // 3. Loop + Swiper ကို လုံးဝ ပြန်ဆောက်ပေး (အရေးကြီးဆုံး)
+        setTimeout(() => {
+            swiper.updateSize();
+            swiper.updateSlides();
+            swiper.update();
+
+            if (swiper.params.loop && banners.length > 1) {
+                swiper.loopDestroy();   // ဟောင်း loop ဖျက်
+                swiper.loopCreate();    // အသစ် loop ပြန်ဆောက်
+            }
+
+            if (swiper.autoplay) {
+                swiper.autoplay.stop();
+                swiper.autoplay.start();
+            }
+
+            // နောက်ဆုံး တည်ငြိမ်စေရန်
+            setTimeout(() => swiper.update(), 200);
+        }, 250);
 
     } catch (err) {
-        console.error("💥 Unexpected error in loadDynamicBanners:", err);
-        swiperWrapper.innerHTML = `
-            <div class="swiper-slide">
-                <img src="https://via.placeholder.com/1200x400/ff0000/ffffff?text=JS+Error" alt="JS Error">
-            </div>`;
-        swiper.update();
+        console.error("💥 Unexpected error:", err);
     }
 }
 async function loadHomeBooks() {
@@ -178,4 +187,22 @@ document.addEventListener('DOMContentLoaded', () => {
     loadHomeBooks();
     loadPopularBooks();
     loadDownloadBooks();
+});
+// Resize နဲ့ Orientation ပြောင်းရင် ပိုတည်ငြိမ်အောင်
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        if (swiper) {
+            swiper.updateSize();
+            swiper.updateSlides();
+            swiper.update();
+        }
+    }, 200);
+});
+
+window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+        if (swiper) swiper.update();
+    }, 300);
 });

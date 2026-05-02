@@ -539,32 +539,72 @@ body {
 .category-item:hover i {
     color: #fff;
 }
-/* ==================== MAIN SLIDER (Fixed) ==================== */
+/* --- Banner & Loading Box အမြင့်ကို PC/Mobile ညှိခြင်း --- */
 .main-slider {
     width: 100%;
-    max-width: 100%;
-    height: 500px;           /* PC အတွက် သင့်တော်တဲ့ အမြင့် */
+    height: 500px; /* PC အတွက် အမြင့် */
     margin-bottom: 30px;
     overflow: hidden;
     border-radius: 8px;
 }
 
-.main-slider .swiper-slide {
+/* Loading Box အမြင့်ကို Slider နှင့် ထပ်တူထားခြင်း */
+.banner-skeleton {
     width: 100%;
-    height: 100%;
-    background: #111;
+    height: 500px;
+    background: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Jump Bar ကို အလယ်ဗဟိုပို့ရန် */
 }
-
-.main-slider .swiper-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;        /* ပုံ အပြည့်ပေါ်စေရန် */
-    object-position: center;
-}
-
-/* Mobile အတွက် */
+/* Mobile Version အတွက် အမြင့်ပြန်ညှိခြင်း */
 @media screen and (max-width: 768px) {
-    .main-slider {
-        height: 220px;        /* ဖုန်းမှာ ပိုတိုအောင် */
+    .main-slider, .banner-skeleton {
+        height: 220px; /* Mobile အတွက် အမြင့်[cite: 3] */
     }
+
+    /* Mobile Menu Toggle Bar အလယ်ကျစေရန်[cite: 3] */
+    .menu-toggle {
+        display: block;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+        height: 40px;
+        width: 40px;
+    }
+}
+
+/* Jump Bar Animation တိုင်လေးတွေ အမြင့်ကို Loading Box နဲ့ ညီအောင် ညှိခြင်း */
+.jump-bar-container {
+    display: flex;
+    gap: 6px;
+    align-items: center; /* အလယ်ဗဟိုမှာ တိုင်လေးတွေ ပေါ်စေရန် */
+    height: 40px;
+}
+
+
+
+/* Jump Bar Animation (သင့် code ထဲက အတိုင်း) */
+.jump-bar-container {
+    display: flex;
+    gap: 5px;
+    align-items: flex-end;
+    height: 30px;
+}
+
+.jump-bar {
+    width: 6px;
+    height: 100%;
+    border-radius: 3px;
+    animation: jump 0.6s infinite alternate;
+}
+
+.jump-bar:nth-child(1) { background: #ff4d4d; animation-delay: 0.1s; }
+.jump-bar:nth-child(2) { background: #2ecc71; animation-delay: 0.2s; }
+.jump-bar:nth-child(3) { background: #3498db; animation-delay: 0.3s; }
+
+@keyframes jump {
+    0% { height: 30%; }
+    100% { height: 100%; }
 }

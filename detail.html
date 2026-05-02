@@ -96,6 +96,68 @@
     .btn { padding: 14px 15px; font-size: 14px; flex: 1 1 45%; }
     #like-btn { flex: 1 1 100%; margin-top: 5px; }
 }
+/* Detail Page အတွက် Skeleton Loading Box */
+.detail-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.hero-skeleton {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+/* စာအုပ် Cover နေရာအတွက် Skeleton */
+.skeleton-cover {
+    flex: 0 0 240px;
+    height: 340px;
+    background: #eee;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* စာသားနေရာများအတွက် Skeleton */
+.skeleton-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.skeleton-line {
+    height: 20px;
+    background: #eee;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.skeleton-line.title { height: 35px; width: 70%; margin-bottom: 25px; }
+.skeleton-line.meta { width: 40%; }
+.skeleton-line.btn-row { height: 45px; width: 100%; margin-top: 30px; }
+
+/* Jump Bar Animation (မူလအတိုင်း) */
+.jump-bar-container {
+    display: flex;
+    gap: 5px;
+    align-items: flex-end;
+    height: 35px;
+}
+.jump-bar {
+    width: 6px;
+    height: 100%;
+    border-radius: 3px;
+    animation: jump 0.6s infinite alternate;
+}
+.jump-bar:nth-child(1) { background: #ff4d4d; animation-delay: 0.1s; }
+.jump-bar:nth-child(2) { background: #2ecc71; animation-delay: 0.2s; }
+.jump-bar:nth-child(3) { background: #3498db; animation-delay: 0.3s; }
+
+@keyframes jump {
+    0% { height: 30%; }
+    100% { height: 100%; }
+}
     </style>
 </head>
 <body>
@@ -108,17 +170,44 @@
         </div>
     </nav>
 
+    <!-- Main Content Container (Skeleton ကို ဤနေရာတွင် တစ်ခါတည်းပြထားမည်) -->
     <div class="container" id="main-content">
-        <div style="text-align:center; padding: 100px;">
-            <i class="fas fa-circle-notch fa-spin fa-2x" style="color:var(--primary)"></i>
+        <div class="detail-skeleton">
+            <div class="hero-skeleton">
+                <div class="skeleton-cover">
+                    <!-- Jump Bar Animation -->
+                    <div class="jump-bar-container">
+                        <div class="jump-bar"></div>
+                        <div class="jump-bar"></div>
+                        <div class="jump-bar"></div>
+                    </div>
+                </div>
+                <div class="skeleton-info">
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line meta"></div>
+                    <div class="skeleton-line meta"></div>
+                    <div class="skeleton-line btn-row"></div>
+                </div>
+            </div>
+            <!-- အညွှန်းနေရာအတွက် Skeleton -->
+            <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 25px;">
+                <div class="skeleton-line" style="width: 150px; height: 25px;"></div>
+                <div class="skeleton-line" style="width: 100%;"></div>
+                <div class="skeleton-line" style="width: 90%;"></div>
+            </div>
         </div>
     </div>
 
+    <!-- ဆက်စပ်စာအုပ်များ -->
     <div class="container related-box">
         <h3 style="margin-bottom:20px;">ဆက်စပ်စာအုပ်များ</h3>
-        <div id="related-view" class="related-grid"></div>
+        <div id="related-view" class="related-grid">
+            <!-- Related အတွက် loading icons လေးတွေပြထားနိုင်သည် -->
+            <div style="text-align:center; width:100%; padding:20px;">
+                <i class="fas fa-circle-notch fa-spin" style="color:var(--primary)"></i>
+            </div>
+        </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 <script>
@@ -132,22 +221,27 @@
     let activeBook = null;
     let currentUser = null;
 
-    async function loadPage() {
-        const id = new URLSearchParams(window.location.search).get('id');
-        if (!id) return;
+ async function loadPage() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) return;
 
-        // Check Auth
-        const { data: { user } } = await sb.auth.getUser();
-        currentUser = user;
+    // Loading ပြရန် (အပေါ်က HTML မှာ ထည့်ထားပြီးသားဖြစ်လို့ ဒီမှာ ထပ်ခေါ်စရာမလိုတော့ပါ)
 
-        const { data, error } = await sb.from('books').select('*').eq('id', id).maybeSingle();
-        if (error || !data) return;
+    const { data: { user } } = await sb.auth.getUser();
+    currentUser = user;
 
-        activeBook = data;
-        renderBookUI(data);
-        checkLikeStatus();
-        loadMoreRelatedBooks(data.category, data.author, data.id);
+    const { data, error } = await sb.from('books').select('*').eq('id', id).maybeSingle();
+    
+    if (error || !data) {
+        document.getElementById('main-content').innerHTML = "စာအုပ် ရှာမတွေ့ပါ။";
+        return;
     }
+
+    activeBook = data;
+    renderBookUI(data); // ဒေတာရလာမှ Skeleton နေရာမှာ အစစ်ထည့်ပါမည်
+    checkLikeStatus();
+    loadMoreRelatedBooks(data.category, data.author, data.id);
+}
 
     function renderBookUI(data) {
         document.getElementById('main-content').innerHTML = `
