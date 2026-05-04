@@ -1,3 +1,3 @@
 // config.js
 const SUPABASE_URL = 'https://mituedqotwbmporkwbqf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pdHVlZHFvdHdibXBvcmt3YnFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2OTEzNjAsImV4cCI6MjA5MDI2NzM2MH0.eQzvuSiwPEweZJwT1JTC8pVnYt4UQPzRsoQI1X5_AL4';
