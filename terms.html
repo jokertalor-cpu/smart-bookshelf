@@ -4,79 +4,251 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service - Smart Bookshelf</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="mainstyle.css">
     <style>
-        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #f9f9f9; }
-        .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h1 { color: #1a73e8; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        h2 { color: #202124; margin-top: 30px; }
-        p, li { font-size: 15px; color: #5f6368; }
-        ul { padding-left: 20px; }
-        .back-btn { 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 8px;
-            margin-bottom: 20px; 
-            color: #1a73e8; 
-            text-decoration: none; 
-            font-weight: 600; 
-            cursor: pointer;
-            border: none;
-            background: none;
-            padding: 0;
-            font-size: 16px;
+        .policy-hero {
+            background: linear-gradient(135deg, #1976D2 0%, #1a237e 100%);
+            color: white;
+            padding: 60px 20px 40px;
+            text-align: center;
         }
-        .back-btn:hover { text-decoration: underline; }
+        .policy-hero .icon { font-size: 3rem; margin-bottom: 15px; display: block; }
+        .policy-hero h1 { font-size: 1.8rem; margin: 0 0 10px; }
+        .policy-hero p { font-size: 0.95rem; opacity: 0.85; max-width: 500px; margin: 0 auto; line-height: 1.7; }
+
+        .policy-container { max-width: 800px; margin: 0 auto; padding: 40px 20px 60px; }
+
+        .last-updated { text-align: center; color: #888; font-size: 0.85rem; margin-bottom: 40px; }
+
+        .policy-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            border-left: 4px solid #2196F3;
+        }
+        .policy-card h2 {
+            font-size: 1.1rem;
+            color: #1976D2;
+            margin: 0 0 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .policy-card p, .policy-card li {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: #444;
+        }
+        .policy-card ul { padding-left: 20px; margin: 10px 0; }
+        .policy-card ul li { margin-bottom: 6px; }
+
+        .warning-box {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: #e65100;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-radius: 12px;
+            padding: 25px 30px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        .contact-box p { font-size: 0.95rem; color: #1565C0; margin: 0 0 15px; }
+        .contact-box a {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .contact-box a:hover { background: #1565C0; }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #2196F3;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            transition: 0.2s;
+        }
+        .back-btn:hover { color: #1565C0; gap: 12px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <button onclick="goBack()" class="back-btn">
-            <i class="fas fa-arrow-left"></i> ရှေ့သို့ပြန်သွားရန်
-        </button>
-        
-        <h1>အသုံးပြုမှုစည်းမျဉ်းများ (Terms of Service)</h1>
-        <p>နောက်ဆုံးပြင်ဆင်သည့်ရက်စွဲ - ဧပြီ ၂၃၊ ၂၀၂၆</p>
 
-        <h2>၁။ ဝန်ဆောင်မှုဆိုင်ရာ သဘောတူညီချက်</h2>
-        <p>Smart Bookshelf ဝန်ဆောင်မှုကို အသုံးပြုခြင်းဖြင့် သင်သည် ဤစည်းမျဉ်းများကို လိုက်နာရန် သဘောတူညီပြီး ဖြစ်ပါသည်။ ဤစည်းမျဉ်းများကို သဘောမတူပါက ဝန်ဆောင်မှုကို အသုံးပြုခြင်း မပြုပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။</p>
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            </button>
+            <div class="logo">
+                <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
+            </div>
+            <div class="search-wrapper">
+                <div class="search-box" id="search-box">
+                    <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..."
+                        oninput="handleInput(event)" onkeydown="handleKeyDown(event)" autocomplete="off">
+                    <div id="search-suggestions" class="search-suggestions"></div>
+                </div>
+                <button id="search-trigger" class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
+                <li><a href="categories.html"><i class="fa-solid fa-book"></i> စာအုပ်အမျိုးအစားများ</a></li>
+                <li><a href="authors.html"><i class="fa-solid fa-pen-nib"></i> AUTHORS</a></li>
+                <li><a href="library.html"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
+            </ul>
+        </div>
+    </nav>
 
-        <h2>၂။ အကောင့်ဖွင့်လှစ်ခြင်းနှင့် လုံခြုံရေး</h2>
-        <ul>
-            <li>အကောင့်တစ်ခုလျှင် အီးမေးလ်လိပ်စာ တစ်ခုသာ အသုံးပြုခွင့်ရှိပါသည်။</li>
-            <li>သင်၏ အကောင့်ဝင်ရောက်ခွင့် အချက်အလက်များကို လုံခြုံစွာ ထိန်းသိမ်းရန်မှာ သင်၏ တာဝန်ဖြစ်ပါသည်။</li>
-            <li>အကောင့်ကို အခြားသူများအား မျှဝေသုံးစွဲခြင်း မပြုလုပ်ရပါ။</li>
-        </ul>
-
-        <h2>၃။ အသုံးပြုသူ၏ တာဝန်ဝတ္တရားများ</h2>
-        <p>ဝန်ဆောင်မှုကို အသုံးပြုရာတွင် အောက်ပါအချက်များကို ရှောင်ကြဉ်ရပါမည် -</p>
-        <ul>
-            <li>မူပိုင်ခွင့် ချိုးဖောက်ထားသော စာအုပ်များနှင့် အချက်အလက်များကို တင်ပြခြင်း။</li>
-            <li>စနစ်၏ လုံခြုံရေးကို ထိခိုက်စေမည့် လုပ်ဆောင်ချက်များ ပြုလုပ်ခြင်း။</li>
-        </ul>
-
-        <h2>၄။ ဝန်ဆောင်မှု ရပ်စဲခြင်း</h2>
-        <p>အသုံးပြုမှုစည်းမျဉ်းများကို ချိုးဖောက်ကြောင်း တွေ့ရှိပါက ကျွန်ုပ်တို့သည် မည်သည့် ကြိုတင်အကြောင်းကြားမှုမျှ မပြုလုပ်ဘဲ သင်၏ အကောင့်ကို ယာယီ သို့မဟုတ် အပြီးအပိုင် ပိတ်သိမ်းပိုင်ခွင့် ရှိပါသည်။</p>
+    <!-- Hero -->
+    <div class="policy-hero">
+        <span class="icon">📋</span>
+        <h1>အသုံးပြုမှုစည်းမျဉ်းများ</h1>
+        <p>Smart Bookshelf ကို အသုံးပြုခြင်းဖြင့် သင်သည် ဤစည်းမျဉ်းများကို သဘောတူညီပြီး ဖြစ်သည်ဟု မှတ်ယူပါသည်။</p>
     </div>
 
-    <script>
-       function goBack() {
-    // URL ထဲမှာပါတဲ့ Parameter တွေကို ဖတ်မယ်
-    const urlParams = new URLSearchParams(window.location.search);
-    const from = urlParams.get('from');
+    <div class="policy-container">
+        <p class="last-updated"><i class="fa-regular fa-calendar"></i> နောက်ဆုံးပြင်ဆင်သည့်ရက် — ဧပြီ ၂၃၊ ၂၀၂၆</p>
 
-    if (from === 'auth') {
-        // အကယ်၍ auth page က လာတာဆိုရင် auth.html ကို ပြန်သွားမယ်
-        window.location.href = 'auth.html';
-    } else if (from === 'home') {
-        // အကယ်၍ home page က လာတာဆိုရင် index.html ကို ပြန်သွားမယ်
-        window.location.href = 'index.html';
-    } else {
-        // အကယ်၍ parameter မပါဘဲ တိုက်ရိုက်ဝင်လာတာဆိုရင် (ဥပမာ- link ကို copy ကူးပြီး ဝင်တာမျိုး)
-        // index.html ကို default အနေနဲ့ ပြန်ပို့ပေးမယ်
-        window.location.href = 'index.html';
-    }
-}
-    </script>
+           <a href="javascript:history.back()" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i> နောက်သို့ပြန်သွားမည်
+        </a>
+
+        <!-- 1 -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-handshake"></i> ၁။ သဘောတူညီချက်</h2>
+            <p>Smart Bookshelf ဝန်ဆောင်မှုကို အသုံးပြုခြင်းဖြင့် သင်သည် ဤစည်းမျဉ်းများကို လိုက်နာရန် သဘောတူညီပြီး ဖြစ်ပါသည်။</p>
+            <div class="warning-box">
+                ⚠️ ဤစည်းမျဉ်းများကို သဘောမတူပါက ဝန်ဆောင်မှုကို အသုံးပြုခြင်း မပြုပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။
+            </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-user-lock"></i> ၂။ အကောင့်ဖွင့်လှစ်ခြင်းနှင့် လုံခြုံရေး</h2>
+            <ul>
+                <li>အကောင့်တစ်ခုလျှင် အီးမေးလ်လိပ်စာ တစ်ခုသာ အသုံးပြုခွင့် ရှိပါသည်</li>
+                <li>သင်၏ password နှင့် အကောင့်ဝင်ရောက်ခွင့် အချက်အလက်များကို လုံခြုံစွာ ထိန်းသိမ်းရန်မှာ သင်၏ တာဝန်ဖြစ်ပါသည်</li>
+                <li>အကောင့်ကို အခြားသူများအား မျှဝေသုံးစွဲခြင်း မပြုလုပ်ရပါ</li>
+                <li>အကောင့် ဖောက်ထွင်းခံရပါက ချက်ချင်း ကျွန်ုပ်တို့ထံ အကြောင်းကြားပါ</li>
+            </ul>
+        </div>
+
+        <!-- 3 -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-ban"></i> ၃။ ကန့်သတ်ချက်များ</h2>
+            <p>ဝန်ဆောင်မှုကို အသုံးပြုရာတွင် အောက်ပါ အချက်များကို ရှောင်ကြဉ်ရပါမည် —</p>
+            <ul>
+                <li>မူပိုင်ခွင့် ချိုးဖောက်ထားသော စာအုပ်များနှင့် အချက်အလက်များကို တင်ပြခြင်း</li>
+                <li>Website ၏ လုံခြုံရေးကို ထိခိုက်စေမည့် hacking သို့မဟုတ် scraping ပြုလုပ်ခြင်း</li>
+                <li>Spam သို့မဟုတ် အန္တရာယ်ရှိသော content တင်ခြင်း</li>
+                <li>အခြား user များ၏ အချက်အလက်ကို ခွင့်မပြုဘဲ ရယူကြိုးပမ်းခြင်း</li>
+                <li>Bot သို့မဟုတ် automated script ဖြင့် မမှန်မကန် အသုံးပြုခြင်း</li>
+            </ul>
+        </div>
+
+        <!-- 4 -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-book-open"></i> ၄။ စာအုပ်နှင့် အကြောင်းအရာများ</h2>
+            <ul>
+                <li>Smart Bookshelf တွင် ရှိသော စာအုပ်များသည် ဖတ်ရှုရန်နှင့် ပညာသင်ယူရန်အတွက်သာ ဖြစ်ပါသည်</li>
+                <li>Website မှ ရရှိသော စာအုပ်များကို ကူးယူ၍ ပြန်လည်ဖြန့်ချိခြင်း မပြုလုပ်ရပါ</li>
+                <li>စာအုပ်များ၏ မူပိုင်ခွင့်သည် မူလ စာရေးဆရာများနှင့် ထုတ်ဝေသူများ၌ ကျန်ရှိနေပါသည်</li>
+            </ul>
+        </div>
+
+        <!-- 5 -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-circle-xmark"></i> ၅။ ဝန်ဆောင်မှု ရပ်စဲခြင်း</h2>
+            <p>အောက်ပါ အခြေအနေများတွင် ကျွန်ုပ်တို့သည် ကြိုတင်အကြောင်းကြားမှုမပြုဘဲ သင်၏ အကောင့်ကို ယာယီ သို့မဟုတ် အပြီးအပိုင် ပိတ်သိမ်းပိုင်ခွင့် ရှိပါသည် —</p>
+            <ul>
+                <li>အသုံးပြုမှုစည်းမျဉ်းများကို ချိုးဖောက်ကြောင်း တွေ့ရှိပါက</li>
+                <li>မမှန်မကန် သို့မဟုတ် အန္တရာယ်ရှိသော လုပ်ဆောင်ချက်များ ပြုလုပ်ပါက</li>
+                <li>ဥပဒေနှင့် မညီညွတ်သော နည်းလမ်းဖြင့် ဝန်ဆောင်မှုကို အသုံးပြုပါက</li>
+            </ul>
+        </div>
+
+        <!-- 6 -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-scale-balanced"></i> ၆။ တာဝန်ကန့်သတ်ချက်</h2>
+            <p>Smart Bookshelf သည် အောက်ပါ အကြောင်းများကြောင့် ဖြစ်ပေါ်သည့် ဆုံးရှုံးမှုများအတွက် တာဝန်မရှိပါ —</p>
+            <ul>
+                <li>Internet ချိတ်ဆက်မှု ပြတ်တောက်ခြင်းကြောင့် ဖတ်ရှုမှု ရပ်ဆိုင်းသွားခြင်း</li>
+                <li>User ၏ device ပြဿနာကြောင့် data ဆုံးရှုံးခြင်း</li>
+                <li>တတိယပုဂ္ဂိုလ် ဝန်ဆောင်မှုများ (Supabase, Google) ၏ ပြဿနာများ</li>
+            </ul>
+        </div>
+
+        <!-- 7 -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-rotate"></i> ၇။ စည်းမျဉ်း ပြောင်းလဲမှုများ</h2>
+            <p>ကျွန်ုပ်တို့သည် ဤ Terms of Service ကို လိုအပ်သည့်အခါ အပ်ဒိတ်လုပ်နိုင်ပါသည်။ မည်သည့် အပြောင်းအလဲမဆို ဤစာမျက်နှာတွင် ထုတ်ဖော်ကြေညာမည်ဖြစ်ပြီး ဝန်ဆောင်မှုကို ဆက်လက်အသုံးပြုပါက ပြောင်းလဲသည့် စည်းမျဉ်းများကို သဘောတူညီသည်ဟု မှတ်ယူပါသည်။</p>
+        </div>
+
+        <!-- Contact -->
+        <div class="contact-box">
+            <p>စည်းမျဉ်းများနှင့် ပတ်သက်၍ မေးမြန်းလိုပါက ကျွန်ုပ်တို့ထံ ဆက်သွယ်နိုင်ပါသည်။</p>
+            <a href="#"><i class="fa-brands fa-telegram"></i> Telegram မှ ဆက်သွယ်ရန်</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="photo_2026-03-20_09-18-40.jpg" alt="Smart Bookshelf Logo" class="footer-logo">
+                <div class="social-links">
+                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-telegram"></i></a>
+                    <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+                <p class="copyright">&copy; 2026 Smart Bookshelf. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">ပင်မစာမျက်နှာ</a></li>
+                    <li><a href="latest.html">နောက်ဆုံးထွက်စာအုပ်များ</a></li>
+                    <li><a href="authors.html">စာရေးဆရာများ</a></li>
+                    <li><a href="library.html">ကိုယ်ပိုင်စာအုပ်စင်</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">အသုံးပြုပုံ လမ်းညွှန်</a></li>
+                    <li><a href="terms.html" class="active">Terms of Service</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="cookies.html">Cookies Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+<script src="config.js"></script>
+    <script src="mainscript.js"></script>
+   
 </body>
 </html>
