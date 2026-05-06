@@ -117,26 +117,23 @@ body {
 }
 #search-input {
     width: 100%;
-    /* ညာဘက်က ပုံကို စာလုံးတွေ မဖုံးဖို့ နေရာချန်ထားခြင်း */
     padding: 10px 50px 10px 15px; 
-    
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
     outline: none;
-
-    /* --- ပုံကို ညာဘက်အစွန်း ကပ်စေရန် --- */
     background-repeat: no-repeat;
-    /* right center လို့ ပေးရင် အစွန်းဆုံးကို ကပ်သွားပါမယ် */
     background-position: right center; 
-    /* အမြင့်ကို Search Box နဲ့ အပြည့် (၁၀၀%) ဖြစ်စေရန် */
     background-size: contain; 
-    
     transition: all 0.3s ease;
 }
 
-/* စာရိုက်တဲ့အခါ Background ပုံနဲ့ စာသား မထပ်စေရန် */
+/* ✅ ဒါပေါင်းထည့်ပါ - စာရှိရင် ပုံဖျောက်မယ် */
+#search-input:not(:placeholder-shown) {
+    background-image: none !important;
+}
+
 #search-input:focus {
     background-color: white;
     color: #333;
