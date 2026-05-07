@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>အသုံးပြုပုံ လမ်းညွှန် - Smart Bookshelf</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="mainstyle.css">
+    <style>
+        .policy-hero {
+            background: linear-gradient(135deg, #1976D2 0%, #1a237e 100%);
+            color: white;
+            padding: 60px 20px 40px;
+            text-align: center;
+        }
+        .policy-hero .icon { font-size: 3rem; margin-bottom: 15px; display: block; }
+        .policy-hero h1 { font-size: 1.8rem; margin: 0 0 10px; }
+        .policy-hero p { font-size: 0.95rem; opacity: 0.85; max-width: 500px; margin: 0 auto; line-height: 1.7; }
+
+        .policy-container { max-width: 800px; margin: 0 auto; padding: 40px 20px 60px; }
+
+        .last-updated { text-align: center; color: #888; font-size: 0.85rem; margin-bottom: 40px; }
+
+        .policy-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            border-left: 4px solid #2196F3;
+        }
+        .policy-card h2 {
+            font-size: 1.1rem;
+            color: #1976D2;
+            margin: 0 0 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .policy-card p, .policy-card li {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: #444;
+        }
+        .policy-card ul { padding-left: 20px; margin: 10px 0; }
+        .policy-card ul li { margin-bottom: 8px; }
+
+        /* Step Cards */
+        .step-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .step-item {
+            background: #f0f7ff;
+            border-radius: 10px;
+            padding: 18px 14px;
+            text-align: center;
+            border: 1px solid #bbdefb;
+        }
+
+        .step-item .step-num {
+            width: 36px;
+            height: 36px;
+            background: #2196F3;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 0 auto 10px;
+        }
+
+        .step-item p {
+            font-size: 0.88rem !important;
+            color: #1565C0 !important;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Feature Badge */
+        .feature-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .feature-row:last-child { border-bottom: none; }
+
+        .feature-icon {
+            width: 38px;
+            height: 38px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1976D2;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .feature-text strong {
+            display: block;
+            font-size: 0.95rem;
+            color: #222;
+            margin-bottom: 3px;
+        }
+
+        .feature-text span {
+            font-size: 0.88rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Tip Box */
+        .tip-box {
+            background: #fffde7;
+            border: 1px solid #ffe082;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-top: 14px;
+            font-size: 0.9rem;
+            color: #795548;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .tip-box i { color: #f9a825; margin-top: 2px; flex-shrink: 0; }
+
+        /* Contact Box */
+        .contact-box {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-radius: 12px;
+            padding: 25px 30px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        .contact-box p { font-size: 0.95rem; color: #1565C0; margin: 0 0 15px; }
+        .contact-box a {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .contact-box a:hover { background: #1565C0; }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #2196F3;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            transition: 0.2s;
+        }
+        .back-btn:hover { color: #1565C0; gap: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            </button>
+            <div class="logo">
+                <img src="photo_2026-03-20_09-18-40.jpg" alt="logo">
+            </div>
+            <div class="search-wrapper">
+                <div class="search-box" id="search-box">
+                    <input type="text" id="search-input" placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..."
+                        oninput="handleInput(event)" onkeydown="handleKeyDown(event)" autocomplete="off">
+                    <div id="search-suggestions" class="search-suggestions"></div>
+                </div>
+                <button id="search-trigger" class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html"><i class="fa-solid fa-house"></i> HOME</a></li>
+                <li><a href="categories.html"><i class="fa-solid fa-book"></i> စာအုပ်အမျိုးအစားများ</a></li>
+                <li><a href="authors.html"><i class="fa-solid fa-pen-nib"></i> AUTHORS</a></li>
+                <li><a href="library.html"><i class="fa-solid fa-bookmark"></i> LIBRARY</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="policy-hero">
+        <span class="icon">📖</span>
+        <h1>အသုံးပြုပုံ လမ်းညွှန်</h1>
+        <p>Smart Bookshelf ၏ လုပ်ဆောင်ချက်များကို အကောင်းဆုံး အသုံးချနိုင်ရန် ဤလမ်းညွှန်ကို ဖတ်ရှုပါ။</p>
+    </div>
+
+    <div class="policy-container">
+        <p class="last-updated"><i class="fa-regular fa-calendar"></i> နောက်ဆုံးပြင်ဆင်သည့်ရက် — မေ ၂၀၂၆</p>
+
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i> နောက်သို့ပြန်သွားမည်
+        </a>
+
+        <!-- 1. စတင်အသုံးပြုနည်း -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-rocket"></i> ၁။ စတင်အသုံးပြုနည်း</h2>
+            <p>Smart Bookshelf ကို အသုံးပြုရန် အောက်ပါ အဆင့်များ လိုက်နာပါ —</p>
+            <div class="step-grid">
+                <div class="step-item">
+                    <div class="step-num">၁</div>
+                    <p>Website သို့ ဝင်ရောက်ပါ</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">၂</div>
+                    <p>Sign Up နှင့် အကောင့်ဖွင့်ပါ</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">၃</div>
+                    <p>Email Confirmation နှိပ်ပါ</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">၄</div>
+                    <p>Sign In ဝင်ပြီး စာဖတ်ပါ</p>
+                </div>
+            </div>
+            <div class="tip-box">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Google အကောင့်ရှိပါက <strong>Google နှင့် ဝင်ရောက်မည်</strong> ကို နှိပ်ရုံဖြင့် Email Confirmation မလိုဘဲ ချက်ချင်း ဝင်ရောက်နိုင်သည်။</span>
+            </div>
+        </div>
+
+        <!-- 2. စာအုပ်ရှာဖွေနည်း -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-magnifying-glass"></i> ၂။ စာအုပ်ရှာဖွေနည်း</h2>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-search"></i></div>
+                <div class="feature-text">
+                    <strong>Search Bar</strong>
+                    <span>အပေါ်ဆုံးရှိ Search Bar တွင် စာအုပ်အမည် ရိုက်ထည့်ပါ။ စာ ၂ လုံးမှ စတင်ပြီး အကြံပြုချက်များ ပေါ်လာမည်ဖြစ်သည်။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="feature-text">
+                    <strong>အမျိုးအစားများ (Categories)</strong>
+                    <span>Menu မှ "စာအုပ်အမျိုးအစားများ" ကို နှိပ်ပါ။ Novel, History, Knowledge, Technical, Poem စသည့် အမျိုးအစားများဖြင့် ရှာဖွေနိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-fire"></i></div>
+                <div class="feature-text">
+                    <strong>လူကြိုက်အများဆုံး / နောက်ဆုံးထွက်</strong>
+                    <span>Home Page တွင် လူကြိုက်အများဆုံး၊ Download အများဆုံး နှင့် နောက်ဆုံးတင်ထားသော စာအုပ်များကို တွေ့နိုင်သည်။</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. စာအုပ်ဖတ်နည်း -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-book-open"></i> ၃။ စာအုပ်ဖတ်ရှုနည်း</h2>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-eye"></i></div>
+                <div class="feature-text">
+                    <strong>Online ဖတ်ရှုခြင်း</strong>
+                    <span>စာအုပ်ကို နှိပ်ပြီး Detail Page သို့ ရောက်သောအခါ <strong>"ဖတ်မည်"</strong> ခလုတ်ကို နှိပ်ပါ။ PDF Viewer တွင် တိုက်ရိုက်ဖတ်နိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-download"></i></div>
+                <div class="feature-text">
+                    <strong>Download လုပ်ခြင်း</strong>
+                    <span><strong>"ဒေါင်းလုတ်"</strong> ခလုတ်ကို နှိပ်ပါ။ ဒေါင်းလုတ်လုပ်ထားသောစာအုပ်များကို Offline တွင်လည်း ဖတ်ရှုနိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-heart"></i></div>
+                <div class="feature-text">
+                    <strong>Like နှင့် Library သိမ်းဆည်းခြင်း</strong>
+                    <span>ကြိုက်နှစ်သက်သော စာအုပ်များကို ❤️ နှိပ်ပြီး Like လုပ်နိုင်သည်။ Library ထဲ သိမ်းဆည်းထားလျှင် LIBRARY Menu မှ ပြန်ဖတ်နိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="tip-box">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>PDF Viewer တွင် နောက်ဆုံးဖတ်သောစာမျက်နှာကို အလိုအလျောက် မှတ်မိပေးသောကြောင့် နောက်တစ်ကြိမ်ဖတ်သည့်အခါ ဆက်ဖတ်နိုင်သည်။</span>
+            </div>
+        </div>
+
+        <!-- 4. Library -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-bookmark"></i> ၄။ ကိုယ်ပိုင်စာအုပ်စင် (Library)</h2>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-book-bookmark"></i></div>
+                <div class="feature-text">
+                    <strong>Library ထဲ သိမ်းဆည်းနည်း</strong>
+                    <span>စာအုပ် Detail Page တွင် <strong>"Library ထဲသိမ်းမည်"</strong> ခလုတ်ကို နှိပ်ပါ။ Login ဝင်ထားမှသာ သိမ်းဆည်းနိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+                <div class="feature-text">
+                    <strong>Offline ဖတ်ရှုခြင်း</strong>
+                    <span>Download လုပ်ထားသောစာအုပ်များကို Internet မရှိသောအခါတွင်လည်း Library မှတစ်ဆင့် ဆက်ဖတ်နိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="feature-text">
+                    <strong>ဖတ်ရှုမှုတိုးတက်မှု ကြည့်ရှုခြင်း</strong>
+                    <span>Library တွင် စာအုပ်တစ်အုပ်ချင်းစီ၏ ဖတ်ရှုမှု Progress ကို ကြည့်ရှုနိုင်သည်။</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. AI Assistant -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-robot"></i> ၅။ AI Assistant အသုံးပြုနည်း</h2>
+            <p>မျက်နှာပြင် ညာဘက်အောက်ထောင့်တွင် ရှိသော 🤖 Robot Icon ကို နှိပ်ပါ —</p>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-comments"></i></div>
+                <div class="feature-text">
+                    <strong>စာအုပ်အကြံပြုချက်</strong>
+                    <span>"လူကြိုက်အများဆုံး စာအုပ်ဘာတွေလဲ" သို့မဟုတ် "နောက်ဆုံးထွက် စာအုပ်တွေပြောပြပါ" ဟု မေးနိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div class="feature-text">
+                    <strong>ကိုယ်ပိုင်အကြံပြုချက်</strong>
+                    <span>AI သည် သင်ဖတ်ရှုမှုမှတ်တမ်းအပေါ် အခြေခံပြီး သင့်နှင့် ကိုက်ညီသော စာအုပ်များကို အကြံပြုနိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="tip-box">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>AI ကို မြန်မာဘာသာဖြင့် မေးမြန်းနိုင်သည်။ Rate limit ကြောင့် မက်ဆေ့ ၂ ခုကြားတွင် ၈ စက္ကန့်ခန့် စောင့်ရမည်ဖြစ်သည်။</span>
+            </div>
+        </div>
+
+        <!-- 6. အကောင့်ဆိုင်ရာ -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-user-circle"></i> ၆။ အကောင့်ဆိုင်ရာ</h2>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-key"></i></div>
+                <div class="feature-text">
+                    <strong>Password မေ့သွားလျှင်</strong>
+                    <span>Login Page တွင် <strong>"စကားဝှက်မေ့သွားသလား?"</strong> ကို နှိပ်ပါ။ Magic Link, OTP Code သို့မဟုတ် Reset Link ဖြင့် ပြန်လည်ဝင်ရောက်နိုင်သည်။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-brands fa-google"></i></div>
+                <div class="feature-text">
+                    <strong>Google Login</strong>
+                    <span>Google အကောင့်ဖြင့် Login ဝင်ပါက Password မလိုဘဲ ဝင်ရောက်နိုင်သည်။ Email Confirmation လည်း မလိုပါ။</span>
+                </div>
+            </div>
+            <div class="feature-row">
+                <div class="feature-icon"><i class="fa-solid fa-shield"></i></div>
+                <div class="feature-text">
+                    <strong>အကောင့်လုံခြုံရေး</strong>
+                    <span>Password ၅ ကြိမ် မှားယွင်းပါက ယာယီ ပိတ်ဆို့မည်ဖြစ်သည်။ Password အနည်းဆုံး ၈ လုံး သတ်မှတ်ပါ။</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. FAQ -->
+        <div class="policy-card">
+            <h2><i class="fa-solid fa-circle-question"></i> ၇။ မေးလေ့ရှိသောမေးခွန်းများ</h2>
+            <ul>
+                <li><strong>Q: အကောင့်မဖွင့်ဘဲ စာအုပ်ဖတ်လို့ရလား?</strong><br>
+                    A: အချို့ feature များ (Library, Download) အတွက် Login လိုအပ်သည်။ Browse လုပ်ရန်မူ Login မလိုပါ။</li>
+                <li><strong>Q: Download လုပ်ထားသောစာအုပ်တွေ ဘယ်မှာကြည့်ရလဲ?</strong><br>
+                    A: LIBRARY Menu → Downloaded tab တွင် ကြည့်နိုင်သည်။</li>
+                <li><strong>Q: AI Assistant ကို ဘာသာစကားဘယ်မျိုးနဲ့ မေးရလဲ?</strong><br>
+                    A: မြန်မာဘာသာ သို့မဟုတ် အင်္ဂလိပ်ဘာသာ နှစ်မျိုးလုံး မေးနိုင်သည်။</li>
+                <li><strong>Q: Search Bar မှာ စာအုပ်ရှာမတွေ့ရင်?</strong><br>
+                    A: အမည်တိုတိုဖြင့် ထပ်ကြိုးစားပါ သို့မဟုတ် Categories မှ ရှာဖွေပါ။</li>
+            </ul>
+        </div>
+
+        <!-- Contact -->
+        <div class="contact-box">
+            <p>နောက်ထပ် မေးမြန်းလိုသောအချက်များ ရှိပါက ကျွန်ုပ်တို့ထံ ဆက်သွယ်နိုင်ပါသည်။</p>
+            <a href="#"><i class="fa-brands fa-telegram"></i> Telegram မှ ဆက်သွယ်ရန်</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="photo_2026-03-20_09-18-40.jpg" alt="Smart Bookshelf Logo" class="footer-logo">
+                <div class="social-links">
+                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-telegram"></i></a>
+                    <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+                <p class="copyright">&copy; 2026 Smart Bookshelf. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">ပင်မစာမျက်နှာ</a></li>
+                    <li><a href="latest.html">နောက်ဆုံးထွက်စာအုပ်များ</a></li>
+                    <li><a href="authors.html">စာရေးဆရာများ</a></li>
+                    <li><a href="library.html">ကိုယ်ပိုင်စာအုပ်စင်</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="guide.html" class="active">အသုံးပြုပုံ လမ်းညွှန်</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="cookies.html">Cookies Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="mainscript.js"></script>
+</body>
+</html>
