@@ -355,7 +355,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1.4fr;
     gap: 40px;
 }
 
@@ -413,6 +413,123 @@ body {
     margin-top: 20px;
 }
 
+/* --- App Download Section --- */
+.footer-app h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--primary-blue);
+}
+
+.app-tagline {
+    font-size: 12px;
+    color: #a0aec0;
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+.app-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.app-store-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.app-store-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: var(--primary-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.25);
+}
+
+.app-store-btn i {
+    font-size: 26px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.app-store-btn--web {
+    border-color: rgba(33, 150, 243, 0.4);
+}
+
+.app-dl-icon {
+    margin-left: auto;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+
+
+
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.btn-sub {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+}
+
+.btn-main {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+}
+
+.qr-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.qr-placeholder {
+    width: 52px;
+    height: 52px;
+    background: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.qr-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.qr-placeholder i {
+    font-size: 34px;
+    color: #1a237e;
+}
+
+.qr-label {
+    font-size: 11.5px;
+    color: #a0aec0;
+    margin: 0;
+    line-height: 1.5;
+}
+
 @media screen and (max-width: 768px) {
     .footer-container {
         grid-template-columns: 1fr;
@@ -421,6 +538,15 @@ body {
     
     .footer-links {
         margin-bottom: 20px;
+    }
+
+    .app-store-btn {
+        justify-content: center;
+    }
+
+    .qr-section {
+        flex-direction: column;
+        text-align: center;
     }
 }
 .skeleton-card {
