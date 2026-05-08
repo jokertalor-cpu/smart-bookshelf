@@ -616,7 +616,99 @@
                 </div>
             </div>
 
-            <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> သိမ်းဆည်းမည်</button>
+            <!-- Browser Extension Guide Section -->
+            <div id="aiExtensionSection" style="border: 1px solid #e8eaed; border-radius: 12px; background: #fafbff; padding: 0; margin-top: 20px; overflow: hidden;">
+                
+                <div style="background: linear-gradient(135deg, #7c3aed, #3b82f6); padding: 16px 20px; display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">🤖</div>
+                    <div>
+                        <div style="color: white; font-size: 14px; font-weight: 700;">SmartBookshelf AI Browser Extension</div>
+                        <div style="color: rgba(255,255,255,0.75); font-size: 11px; margin-top: 1px;">မည်သည့် website မှာမဆို AI ကို မေးနိုင် — Chrome / Edge</div>
+                    </div>
+                    <div style="margin-left: auto; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: white; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap;">v1.0</div>
+                </div>
+
+                <div style="padding: 20px;">
+
+                    <!-- Download -->
+                    <div style="background: white; border: 2px solid #7c3aed; border-radius: 10px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="font-size: 28px;">📦</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 14px; color: #1a1a2e;">Extension ဒေါင်းလုဒ်</div>
+                                <div style="font-size: 11px; color: #5f6368; margin-top: 2px;">SmartBookshelf-AI-Extension.zip</div>
+                            </div>
+                        </div>
+                        <a href="downloads/SmartBookshelf-AI-Extension.zip" download
+                           style="background: linear-gradient(135deg, #7c3aed, #3b82f6); color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 12px rgba(124,58,237,0.3); white-space: nowrap;">
+                            <i class="fas fa-download"></i> ZIP ဒေါင်းလုဒ်
+                        </a>
+                    </div>
+
+                    <!-- Steps -->
+                    <div style="font-weight: 700; font-size: 13px; color: #202124; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-list-ol" style="color: #7c3aed;"></i> တပ်ဆင်နည်း
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+
+                        <div style="display: flex; gap: 12px; align-items: flex-start; background: white; border: 1px solid #e8eaed; border-radius: 10px; padding: 14px;">
+                            <div style="width: 28px; height: 28px; background: #7c3aed; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0;">1</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 13px; color: #202124; margin-bottom: 4px;">ZIP ဒေါင်းပြီး Extract လုပ်ပါ</div>
+                                <div style="font-size: 12px; color: #5f6368; line-height: 1.6;">ဒေါင်းထားသော ZIP ကို right-click → <strong>Extract All</strong> နှိပ်ပြီး folder ဖြည်ပါ။</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; align-items: flex-start; background: white; border: 1px solid #e8eaed; border-radius: 10px; padding: 14px;">
+                            <div style="width: 28px; height: 28px; background: #3b82f6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0;">2</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 13px; color: #202124; margin-bottom: 4px;">Chrome / Edge Extensions ဖွင့်ပါ</div>
+                                <div style="font-size: 12px; color: #5f6368; line-height: 1.6;">
+                                    Chrome: <code style="background: #f1f3f4; padding: 1px 6px; border-radius: 4px; font-size: 11px; color: #c0392b;">chrome://extensions</code> &nbsp;|&nbsp;
+                                    Edge: <code style="background: #f1f3f4; padding: 1px 6px; border-radius: 4px; font-size: 11px; color: #c0392b;">edge://extensions</code><br>
+                                    ညာဘက်အပေါ် <strong>Developer mode</strong> toggle ဖွင့်ပါ။
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; align-items: flex-start; background: white; border: 1px solid #e8eaed; border-radius: 10px; padding: 14px;">
+                            <div style="width: 28px; height: 28px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0;">3</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 13px; color: #202124; margin-bottom: 4px;">Load Unpacked နှိပ်ပြီး Folder ရွေးပါ</div>
+                                <div style="font-size: 12px; color: #5f6368; line-height: 1.6;"><strong>Load unpacked</strong> button နှိပ်ပြီး ဖြည်ထားသော <strong>SmartBookshelf-AI-Extension</strong> folder ရွေးပါ။ Toolbar မှာ 🤖 icon ပေါ်လာရင် ပြီးပါပြီ။</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; align-items: flex-start; background: white; border: 1px solid #e8eaed; border-radius: 10px; padding: 14px;">
+                            <div style="width: 28px; height: 28px; background: #f59e0b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0;">4</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 13px; color: #202124; margin-bottom: 4px;">Token ထည့်ပြီး အသုံးပြုပါ</div>
+                                <div style="font-size: 12px; color: #5f6368; line-height: 1.6;">Toolbar မှာ 🤖 icon နှိပ်ပါ။ Popup ထဲ Access Token field မှာ အောက်က button နှင့် ရယူသော token ကို paste လုပ်ပြီး <strong>သိမ်းဆည်းမည်</strong> နှိပ်ပါ။</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Token Copy -->
+                    <div style="background: linear-gradient(135deg, #f5f0ff, #eff6ff); border: 1px solid #ddd6fe; border-radius: 10px; padding: 16px;">
+                        <div style="font-weight: 700; font-size: 12px; color: #5b21b6; margin-bottom: 8px; display: flex; align-items: center; gap: 7px;">
+                            <i class="fas fa-key"></i> Access Token ရယူရန်
+                        </div>
+                        <div style="font-size: 12px; color: #5f6368; margin-bottom: 12px; line-height: 1.6;">Login ဝင်ထားသောကြောင့် သင့် token ကို တိုက်ရိုက် ကူးယူနိုင်ပါသည်။ Extension popup ထဲ paste (Ctrl+V) လုပ်ပြီး သိမ်းဆည်းပါ။</div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="copyAccessToken()" id="copyTokenBtn"
+                                style="background: #7c3aed; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                                <i class="fas fa-copy"></i> Token ကူးယူမည်
+                            </button>
+                            <span id="tokenCopiedMsg" style="font-size: 12px; color: #10b981; font-weight: 600; display: none;">
+                                <i class="fas fa-check-circle"></i> Copied! Extension popup မှာ paste လုပ်ပါ
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div><i class="fas fa-save"></i> သိမ်းဆည်းမည်</button>
         </div>
 
 
@@ -970,6 +1062,27 @@ async function saveProfile() {
                 await db.savedBooks.clear();
                 window.location.href = 'auth.html';
             }
+        }
+
+        function copyAccessToken() {
+            try {
+                const raw = localStorage.getItem('sb-mituedqotwbmporkwbqf-auth-token');
+                if (!raw) { Swal.fire('မတွေ့ပါ', 'Login session မရှိပါ။ ထပ်မံ login ဝင်ပါ။', 'warning'); return; }
+                const token = JSON.parse(raw).access_token;
+                if (!token) { Swal.fire('မတွေ့ပါ', 'Access token မရှိပါ။', 'warning'); return; }
+                navigator.clipboard.writeText(token).then(() => {
+                    const btn = document.getElementById('copyTokenBtn');
+                    const msg = document.getElementById('tokenCopiedMsg');
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    btn.style.background = '#10b981';
+                    msg.style.display = 'inline-flex';
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="fas fa-copy"></i> Token ကူးယူမည်';
+                        btn.style.background = '#7c3aed';
+                        msg.style.display = 'none';
+                    }, 3000);
+                });
+            } catch(e) { Swal.fire('မှားယွင်းမှု', 'Token ကူးယူ၍မရပါ။', 'error'); }
         }
 
         async function confirmDeleteAccount() {
