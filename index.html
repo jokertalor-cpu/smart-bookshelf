@@ -113,10 +113,17 @@
             <button onclick="sendToAI()" style="background: #1a73e8; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;">ပို့မည်</button>
         </div>
     </div>
-
-   <div id="robot-icon" 
+<!-- ဒီ အပိုင်းကို ရှာပြီး အစားထိုးပါ -->
+<div id="robot-icon" 
      onmousedown="startDragging(event)" 
-     style="width: 80px; height: 80px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2)); cursor: move; position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
+     style="width: 80px; height: 80px; 
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.25)); 
+            cursor: move; 
+            position: fixed; 
+            top: 50%;           /* အပေါ်ကနေ တက်လာပြီ */
+            right: 15px;        /* ညာဘက်ကနေ နည်းနည်း ဝေးထားတယ် */
+            transform: translateY(-50%);  /* အလယ်ဗဟိုကျအောင် */
+            z-index: 2000;">
     <lottie-player 
         src="AI Robot.json" 
         background="transparent" 
