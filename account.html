@@ -615,19 +615,17 @@
                     </p>
                 </div>
             </div>
-
-            <!-- Browser Extension Guide Section -->
-            <div id="aiExtensionSection" style="border: 1px solid #e8eaed; border-radius: 12px; background: #fafbff; padding: 0; margin-top: 20px; overflow: hidden;">
-                
+  <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> သိမ်းဆည်းမည်</button>
+            <!-- Browser Extension Section -->
+            <div class="section" style="border: 1px solid #e8eaed; background: #fafbff; padding: 0; margin-top: 20px; overflow: hidden;">
                 <div style="background: linear-gradient(135deg, #7c3aed, #3b82f6); padding: 16px 20px; display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">🤖</div>
+                    <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">🤖</div>
                     <div>
                         <div style="color: white; font-size: 14px; font-weight: 700;">SmartBookshelf AI Browser Extension</div>
                         <div style="color: rgba(255,255,255,0.75); font-size: 11px; margin-top: 1px;">မည်သည့် website မှာမဆို AI ကို မေးနိုင် — Chrome / Edge</div>
                     </div>
                     <div style="margin-left: auto; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: white; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap;">v1.0</div>
                 </div>
-
                 <div style="padding: 20px;">
 
                     <!-- Download -->
@@ -639,7 +637,7 @@
                                 <div style="font-size: 11px; color: #5f6368; margin-top: 2px;">SmartBookshelf-AI-Extension.zip</div>
                             </div>
                         </div>
-                        <a href="https://mituedqotwbmporkwbqf.supabase.co/storage/v1/object/public/ai-bucket/ai-extension.zip" download
+                        <a href="https://[PROJECT_ID].supabase.co/storage/v1/object/public/downloads/SmartBookshelf-AI-Extension.zip" download
                            style="background: linear-gradient(135deg, #7c3aed, #3b82f6); color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 12px rgba(124,58,237,0.3); white-space: nowrap;">
                             <i class="fas fa-download"></i> ZIP ဒေါင်းလုဒ်
                         </a>
@@ -649,7 +647,6 @@
                     <div style="font-weight: 700; font-size: 13px; color: #202124; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-list-ol" style="color: #7c3aed;"></i> တပ်ဆင်နည်း
                     </div>
-
                     <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
 
                         <div style="display: flex; gap: 12px; align-items: flex-start; background: white; border: 1px solid #e8eaed; border-radius: 10px; padding: 14px;">
@@ -676,7 +673,7 @@
                             <div style="width: 28px; height: 28px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0;">3</div>
                             <div>
                                 <div style="font-weight: 700; font-size: 13px; color: #202124; margin-bottom: 4px;">Load Unpacked နှိပ်ပြီး Folder ရွေးပါ</div>
-                                <div style="font-size: 12px; color: #5f6368; line-height: 1.6;"><strong>Load unpacked</strong> button နှိပ်ပြီး ဖြည်ထားသော <strong>SmartBookshelf-AI-Extension</strong> folder ရွေးပါ။ Toolbar မှာ 🤖 icon ပေါ်လာရင် ပြီးပါပြီ။</div>
+                                <div style="font-size: 12px; color: #5f6368; line-height: 1.6;"><strong>Load unpacked</strong> button နှိပ်ပြီး ဖြည်ထားသော folder ကို ရွေးပါ။ Toolbar မှာ 🤖 icon ပေါ်လာရင် ပြီးပါပြီ။</div>
                             </div>
                         </div>
 
@@ -684,7 +681,16 @@
                             <div style="width: 28px; height: 28px; background: #f59e0b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0;">4</div>
                             <div>
                                 <div style="font-weight: 700; font-size: 13px; color: #202124; margin-bottom: 4px;">Token ထည့်ပြီး အသုံးပြုပါ</div>
-                                <div style="font-size: 12px; color: #5f6368; line-height: 1.6;">Toolbar မှာ 🤖 icon နှိပ်ပါ။ Popup ထဲ Access Token field မှာ အောက်က button နှင့် ရယူသော token ကို paste လုပ်ပြီး <strong>သိမ်းဆည်းမည်</strong> နှိပ်ပါ။</div>
+                                <div style="font-size: 12px; color: #5f6368; line-height: 1.6;">Toolbar မှာ 🤖 icon နှိပ်ပါ။ Popup ထဲ Access Token field မှာ အောက်က button ဖြင့် ရယူသော token ကို paste လုပ်ပြီး <strong>သိမ်းဆည်းမည်</strong> နှိပ်ပါ။</div>
+                                <!-- Guide Link -->
+                                <div style="margin-top: 10px;">
+                                    <a href="guide.html#ai-extension" style="display: inline-flex; align-items: center; gap: 7px; background: #f5f0ff; border: 1px solid #ddd6fe; color: #6d28d9; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;"
+                                       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f0ff'">
+                                        <i class="fas fa-book-open"></i>
+                                        SmartBookshelf AI Browser Extension အသေးစိတ်တပ်ဆင်နည်းနှင့် အသုံးပြုပုံ လမ်းညွှန် ကြည့်ရန်
+                                        <i class="fas fa-arrow-right" style="font-size: 10px;"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
@@ -698,7 +704,7 @@
                         <div style="font-size: 12px; color: #5f6368; margin-bottom: 12px; line-height: 1.6;">Login ဝင်ထားသောကြောင့် သင့် token ကို တိုက်ရိုက် ကူးယူနိုင်ပါသည်။ Extension popup ထဲ paste (Ctrl+V) လုပ်ပြီး သိမ်းဆည်းပါ။</div>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <button onclick="copyAccessToken()" id="copyTokenBtn"
-                                style="background: #7c3aed; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                                style="background: #7c3aed; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
                                 <i class="fas fa-copy"></i> Token ကူးယူမည်
                             </button>
                             <span id="tokenCopiedMsg" style="font-size: 12px; color: #10b981; font-weight: 600; display: none;">
@@ -708,7 +714,9 @@
                     </div>
 
                 </div>
-            </div><i class="fas fa-save"></i> သိမ်းဆည်းမည်</button>
+            </div>
+
+          
         </div>
 
 
@@ -1085,18 +1093,76 @@ async function saveProfile() {
             } catch(e) { Swal.fire('မှားယွင်းမှု', 'Token ကူးယူ၍မရပါ။', 'error'); }
         }
 
+       
         async function confirmDeleteAccount() {
             const result = await Swal.fire({ 
                 title: 'အကောင့်ဖျက်သိမ်းမည်လား?', 
-                text: 'ဤလုပ်ဆောင်ချက်ကို ပြန်လည်ပြင်ဆင်၍မရပါ။',
+                html: '<p style="color:#ea4335; font-weight:600;">ဤလုပ်ဆောင်ချက်ကို ပြန်လည်ပြင်ဆင်၍မရပါ။</p><p style="margin-top:8px; font-size:13px; color:#5f6368;">သင်၏ ဒေါင်းလုဒ်မှတ်တမ်း၊ ကြိုက်နှစ်သက်မှုများနှင့် ဒေတာများ အားလုံး ပျောက်ကွယ်သွားမည်ဖြစ်သည်။</p>',
                 icon: 'warning', 
                 showCancelButton: true, 
                 confirmButtonColor: '#ea4335', 
                 confirmButtonText: 'ဖျက်သိမ်းမည်',
                 cancelButtonText: 'မလုပ်တော့ပါ'
             });
-            if (result.isConfirmed) {
-                Swal.fire('အကောင့်ဖျက်သိမ်းခြင်းကို System Admin မှတစ်ဆင့်သာ ဆောင်ရွက်နိုင်ပါသည်။', '', 'info');
+ 
+            if (!result.isConfirmed) return;
+ 
+            // နောက်တစ်ကြိမ် အတည်ပြုချက် တောင်းပါ
+            const confirm2 = await Swal.fire({
+                title: 'သေချာပါသလား?',
+                text: 'စကားဝှက် ထည့်သွင်း၍ အတည်ပြုပါ။',
+                input: 'password',
+                inputPlaceholder: 'စကားဝှက် ထည့်ပါ',
+                inputAttributes: { autocomplete: 'current-password' },
+                showCancelButton: true,
+                confirmButtonColor: '#ea4335',
+                confirmButtonText: 'အတည်ပြု၍ ဖျက်မည်',
+                cancelButtonText: 'မလုပ်တော့ပါ',
+                preConfirm: (password) => {
+                    if (!password) {
+                        Swal.showValidationMessage('စကားဝှက် ထည့်သွင်းရပါမည်။');
+                    }
+                    return password;
+                }
+            });
+ 
+            if (!confirm2.isConfirmed || !confirm2.value) return;
+ 
+            try {
+                Swal.fire({
+                    title: 'ဖျက်သိမ်းနေသည်...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+ 
+                // Email + Password ဖြင့် ပြန်လည် authenticate လုပ်ပါ
+                const { error: signInError } = await sb.auth.signInWithPassword({
+                    email: currentUser.email,
+                    password: confirm2.value
+                });
+                if (signInError) throw new Error('စကားဝှက် မှားနေပါသည်။');
+ 
+                // Local data ဖျက်ပါ
+                await db.savedBooks.clear();
+ 
+                // Supabase auth user ဖျက်ပါ
+                const { error: deleteError } = await sb.rpc('delete_user');
+                if (deleteError) throw deleteError;
+ 
+                await sb.auth.signOut();
+ 
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'အကောင့် ဖျက်သိမ်းပြီးပါပြီ',
+                    text: 'သင်၏အကောင့်ကို အောင်မြင်စွာ ဖျက်သိမ်းပြီးပါပြီ။',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+ 
+                window.location.href = 'auth.html';
+ 
+            } catch (err) {
+                Swal.fire('မှားယွင်းမှု', err.message || 'အကောင့်ဖျက်သိမ်း၍ မရပါ။ နောက်မှ ထပ်ကြိုးစားပါ။', 'error');
             }
         }
     </script>
