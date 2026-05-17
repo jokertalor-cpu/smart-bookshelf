@@ -9,82 +9,77 @@
 
 <url>
   <loc>https://smart-bookshelf.vercel.app/</loc>
-  <lastmod>2026-05-07T06:51:31+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:42+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/index.html</loc>
-  <lastmod>2026-05-07T06:51:31+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:43+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/categories.html</loc>
-  <lastmod>2026-05-07T06:51:31+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:43+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/authors.html</loc>
-  <lastmod>2026-05-07T06:51:31+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:43+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/library.html</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:43+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://smart-bookshelf.vercel.app/ai-assistant.html</loc>
+  <lastmod>2026-05-17T08:48:44+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://smart-bookshelf.vercel.app/account.html</loc>
+  <lastmod>2026-05-17T08:48:44+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/all-books.html?sort=latest</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:44+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/all-books.html?sort=popular</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:44+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/all-books.html?sort=downloads</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:44+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://smart-bookshelf.vercel.app/guide.html</loc>
+  <lastmod>2026-05-17T08:48:44+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/terms.html</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:44+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/privacy.html</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:44+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://smart-bookshelf.vercel.app/cookies.html</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:45+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://smart-bookshelf.vercel.app/terms.html?from=home</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://smart-bookshelf.vercel.app/privacy.html?from=home</loc>
-  <lastmod>2026-05-07T06:51:32+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://smart-bookshelf.vercel.app/ai-assistant.html</loc>
-  <lastmod>2026-05-07T06:51:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
-  <loc>https://smart-bookshelf.vercel.app/account.html</loc>
-  <lastmod>2026-05-07T06:51:33+00:00</lastmod>
-  <priority>0.64</priority>
-</url>
-<url>
   <loc>https://smart-bookshelf.vercel.app/auth.html</loc>
-  <lastmod>2026-05-07T06:51:33+00:00</lastmod>
+  <lastmod>2026-05-17T08:48:45+00:00</lastmod>
   <priority>0.64</priority>
 </url>
 
