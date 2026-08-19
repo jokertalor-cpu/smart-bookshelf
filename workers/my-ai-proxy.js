@@ -30,7 +30,10 @@ function isJWT(value) {
 function binding(name) { return globalThis[name] || ''; }
 
 async function handle(request) {
-  const env = { SUPABASE_URL: binding('SUPABASE_URL'), SUPABASE_ANON_KEY: binding('SUPABASE_ANON_KEY') };
+  const env = {
+    SUPABASE_URL: String(binding('SUPABASE_URL')).trim(),
+    SUPABASE_ANON_KEY: String(binding('SUPABASE_ANON_KEY')).trim()
+  };
     const origin = request.headers.get('Origin');
     if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ error: 'Origin not allowed' }, 403, origin);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
@@ -63,11 +66,18 @@ async function handle(request) {
 
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), MAX_TIMEOUT_MS);
+      const requestOrigin = ALLOWED_ORIGINS.has(origin) ? origin : 'https://smart-bookshelf.vercel.app';
       let response;
       try {
         response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
+            // Preserve the allowlisted site identity for API keys restricted by HTTP referrer.
+            'Origin': requestOrigin,
+            'Referer': `${requestOrigin}/`
+          },
           body: JSON.stringify(geminiBody),
           signal: controller.signal
         });
@@ -79,6 +89,7 @@ async function handle(request) {
       headers.set('X-Content-Type-Options', 'nosniff');
       return new Response(response.body, { status: 200, headers });
     } catch (error) {
+      console.error('AI proxy failure:', error?.name || 'UnknownError');
       return json({ error: error?.name === 'AbortError' ? 'AI request timed out' : 'AI request failed' }, 502, origin);
     }
 }
