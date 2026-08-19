@@ -566,7 +566,8 @@
             await renderFavorites();
         }
         setupAuthListener();
-        loadDownloadQueue();
+        await loadDownloadQueue();
+        await renderLibrary();
     };
 
     function setupAuthListener() {
@@ -695,8 +696,25 @@
             if (progressContainer) progressContainer.classList.add('active');
 
             const xhr = new XMLHttpRequest();
-            
-            xhr.upload.addEventListener('progress', (e) => {
+            xhr.timeout = 60000;
+
+            const handleDownloadFailure = async (reason = 'Download failed') => {
+                console.error('Download failed:', reason);
+                if (retryCount < MAX_RETRIES) {
+                    await db.downloadQueue.update(bookId, {
+                        retryCount: retryCount + 1,
+                        status: 'retrying'
+                    });
+                    setTimeout(() => downloadAndSave(bookId, retryCount + 1), 2000 * (retryCount + 1));
+                } else {
+                    await db.downloadQueue.update(bookId, { status: 'failed' });
+                    downloadQueue.set(bookId, 'failed');
+                    await renderLibrary();
+                    Swal.fire('အမှားအယွင်း', `"${book.title}" ဒေါင်းလုဒ်လုပ်၍မရပါ။ နောက်မှ ထပ်မံကြိုးစားပါ။`, 'error');
+                }
+            };
+
+            xhr.addEventListener('progress', (e) => {
                 if (e.lengthComputable && progressBar) {
                     const percentComplete = (e.loaded / e.total) * 100;
                     progressBar.style.width = percentComplete + '%';
@@ -704,52 +722,47 @@
             });
 
             xhr.addEventListener('load', async () => {
-                if (xhr.status === 200) {
+                try {
+                    if (xhr.status !== 200) throw new Error(`HTTP ${xhr.status}`);
+                    const bytes = new Uint8Array(xhr.response || new ArrayBuffer(0));
+                    const pdfHeader = String.fromCharCode(...bytes.slice(0, 4));
+                    if (bytes.byteLength < 5 || pdfHeader !== '%PDF') throw new Error('Invalid PDF response');
+
                     const blob = new Blob([xhr.response], { type: 'application/pdf' });
-                    await db.savedBooks.update(bookId, { 
+                    await db.savedBooks.update(bookId, {
                         fileData: blob,
                         lastReadDate: new Date().toISOString()
                     });
-                    
+
                     await db.downloadQueue.delete(bookId);
                     downloadQueue.delete(bookId);
-                    
                     showSyncStatus(true, `"${book.title}" ကို ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ။`);
                     setTimeout(() => showSyncStatus(false), 2000);
-                    
                     await renderLibrary();
-                } else {
-                    throw new Error('Download failed');
+                } catch (error) {
+                    await handleDownloadFailure(error.message);
                 }
             });
 
-            xhr.addEventListener('error', async () => {
-                if (retryCount < MAX_RETRIES) {
-                    await db.downloadQueue.update(bookId, { 
-                        retryCount: retryCount + 1,
-                        status: 'retrying'
-                    });
-                    setTimeout(() => downloadAndSave(bookId, retryCount + 1), 2000 * (retryCount + 1));
-                } else {
-                    await db.downloadQueue.update(bookId, { status: 'failed' });
-                    Swal.fire('အမှားအယွင်း', `"${book.title}" ဒေါင်းလုဒ်လုပ်၍မရပါ။ နောက်မှ ထပ်မံကြိုးစားပါ။`, 'error');
-                }
-            });
+            xhr.addEventListener('error', () => handleDownloadFailure('Network error'));
+            xhr.addEventListener('timeout', () => handleDownloadFailure('Request timed out'));
 
             const downloadURL = window.safeAssetURL(data.download_link, '');
             if (!downloadURL) throw new Error('Invalid download URL');
             xhr.open('GET', downloadURL);
             xhr.withCredentials = false;
             xhr.responseType = 'arraybuffer';
-            xhr.send();
 
+            // Persist the queue before starting the request to avoid a fast-response race.
             await db.downloadQueue.put({
                 id: bookId,
                 bookId: bookId,
                 status: 'downloading',
-                retryCount: retryCount
+                retryCount: retryCount,
+                createdAt: Date.now()
             });
             downloadQueue.set(bookId, 'downloading');
+            xhr.send();
 
         } catch (e) {
             console.error("Download Error:", e);
@@ -766,9 +779,15 @@
 
     async function loadDownloadQueue() {
         const queue = await db.downloadQueue.toArray();
-        queue.forEach(item => {
+        for (const item of queue) {
+            // A page reload can leave a download marked as active forever.
+            // Requeue it so the normal sync path can retry it safely.
+            if (item.status === 'downloading') {
+                await db.downloadQueue.update(item.id, { status: 'queued' });
+                item.status = 'queued';
+            }
             downloadQueue.set(item.bookId, item.status);
-        });
+        }
     }
 
     async function renderLibrary() {

@@ -6,6 +6,7 @@
     <title>AI Assistant - SmartBookshelf</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="config.js"></script>
     <!-- Export Libraries -->
     <script src="https://unpkg.com/docx@8.2.2/build/index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -722,14 +723,13 @@
             if (storedSession) {
                 try {
                     const sessionData = JSON.parse(storedSession);
+                    if (!sessionData.access_token || (sessionData.expires_at && Number(sessionData.expires_at) * 1000 <= Date.now())) {
+                        throw new Error('Session expired');
+                    }
                     accessToken = sessionData.access_token;
                     currentSession = sessionData;
                     currentUser = sessionData.user;
-                    geminiApiKey = currentUser?.user_metadata?.gemini_api_key;
-
-                    if (!geminiApiKey) {
-                        document.getElementById('apiWarning').style.display = 'flex';
-                    }
+                    await loadGeminiApiKey();
                 } catch (e) {
                     console.error("Session parse error", e);
                     window.location.href = 'auth.html';
@@ -741,16 +741,52 @@
             loadGlossary();
         };
 
-        function loadGlossary() {
-            const saved = localStorage.getItem('ai_glossary');
-            if (saved) {
-                glossary = JSON.parse(saved);
-                renderGlossaryTags();
+        async function loadGeminiApiKey() {
+            if (!currentUser?.id || typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_KEY === 'undefined') return;
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/user_settings?select=gemini_api_key&user_id=eq.${encodeURIComponent(currentUser.id)}&limit=1`, {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                });
+                if (!response.ok) throw new Error(`Settings request failed: ${response.status}`);
+                const rows = await response.json();
+                geminiApiKey = rows[0]?.gemini_api_key || null;
+            } catch (error) {
+                console.warn('Unable to load AI settings:', error);
+                geminiApiKey = null;
             }
+            document.getElementById('apiWarning').style.display = geminiApiKey ? 'none' : 'flex';
+        }
+
+        function glossaryStorageKey() {
+            return `ai_glossary:${currentUser?.id || 'guest'}`;
+        }
+
+        function loadGlossary() {
+            try {
+                const key = glossaryStorageKey();
+                let saved = localStorage.getItem(key);
+                // Migrate the old global glossary once for the currently signed-in user.
+                if (!saved && currentUser?.id) {
+                    saved = localStorage.getItem('ai_glossary');
+                    if (saved) {
+                        localStorage.setItem(key, saved);
+                        localStorage.removeItem('ai_glossary');
+                    }
+                }
+                glossary = saved ? JSON.parse(saved) : {};
+                if (!glossary || typeof glossary !== 'object' || Array.isArray(glossary)) glossary = {};
+            } catch (error) {
+                console.warn('Glossary data was invalid and has been reset:', error);
+                glossary = {};
+            }
+            renderGlossaryTags();
         }
 
         function saveGlossary() {
-            localStorage.setItem('ai_glossary', JSON.stringify(glossary));
+            localStorage.setItem(glossaryStorageKey(), JSON.stringify(glossary));
         }
 
         function toggleGlossary() {
@@ -922,7 +958,7 @@ async function sendMessage() {
         };
 
         if (systemInstruction) {
-            payload.system_instruction = systemInstruction;
+            payload.systemInstruction = systemInstruction;
         }
 
         const response = await fetch(workerUrl, { 
@@ -944,10 +980,12 @@ async function sendMessage() {
             throw new Error(errorMsg);
         }
 
-        // Streaming Logic
+        // Streaming Logic: preserve partial UTF-8/SSE lines across network chunks.
+        if (!response.body) throw new Error('AI response stream မရရှိပါ။');
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullAiResponse = "";
+        let buffer = "";
 
         const aiMessageDiv = document.getElementById(typingId);
         const contentDiv = document.createElement('div');
@@ -955,27 +993,37 @@ async function sendMessage() {
         aiMessageDiv.innerHTML = '';
         aiMessageDiv.appendChild(contentDiv);
 
+        const appendContent = (content) => {
+            if (!content) return;
+            fullAiResponse += content;
+            contentDiv.innerHTML = formatResponse(fullAiResponse);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        };
+
+        const processSSELine = (line) => {
+            if (!line.startsWith('data: ')) return;
+            try {
+                const json = JSON.parse(line.substring(6).trim());
+                const textPart = json.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (textPart) appendContent(textPart);
+            } catch (_) {
+                // Ignore keep-alive/invalid lines; valid partial lines remain buffered.
+            }
+        };
+
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
-            
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const json = JSON.parse(line.substring(6));
-                        if (json.candidates && json.candidates[0]?.content?.parts?.[0]?.text) {
-                            const part = json.candidates[0].content.parts[0].text;
-                            fullAiResponse += part;
-                            contentDiv.innerHTML = formatResponse(fullAiResponse);
-                            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                        }
-                    } catch (e) {}
-                }
-            }
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split(/\\r?\\n/);
+            buffer = lines.pop() || '';
+            lines.forEach(processSSELine);
         }
+
+        // Flush a final UTF-8 sequence and process an SSE event without trailing newline.
+        buffer += decoder.decode();
+        if (buffer.trim()) processSSELine(buffer);
+        if (!fullAiResponse) throw new Error('AI မှ ပြန်စာမရရှိပါ။');
 
         conversationHistory.push({ role: "model", parts: [{ text: fullAiResponse }] });
 
@@ -989,6 +1037,7 @@ async function sendMessage() {
         aiMessageDiv.innerHTML += actionsHtml;
 
     } catch (error) {
+        if (conversationHistory.at(-1)?.role === 'user') conversationHistory.pop();
         if (error.name === 'AbortError') {
             document.getElementById(typingId).innerHTML = `<em style="color: #999;">Generation stopped by user</em>`;
         } else {

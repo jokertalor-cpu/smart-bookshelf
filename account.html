@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Account - SmartBookshelf</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -764,6 +764,32 @@
         let currentUser = null;
         let readingChart = null;
 
+        function removedDownloadsStorageKey() {
+            return `smartbookshelf_removed_downloads:${currentUser?.id || 'guest'}`;
+        }
+
+        function getRemovedDownloadIds() {
+            try {
+                const ids = JSON.parse(localStorage.getItem(removedDownloadsStorageKey()) || '[]');
+                return new Set(Array.isArray(ids) ? ids.map(id => String(id)) : []);
+            } catch (_) {
+                return new Set();
+            }
+        }
+
+        function forgetRemovedDownload(id) {
+            const ids = getRemovedDownloadIds();
+            ids.delete(String(id));
+            if (ids.size) localStorage.setItem(removedDownloadsStorageKey(), JSON.stringify([...ids]));
+            else localStorage.removeItem(removedDownloadsStorageKey());
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[ch]));
+        }
+
       window.onload = async () => {
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
@@ -788,14 +814,28 @@
                     localStorage.setItem('my_likes', JSON.stringify(likesData.map(i => i.book_id.toString())));
                 }
 
+                // Complete pending Library removals before loading cloud metadata.
+                const pendingRemovedIds = getRemovedDownloadIds();
+                for (const removedId of pendingRemovedIds) {
+                    const { error: removeError } = await sb
+                        .from('user_downloads')
+                        .delete()
+                        .eq('user_id', currentUser.id)
+                        .eq('book_id', Number(removedId));
+                    if (!removeError) forgetRemovedDownload(removedId);
+                }
+
                 // Sync Downloads Metadata
-                const { data: downloadsData } = await sb
+                const { data: downloadsData, error: downloadsError } = await sb
                     .from('user_downloads')
                     .select('book_id, books:book_id(id, title, author, cover)')
                     .eq('user_id', currentUser.id);
 
-                if (downloadsData) {
-                    const cloudBooks = downloadsData.filter(d => d.books).map(d => d.books);
+                if (!downloadsError && downloadsData) {
+                    const removedIds = getRemovedDownloadIds();
+                    const cloudBooks = downloadsData
+                        .filter(d => d.books && !removedIds.has(String(d.book_id)))
+                        .map(d => d.books);
                     
                     for (const book of cloudBooks) {
                         const existing = await db.savedBooks.get(book.id.toString());
@@ -814,11 +854,12 @@
 
                     const cloudIds = new Set(cloudBooks.map(b => b.id.toString()));
                     const localBooks = await db.savedBooks.toArray();
-                    for (const lb of localBooks) {
-                        if (!cloudIds.has(lb.id.toString())) {
-                            await db.savedBooks.delete(lb.id);
+                        for (const lb of localBooks) {
+                            // Preserve real offline files when cloud metadata is delayed or unavailable.
+                            if (!lb.fileData && !cloudIds.has(lb.id.toString())) {
+                                await db.savedBooks.delete(lb.id);
+                            }
                         }
-                    }
                 }
 
                 await loadStats();
@@ -1052,7 +1093,7 @@ async function saveProfile() {
                 const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
                     <div class="activity-item success">
                         <div class="activity-time"><i class="fas fa-clock"></i> ${item.downloaded_at ? new Date(item.downloaded_at).toLocaleString('my-MM') : 'အချိန်မသိ'}</div>
-                        <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်</div>
+                        <div class="activity-desc"><i class="fas fa-download"></i> "${escapeHTML(item.books?.title || 'Unknown')}" ဒေါင်းလုဒ်ခဲ့သည်</div>
                     </div>
                 `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';
                 
@@ -1070,6 +1111,8 @@ async function saveProfile() {
             if (result.isConfirmed) {
                 await sb.auth.signOut();
                 await db.savedBooks.clear();
+                await db.downloadQueue.clear();
+                localStorage.removeItem(removedDownloadsStorageKey());
                 window.location.href = 'auth.html';
             }
         }
@@ -1137,20 +1180,21 @@ async function saveProfile() {
                     didOpen: () => Swal.showLoading()
                 });
  
-                // Email + Password ဖြင့် ပြန်လည် authenticate လုပ်ပါ
-                const { error: signInError } = await sb.auth.signInWithPassword({
-                    email: currentUser.email,
-                    password: confirm2.value
-                });
+                // Email သို့မဟုတ် Phone + Password ဖြင့် ပြန်လည် authenticate လုပ်ပါ
+                const credentials = currentUser.phone
+                    ? { phone: currentUser.phone, password: confirm2.value }
+                    : { email: currentUser.email, password: confirm2.value };
+                if (!credentials.email && !credentials.phone) throw new Error('ဤအကောင့်အမျိုးအစားအတွက် ပြန်လည်အတည်ပြု၍မရပါ။');
+                const { error: signInError } = await sb.auth.signInWithPassword(credentials);
                 if (signInError) throw new Error('စကားဝှက် မှားနေပါသည်။');
  
-                // Local data ဖျက်ပါ
-                await db.savedBooks.clear();
- 
-                // Supabase auth user ဖျက်ပါ
+                // Supabase auth user ကို အရင်ဖျက်ပြီး အောင်မြင်မှ local data ကိုဖျက်ပါ။
                 const { error: deleteError } = await sb.rpc('delete_user');
                 if (deleteError) throw deleteError;
- 
+
+                await db.savedBooks.clear();
+                await db.downloadQueue.clear();
+                localStorage.removeItem(removedDownloadsStorageKey());
                 await sb.auth.signOut();
  
                 await Swal.fire({
