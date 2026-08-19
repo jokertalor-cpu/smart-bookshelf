@@ -1,9 +1,10 @@
-const CACHE_NAME = 'smart-bookshelf-v3';
+const CACHE_NAME = 'smart-bookshelf-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/mainstyle.css',
   '/mainscript.js',
+  '/ai-enhanced-gemini-improved.js',
   '/config.js',
   '/manifest.json'
 ];
