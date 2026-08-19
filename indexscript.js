@@ -4,17 +4,60 @@
 const itemsLimit = 4; 
 let isFetchingHome = false;
 let isFetchingPopular = false;
-const swiper = new Swiper('.main-slider', {
-    speed: 800,
-    autoplay: {
-        delay: 3000,
-        disableOnInteraction: false,
-        pauseOnMouseEnter: true
-    },
-    loop: true,   // ✅ ဒီမှာ true ပြောင်းပါ
-    pagination: { el: '.swiper-pagination', clickable: true },
-    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+let swiper = null;
+let lastBannerRealIndex = null;
+let lastBannerChangeAt = 0;
+
+function initBannerSwiper(slideCount) {
+    if (swiper && !swiper.destroyed) swiper.destroy(true, true);
+
+    const shouldLoop = slideCount > 1;
+    swiper = new Swiper('.main-slider', {
+        speed: 800,
+        autoplay: shouldLoop ? {
+            delay: 3000,
+            disableOnInteraction: false,
+            // Do not pause permanently when the pointer rests over the banner.
+            pauseOnMouseEnter: false
+        } : false,
+        loop: shouldLoop,
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        observer: true,
+        observeParents: true
+    });
+
+    lastBannerRealIndex = swiper.realIndex;
+    lastBannerChangeAt = Date.now();
+    if (shouldLoop && swiper.autoplay) {
+        swiper.on('realIndexChange', () => {
+            lastBannerRealIndex = swiper.realIndex;
+            lastBannerChangeAt = Date.now();
+        });
+        swiper.autoplay.start();
+    }
+    return swiper;
+}
+
+function restartBannerAutoplay() {
+    if (!swiper || swiper.destroyed || !swiper.params.loop || !swiper.autoplay || document.hidden) return;
+    swiper.autoplay.stop();
+    swiper.autoplay.start();
+    lastBannerChangeAt = Date.now();
+}
+
+// Recover after returning to the tab, restoring focus, or an interrupted timer.
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) setTimeout(restartBannerAutoplay, 100);
 });
+window.addEventListener('focus', () => setTimeout(restartBannerAutoplay, 100));
+window.addEventListener('pageshow', () => setTimeout(restartBannerAutoplay, 100));
+setInterval(() => {
+    if (!swiper || swiper.destroyed || document.hidden || !swiper.params.loop) return;
+    const delay = swiper.params.autoplay?.delay || 3000;
+    const stale = Date.now() - lastBannerChangeAt > (delay * 2 + 1500);
+    if (stale || !swiper.autoplay?.running || swiper.autoplay?.paused) restartBannerAutoplay();
+}, 5000);
 // Loading Skeleton
 function getSkeletons(count) {
     let skeletons = '';
@@ -50,8 +93,6 @@ async function loadDynamicBanners() {
             </div>
         </div>`;
 
-    swiper.update();
-
     try {
         // အကောင်းဆုံး အစဉ်လိုက် ဆွဲထုတ်ပါ (created_at အဟောင်းကနေ အသစ်ဆုံး)
         const { data: banners, error } = await supabase
@@ -64,7 +105,7 @@ async function loadDynamicBanners() {
             swiperWrapper.innerHTML = `<div class="swiper-slide banner-skeleton" style="background:#ffebee;color:#c62828;display:flex;align-items:center;justify-content:center;">
                 No Banners Available
             </div>`;
-            swiper.update();
+            initBannerSwiper(1);
             return;
         }
 
@@ -79,24 +120,7 @@ async function loadDynamicBanners() {
 
         console.log(`✅ Loaded ${banners.length} banner(s)`);
 
-        setTimeout(() => {
-    swiper.updateSize();
-    swiper.updateSlides();
-
-    if (banners.length > 1) {
-        swiper.loopDestroy();
-        swiper.loopCreate();
-    }
-
-    swiper.update();
-
-    if (swiper.autoplay) {
-        swiper.autoplay.stop();
-        swiper.autoplay.start();
-    }
-
-    setTimeout(() => swiper.update(), 200);
-}, 250);
+        setTimeout(() => initBannerSwiper(banners.length), 250);
 
     } catch (err) {
         console.error("💥 Unexpected error:", err);
