@@ -212,6 +212,35 @@
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="config.js"></script>
 <script>
+    // Detail page uses the shared safety contract without loading the global navbar/search script.
+    const SAFE_ASSET_HOSTS = new Set([
+        'mituedqotwbmporkwbqf.supabase.co',
+        'admin-vercel.jokertalor.workers.dev',
+        'via.placeholder.com',
+        'cdnjs.cloudflare.com',
+        'cdn.jsdelivr.net',
+        'unpkg.com',
+        'www.svgrepo.com'
+    ]);
+    window.escapeHTML = window.escapeHTML || function(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[ch]));
+    };
+    window.safeAssetURL = window.safeAssetURL || function(value, fallback = '') {
+        try {
+            const url = new URL(String(value || ''), window.location.href);
+            if (url.protocol !== 'https:' || !SAFE_ASSET_HOSTS.has(url.hostname)) return fallback;
+            return url.href;
+        } catch (_) {
+            return fallback;
+        }
+    };
+    window.safeBookID = window.safeBookID || function(value) {
+        const id = Number.parseInt(value, 10);
+        return Number.isSafeInteger(id) && id > 0 ? String(id) : '';
+    };
+
     const db = new Dexie("MyDigitalLibrary");
     db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
 
