@@ -135,7 +135,12 @@ async function handle(request, env, ctx) {
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
     const now = Date.now();
     const last = ipThrottleMap.get(ip) || 0;
-    if (now - last < IP_THROTTLE_MS) return new Response(`data: ${JSON.stringify({ error: 'ခဏစောင့်ပြီးမှ ထပ်မေးပါ။' })}\n\ndata: [DONE]\n\n`, { status: 429, headers: { ...cors(origin), 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store' } });
+    if (now - last < IP_THROTTLE_MS) {
+      const headers = cors(origin);
+      headers.set('Content-Type', 'text/event-stream; charset=utf-8');
+      headers.set('Cache-Control', 'no-store');
+      return new Response(`data: ${JSON.stringify({ error: 'ခဏစောင့်ပြီးမှ ထပ်မေးပါ။' })}\n\ndata: [DONE]\n\n`, { status: 429, headers });
+    }
     ipThrottleMap.set(ip, now);
 
     const keys = [1, 2, 3, 4, 5, 6].map(index => env[`GEMINI_API_KEY_${index}`]).filter(key => typeof key === 'string' && key.trim());
@@ -144,7 +149,12 @@ async function handle(request, env, ctx) {
     if (env.AI_CACHE_KV) {
       try {
         const cached = await env.AI_CACHE_KV.get(cacheKey);
-        if (cached) return new Response(`data: ${JSON.stringify({ text: cached })}\n\ndata: [DONE]\n\n`, { headers: { ...cors(origin), 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store' } });
+        if (cached) {
+          const headers = cors(origin);
+          headers.set('Content-Type', 'text/event-stream; charset=utf-8');
+          headers.set('Cache-Control', 'no-store');
+          return new Response(`data: ${JSON.stringify({ text: cached })}\n\ndata: [DONE]\n\n`, { headers });
+        }
       } catch (_) {}
     }
     const books = await fetchBooks(message, env);
@@ -159,7 +169,11 @@ async function handle(request, env, ctx) {
         flush() { const clean = extractTextFromSSE(rawSSE); if (clean && env.AI_CACHE_KV) ctx.waitUntil(cachePut(env.AI_CACHE_KV, cacheKey, clean)); }
       });
       upstream.body.pipeTo(stream.writable);
-      return new Response(stream.readable, { status: 200, headers: { ...cors(origin), 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache, no-store', 'X-Content-Type-Options': 'nosniff' } });
+      const headers = cors(origin);
+      headers.set('Content-Type', 'text/event-stream; charset=utf-8');
+      headers.set('Cache-Control', 'no-cache, no-store');
+      headers.set('X-Content-Type-Options', 'nosniff');
+      return new Response(stream.readable, { status: 200, headers });
     } catch (_) { return json({ error: 'AI service unavailable' }, 502, origin); }
 }
 
