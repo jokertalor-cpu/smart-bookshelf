@@ -461,7 +461,7 @@
     const sb = supabase.createClient(SB_URL, SB_KEY);
 
     const db = new Dexie("MyDigitalLibrary");
-    db.version(3).stores({ 
+    db.version(4).stores({ 
         savedBooks: "id, title, author, cover, fileData, lastPage, lastReadDate, readingProgress",
         downloadQueue: "id, bookId, status, retryCount, createdAt"
     });
@@ -563,12 +563,12 @@
             }
 
             // Sync Downloads Metadata (Cloud-First)
-            const { data: downloadsData } = await sb
+            const { data: downloadsData, error: downloadsError } = await sb
                 .from('user_downloads')
                 .select('book_id, books:book_id(id, title, author, cover, download_link)')
                 .eq('user_id', currentUser.id);
 
-            if (downloadsData) {
+            if (!downloadsError && Array.isArray(downloadsData)) {
                 const cloudBooks = downloadsData.filter(d => d.books).map(d => d.books);
                 
                 // Update metadata in Dexie
@@ -591,7 +591,8 @@
                 const cloudIds = new Set(cloudBooks.map(b => b.id.toString()));
                 const localBooks = await db.savedBooks.toArray();
                 for (const lb of localBooks) {
-                    if (!cloudIds.has(lb.id.toString())) {
+                    // Keep a real offline file even if cloud metadata is delayed or unavailable.
+                    if (!lb.fileData && !cloudIds.has(lb.id.toString())) {
                         await db.savedBooks.delete(lb.id);
                     }
                 }

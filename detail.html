@@ -242,7 +242,10 @@
     };
 
     const db = new Dexie("MyDigitalLibrary");
-    db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
+    db.version(4).stores({
+        savedBooks: "id, title, author, cover, fileData, lastPage, lastReadDate, readingProgress",
+        downloadQueue: "id, bookId, status, retryCount, createdAt"
+    });
 
      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -339,11 +342,28 @@
             }
 
             const blob = new Blob(chunks, { type: 'application/pdf' });
-            await db.savedBooks.put({ id: activeBook.id.toString(), title: activeBook.title, author: activeBook.author, cover: activeBook.cover, fileData: blob });
-            
-            await saveToCloudDownload(activeBook.id.toString());
+            const savedId = String(activeBook.id);
+            await db.savedBooks.put({
+                id: savedId,
+                title: activeBook.title,
+                author: activeBook.author,
+                cover: activeBook.cover,
+                fileData: blob,
+                lastReadDate: new Date().toISOString(),
+                readingProgress: 0,
+                lastPage: 1
+            });
+            const savedRecord = await db.savedBooks.get(savedId);
+            if (!savedRecord || !(savedRecord.fileData instanceof Blob) || savedRecord.fileData.size === 0) {
+                throw new Error('Library record verification failed');
+            }
+
+            await saveToCloudDownload(savedId);
             Swal.fire({ title: 'အောင်မြင်ပါသည်', text: 'Library ထဲသို့ ထည့်သွင်းပြီးပါပြီ။', icon: 'success' });
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error(err);
+            Swal.fire({ title: 'ဒေါင်းလုဒ် မအောင်မြင်ပါ', text: 'စာအုပ်ကို Library ထဲသို့ မသိမ်းနိုင်ပါ။ ထပ်မံကြိုးစားပါ။', icon: 'error' });
+        }
         finally { btn.style.display = 'flex'; ui.style.display = 'none'; }
     }
 

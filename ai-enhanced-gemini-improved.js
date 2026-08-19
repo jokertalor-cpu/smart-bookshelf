@@ -6,7 +6,7 @@
 const WORKER_URL = "https://my-supabase-proxy.jokertalor.workers.dev/"; 
 
 const db = new Dexie("MyDigitalLibrary");
-db.version(3).stores({ 
+db.version(4).stores({ 
     savedBooks: "id, title, author, cover, fileData, lastPage, lastReadDate, readingProgress",
     downloadQueue: "id, bookId, status, retryCount, createdAt"
 });

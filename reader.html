@@ -85,7 +85,10 @@
     const params = new URLSearchParams(window.location.search);
     const bookId = params.get('id');
     const db = new Dexie("MyDigitalLibrary");
-    db.version(3).stores({ savedBooks: "id, title, author, cover, fileData, lastPage" });
+    db.version(4).stores({
+        savedBooks: "id, title, author, cover, fileData, lastPage, lastReadDate, readingProgress",
+        downloadQueue: "id, bookId, status, retryCount, createdAt"
+    });
 
     let pdfDoc = null;
     let currentScale = window.innerWidth < 600 ? 1.2 : 1.8;
