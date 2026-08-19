@@ -173,23 +173,32 @@ window.sendToAI = async function() {
             aiMsgDiv.innerHTML = "";
             let buffer = "";
 
+            const appendContent = (content) => {
+                if (!content) return;
+                fullText += content;
+                aiMsgDiv.innerHTML = window.escapeHTML(fullText).replace(/\n/g, "<br>");
+                chatContent.scrollTop = chatContent.scrollHeight;
+            };
+
+            const processSSELine = (line) => {
+                appendContent(parseGeminiSSELine(line));
+            };
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
                 buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
+                const lines = buffer.split(/\r?\n/);
                 buffer = lines.pop() || "";
-
-                for (const line of lines) {
-                    const content = parseGeminiSSELine(line);
-                    if (content) {
-                        fullText += content;
-                        aiMsgDiv.innerHTML = window.escapeHTML(fullText).replace(/\n/g, "<br>");
-                        chatContent.scrollTop = chatContent.scrollHeight;
-                    }
-                }
+                lines.forEach(processSSELine);
             }
+
+            // TextDecoder may hold a final partial UTF-8 sequence; flush it,
+            // then process the final SSE line even when the stream has no
+            // trailing newline. This prevents the last answer chunk from being lost.
+            buffer += decoder.decode();
+            if (buffer.trim()) processSSELine(buffer);
 
             // Save conversation to history
             chatHistory.push({ role: "user", parts: [{ text: msg }] });

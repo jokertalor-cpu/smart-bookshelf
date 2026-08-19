@@ -159,7 +159,7 @@ async function handle(request, env, ctx) {
     }
     const books = await fetchBooks(message, env);
     const prompt = buildPrompt(!history.length ? body.aiContext : null, books);
-    const geminiBody = { contents: [...history, { role: 'user', parts: [{ text: `${prompt}User Question: ${message}` }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 800 } };
+    const geminiBody = { contents: [...history, { role: 'user', parts: [{ text: `${prompt}User Question: ${message}` }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } } };
     try {
       const upstream = await callGemini(keys, geminiBody);
       const decoder = new TextDecoder();
