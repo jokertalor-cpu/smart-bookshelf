@@ -28,13 +28,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // ရှာတွေ့တဲ့ စာအုပ်တွေကို ပြမယ်
-        container.innerHTML = data.map(book => `
-            <div class="book-card" onclick="location.href='detail.html?id=${book.id}'">
-                <img src="${book.cover}" alt="${book.title}" onerror="this.src='https://via.placeholder.com/150x200?text=No+Cover'">
-                <h3>${book.title}</h3>
-                <p>${book.author || 'Unknown'}</p>
-            </div>
-        `).join('');
+        container.innerHTML = data.map(book => {
+            const id = window.safeBookID(book.id);
+            if (!id) return '';
+            const cover = window.safeAssetURL(book.cover, 'https://via.placeholder.com/150x200?text=No+Cover');
+            return `
+            <a class="book-card" href="detail.html?id=${encodeURIComponent(id)}">
+                <img src="${cover}" alt="${window.escapeHTML(book.title)}">
+                <h3>${window.escapeHTML(book.title)}</h3>
+                <p>${window.escapeHTML(book.author || 'Unknown')}</p>
+            </a>`;
+        }).join('');
 
     } catch (err) {
         console.error("Search Error:", err);

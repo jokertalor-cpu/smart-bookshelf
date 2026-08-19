@@ -1049,7 +1049,7 @@ async function saveProfile() {
                 
                 const logHtml = downloads && downloads.length > 0 ? downloads.map(item => `
                     <div class="activity-item success">
-                        <div class="activity-time"><i class="fas fa-clock"></i> ${new Date(item.created_at).toLocaleString('my-MM')}</div>
+                        <div class="activity-time"><i class="fas fa-clock"></i> ${item.downloaded_at ? new Date(item.downloaded_at).toLocaleString('my-MM') : 'အချိန်မသိ'}</div>
                         <div class="activity-desc"><i class="fas fa-download"></i> "${item.books?.title || 'Unknown'}" ဒေါင်းလုဒ်ခဲ့သည်</div>
                     </div>
                 `).join('') : '<p style="text-align: center; color: #5f6368;">လုပ်ဆောင်ချက်မှတ်တမ်း မရှိသေးပါ။</p>';

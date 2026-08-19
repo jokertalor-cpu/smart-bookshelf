@@ -783,8 +783,9 @@
                 tag.className = 'glossary-tag';
                 tag.innerHTML = `
                     <span><strong>${escapeHtml(key)}</strong> → ${escapeHtml(value)}</span>
-                    <i class="fas fa-times glossary-tag-remove" onclick="removeGlossaryTerm('${key}')"></i>
+                    <button type="button" class="glossary-tag-remove" aria-label="Remove glossary term"><i class="fas fa-times"></i></button>
                 `;
+                tag.querySelector('button').addEventListener('click', () => removeGlossaryTerm(key));
                 container.appendChild(tag);
             }
         }

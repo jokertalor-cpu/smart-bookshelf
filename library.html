@@ -665,7 +665,10 @@
                 }
             });
 
-            xhr.open('GET', data.download_link);
+            const downloadURL = window.safeAssetURL(data.download_link, '');
+            if (!downloadURL) throw new Error('Invalid download URL');
+            xhr.open('GET', downloadURL);
+            xhr.withCredentials = false;
             xhr.responseType = 'arraybuffer';
             xhr.send();
 
@@ -720,26 +723,30 @@
             const queueStatus = downloadQueue.get(book.id);
             const isDownloading = queueStatus === 'downloading' || queueStatus === 'retrying';
 
+            const safeId = window.safeBookID(book.id);
+            if (!safeId) return '';
+            const safeCover = window.safeAssetURL(book.cover, 'https://via.placeholder.com/140x190?text=No+Cover');
+            const safeTitle = window.escapeHTML(book.title);
             return `
-                <div class="book-card" data-book-id="${book.id}">
+                <div class="book-card" data-book-id="${safeId}">
                     ${isDownloaded ? '<div class="status-badge offline"><i class="fas fa-check-circle"></i> Offline</div>' : ''}
                     ${isDownloading ? '<div class="status-badge downloading"><i class="fas fa-spinner fa-spin"></i> Downloading</div>' : ''}
                     
                     <div class="book-card-image-wrapper">
-                        <img src="${book.cover}" loading="lazy" onclick="${isDownloaded ? `openReader('${book.id}')` : `downloadAndSave('${book.id}')`}" alt="${book.title}">
+                        <img src="${safeCover}" loading="lazy" onclick="${isDownloaded ? `openReader('${safeId}')` : `downloadAndSave('${safeId}')`}" alt="${safeTitle}">
                         <div class="progress-container">
                             <div class="progress-bar"></div>
                         </div>
                     </div>
                     
-                    <h3>${book.title}</h3>
+                    <h3>${safeTitle}</h3>
                     
                     <div class="actions">
                         ${isDownloaded 
-                            ? `<button class="btn btn-read" onclick="openReader('${book.id}')"><i class="fas fa-book-open"></i> Read</button>`
-                            : `<button class="btn btn-download" onclick="downloadAndSave('${book.id}')" ${isDownloading ? 'disabled' : ''}><i class="fas fa-download"></i> Download</button>`
+                            ? `<button class="btn btn-read" onclick="openReader('${safeId}')"><i class="fas fa-book-open"></i> Read</button>`
+                            : `<button class="btn btn-download" onclick="downloadAndSave('${safeId}')" ${isDownloading ? 'disabled' : ''}><i class="fas fa-download"></i> Download</button>`
                         }
-                        <button class="btn btn-delete" onclick="confirmDelete('${book.id}')"><i class="fas fa-trash"></i> Remove</button>
+                        <button class="btn btn-delete" onclick="confirmDelete('${safeId}')"><i class="fas fa-trash"></i> Remove</button>
                     </div>
                 </div>
             `;
@@ -763,17 +770,21 @@
         try {
             const { data: favBooks } = await sb.from('books').select('*').in('id', likedIds);
             
-            favContainer.innerHTML = favBooks.map(book => `
+            favContainer.innerHTML = favBooks.map(book => {
+                const safeId = window.safeBookID(book.id);
+                if (!safeId) return '';
+                const safeCover = window.safeAssetURL(book.cover, 'https://via.placeholder.com/140x190?text=No+Cover');
+                return `
                 <div class="book-card">
                     <div class="book-card-image-wrapper">
-                        <img src="${book.cover}" onclick="window.location.href='book-details.html?id=${book.id}'" alt="${book.title}">
+                        <a href="detail.html?id=${encodeURIComponent(safeId)}"><img src="${safeCover}" alt="${window.escapeHTML(book.title)}"></a>
                     </div>
-                    <h3>${book.title}</h3>
+                    <h3>${window.escapeHTML(book.title)}</h3>
                     <div class="actions">
-                        <button class="btn btn-read" onclick="window.location.href='book-details.html?id=${book.id}'"><i class="fas fa-info-circle"></i> Details</button>
+                        <a class="btn btn-read" href="detail.html?id=${encodeURIComponent(safeId)}"><i class="fas fa-info-circle"></i> Details</a>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         } catch (e) {
             console.error(e);
         }
@@ -787,11 +798,12 @@
             });
             
             if (currentUser) {
-                await sb.from('user_reading_progress').upsert({
+                const progress = Number(book.readingProgress || 0);
+                await sb.from('user_progress').upsert({
                     user_id: currentUser.id,
-                    book_id: id,
-                    last_read_date: new Date().toISOString(),
-                    reading_progress: book.readingProgress || 0
+                    book_id: Number(id),
+                    progress_percent: Number.isFinite(progress) ? Math.max(0, Math.min(100, progress)) : 0,
+                    updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id,book_id' });
             }
         }

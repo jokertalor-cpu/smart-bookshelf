@@ -248,13 +248,15 @@ async function loadAllAuthors() {
         displayContainer.style.gap = "0px 20px"; // ဘေးတိုက် ၂ တန်းကြား အကွာအဝေး
 
         displayContainer.innerHTML = uniqueAuthors.map(name => `
-            <div class="author-list-item" 
-                 style="padding: 12px 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer;"
-                 onclick="showBooksByAuthor('${name.replace(/'/g, "\\\\")}')">
+            <button type="button" class="author-list-item" data-author="${window.escapeHTML(name)}"
+                 style="padding: 12px 10px; border: 0; border-bottom: 1px solid #eee; background: transparent; text-align: left; display: flex; align-items: center; cursor: pointer;">
                 <i class="fa-solid fa-user-pen" style="font-size: 13px; color: #4f46e5; margin-right: 12px;"></i>
-                <span style="font-size: 15px;">${name}</span>
-            </div>
+                <span style="font-size: 15px;">${window.escapeHTML(name)}</span>
+            </button>
         `).join('');
+        displayContainer.querySelectorAll('[data-author]').forEach(button => {
+            button.addEventListener('click', () => showBooksByAuthor(button.dataset.author));
+        });
 
     } catch (err) {
         console.error("Load Authors Error:", err);
@@ -269,12 +271,14 @@ async function showBooksByAuthor(authorName) {
     // Back Button ပါတဲ့ Title ပုံစံပြောင်းခြင်း
     resultTitle.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <span>"${authorName}" ၏ စာအုပ်များ</span>
-            <button onclick="loadAllAuthors()" style="padding: 5px 12px; font-size: 13px; cursor: pointer; border-radius: 20px; border: 1px solid #4f46e5; background: white; color: #4f46e5;">
+            <span id="selected-author-title"></span>
+            <button type="button" id="author-back-button" style="padding: 5px 12px; font-size: 13px; cursor: pointer; border-radius: 20px; border: 1px solid #4f46e5; background: white; color: #4f46e5;">
                 <i class="fa-solid fa-arrow-left"></i> Back
             </button>
         </div>
     `;
+    document.getElementById('selected-author-title').textContent = `"${authorName}" ၏ စာအုပ်များ`;
+    document.getElementById('author-back-button').addEventListener('click', loadAllAuthors);
 
     displayContainer.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 50px;"><i class="fas fa-spinner fa-spin"></i></div>`;
 
@@ -295,12 +299,16 @@ async function showBooksByAuthor(authorName) {
             return;
         }
 
-        displayContainer.innerHTML = filtered.map(book => `
-            <div class="book-card" onclick="location.href='detail.html?id=${book.id}'">
-                <img src="${book.cover}" loading="lazy" onerror="this.src='https://via.placeholder.com/140x190?text=No+Cover'">
-                <div class="book-info"><p class="book-title">${book.title}</p></div>
-            </div>
-        `).join('');
+        displayContainer.innerHTML = filtered.map(book => {
+            const id = window.safeBookID(book.id);
+            if (!id) return '';
+            const cover = window.safeAssetURL(book.cover, 'https://via.placeholder.com/140x190?text=No+Cover');
+            return `
+            <a class="book-card" href="detail.html?id=${encodeURIComponent(id)}">
+                <img src="${cover}" loading="lazy" alt="${window.escapeHTML(book.title)}">
+                <div class="book-info"><p class="book-title">${window.escapeHTML(book.title)}</p></div>
+            </a>`;
+        }).join('');
     } catch (err) {
         displayContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: red;">အမှားအယွင်းရှိပါသည်။</p>`;
     }
@@ -346,11 +354,14 @@ async function handleAuthorInput() {
 
         if (matches.length > 0) {
             suggestionBox.innerHTML = matches.map(name => `
-                <div class="suggestion-item" onclick="selectAuthor('${name.replace(/'/g, "\\\\'")}')">
+                <button type="button" class="suggestion-item" data-author="${window.escapeHTML(name)}">
                     <i class="fas fa-user-edit" style="font-size: 12px; margin-right: 10px; color: #aaa;"></i>
-                    ${name}
-                </div>
+                    ${window.escapeHTML(name)}
+                </button>
             `).join('');
+            suggestionBox.querySelectorAll('[data-author]').forEach(button => {
+                button.addEventListener('click', () => selectAuthor(button.dataset.author));
+            });
             suggestionBox.style.display = 'block';
         } else {
             suggestionBox.innerHTML = ''; // အဖြေမရှိရင်လည်း ရှင်းပေးရမယ်

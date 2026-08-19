@@ -134,7 +134,7 @@ window.sendToAI = async function() {
     // User message UI
     chatContent.innerHTML += `
         <div class="user-msg" style="background: #1a73e8; color: white; padding: 12px 16px; border-radius: 18px 18px 4px 18px; align-self: flex-end; max-width: 85%; font-size: 14px; margin-left: auto; margin-bottom: 12px;">
-            ${msg}
+            ${window.escapeHTML(msg)}
         </div>
     `;
     input.value = '';
@@ -185,7 +185,7 @@ window.sendToAI = async function() {
                     const content = parseGeminiSSELine(line);
                     if (content) {
                         fullText += content;
-                        aiMsgDiv.innerHTML = fullText.replace(/\n/g, "<br>");
+                        aiMsgDiv.innerHTML = window.escapeHTML(fullText).replace(/\n/g, "<br>");
                         chatContent.scrollTop = chatContent.scrollHeight;
                     }
                 }
@@ -205,7 +205,7 @@ window.sendToAI = async function() {
                 await new Promise(r => setTimeout(r, delay));
                 return attemptFetch();
             }
-            aiMsgDiv.innerHTML = `Error: ${error.message}. Please try again later.`;
+            aiMsgDiv.innerHTML = `Error: ${window.escapeHTML(error.message)}. Please try again later.`;
         } finally {
             isProcessing = false;
             input.disabled = false;

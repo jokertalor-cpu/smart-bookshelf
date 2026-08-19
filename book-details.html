@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="0;url=detail.html">
+  <title>Book Details</title>
+  <script>
+    const id = new URLSearchParams(window.location.search).get('id');
+    const target = id && /^\d+$/.test(id) ? `detail.html?id=${encodeURIComponent(id)}` : 'detail.html';
+    window.location.replace(target);
+  </script>
+</head>
+<body><p>စာအုပ်အသေးစိတ်သို့ ပြောင်းနေပါသည်...</p></body>
+</html>

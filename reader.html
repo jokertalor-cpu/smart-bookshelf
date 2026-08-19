@@ -74,6 +74,13 @@
     const SB_URL = "https://mituedqotwbmporkwbqf.supabase.co"; 
     const SB_KEY = "sb_publishable_gIcm03LyduvN6WgwZek4_Q_ePBBJBUc";
     const sb = supabase.createClient(SB_URL, SB_KEY);
+    const SAFE_ASSET_HOSTS = new Set(['mituedqotwbmporkwbqf.supabase.co', 'admin-vercel.jokertalor.workers.dev']);
+    function safeAssetURL(value) {
+        try {
+            const url = new URL(String(value || ''), window.location.href);
+            return url.protocol === 'https:' && SAFE_ASSET_HOSTS.has(url.hostname) ? url.href : '';
+        } catch (_) { return ''; }
+    }
 
     const params = new URLSearchParams(window.location.search);
     const bookId = params.get('id');
@@ -85,6 +92,7 @@
     let wakeLock = null;
     let renderedPages = new Set();
     let currentUser = null;
+    let isLocalBook = false;
     let lastSavedPage = 0;
     const viewer = document.getElementById('scroll-viewer');
 
@@ -102,11 +110,26 @@
         if (session) currentUser = session.user;
 
         try {
-            const book = await db.savedBooks.get(bookId) || await db.savedBooks.get(Number(bookId));
-            if (!book) return Swal.fire("Error", "စာအုပ်ရှာမတွေ့ပါ", "error");
-            
-            document.getElementById('book-title').innerText = book.title;
-            const data = await book.fileData.arrayBuffer();
+            const localBook = await db.savedBooks.get(bookId) || await db.savedBooks.get(Number(bookId));
+            isLocalBook = Boolean(localBook);
+            let book = localBook;
+            let data;
+            if (localBook && localBook.fileData) {
+                data = await localBook.fileData.arrayBuffer();
+            } else {
+                const safeId = Number.parseInt(bookId, 10);
+                if (!Number.isSafeInteger(safeId) || safeId <= 0) throw new Error('Invalid book id');
+                const { data: remoteBook, error } = await sb.from('books').select('id, title, read_link, download_link').eq('id', safeId).maybeSingle();
+                if (error || !remoteBook) throw new Error('စာအုပ်ရှာမတွေ့ပါ');
+                const remoteURL = safeAssetURL(remoteBook.read_link || remoteBook.download_link);
+                if (!remoteURL) throw new Error('Invalid book URL');
+                const response = await fetch(remoteURL, { credentials: 'omit' });
+                if (!response.ok) throw new Error(`PDF loading failed (${response.status})`);
+                data = await response.arrayBuffer();
+                book = { ...remoteBook, id: String(remoteBook.id), lastPage: 1 };
+            }
+
+            document.getElementById('book-title').innerText = book.title || '';
             pdfDoc = await pdfjsLib.getDocument({data: data, cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/cmaps/', cMapPacked: true}).promise;
 
             const fragment = document.createDocumentFragment();
@@ -228,9 +251,11 @@
         if (pageNum === lastSavedPage) return;
         lastSavedPage = pageNum;
 
-        // Local Update
-        db.savedBooks.update(bookId, { lastPage: pageNum });
-        db.savedBooks.update(Number(bookId), { lastPage: pageNum });
+                // Local Update: only update a record that actually exists in Dexie.
+        if (isLocalBook) {
+            await db.savedBooks.update(bookId, { lastPage: pageNum });
+            await db.savedBooks.update(Number(bookId), { lastPage: pageNum });
+        }
 
         // Cloud Sync (Debounced or Throttled would be better, but simple upsert for now)
         if (currentUser) {

@@ -69,15 +69,13 @@ async function loadDynamicBanners() {
         }
 
         // 2. Real banners ထည့်ပါ
-        swiperWrapper.innerHTML = banners.map(bn => `
+        swiperWrapper.innerHTML = banners.map(bn => {
+            const imageURL = window.safeAssetURL(bn.image_url, 'https://via.placeholder.com/1200x500?text=Image+Load+Error');
+            return `
             <div class="swiper-slide">
-                <img src="${bn.image_url}" 
-                     alt="Banner" 
-                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
-                     loading="lazy"
-                     onerror="this.src='https://via.placeholder.com/1200x500?text=Image+Load+Error'">
-            </div>
-        `).join('');
+                <img src="${imageURL}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover; object-position: center;" loading="lazy">
+            </div>`;
+        }).join('');
 
         console.log(`✅ Loaded ${banners.length} banner(s)`);
 
@@ -171,13 +169,17 @@ function displayBooks(books, containerId) {
     const container = document.getElementById(containerId);
     if (!container || !books) return;
 
-    container.innerHTML = books.map(book => `
-        <div class="book-card" onclick="location.href='detail.html?id=${book.id}'">
-            <img src="${book.cover}" alt="${book.title}" loading="lazy" onload="this.parentElement.classList.add('loaded')">
-            <h3>${book.title}</h3>
-            <p>${book.author || 'Unknown'}</p>
-        </div>
-    `).join('');
+    container.innerHTML = books.map(book => {
+        const id = window.safeBookID(book.id);
+        if (!id) return '';
+        const cover = window.safeAssetURL(book.cover, 'https://via.placeholder.com/140x190?text=No+Cover');
+        return `
+        <a class="book-card" href="detail.html?id=${encodeURIComponent(id)}">
+            <img src="${cover}" alt="${window.escapeHTML(book.title)}" loading="lazy">
+            <h3>${window.escapeHTML(book.title)}</h3>
+            <p>${window.escapeHTML(book.author || 'Unknown')}</p>
+        </a>`;
+    }).join('');
 }
 // DOMContentLoaded ထဲမှာ ထည့်ခေါ်ပါ
 document.addEventListener('DOMContentLoaded', () => {

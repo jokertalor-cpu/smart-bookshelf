@@ -73,13 +73,17 @@ function renderBooks(books) {
         return;
     }
 
-    container.innerHTML = books.map(book => `
-        <div class="book-card" onclick="location.href='detail.html?id=${book.id}'">
-            <img src="${book.cover}" alt="${book.title}" loading="lazy" onload="this.parentElement.classList.add('loaded')">
-            <h3>${book.title}</h3>
-            <p>${book.author || 'Unknown'}</p>
-        </div>
-    `).join('');
+    container.innerHTML = books.map(book => {
+        const id = window.safeBookID(book.id);
+        if (!id) return '';
+        const cover = window.safeAssetURL(book.cover, 'https://via.placeholder.com/140x190?text=No+Cover');
+        return `
+        <a class="book-card" href="detail.html?id=${encodeURIComponent(id)}">
+            <img src="${cover}" alt="${window.escapeHTML(book.title)}" loading="lazy">
+            <h3>${window.escapeHTML(book.title)}</h3>
+            <p>${window.escapeHTML(book.author || 'Unknown')}</p>
+        </a>`;
+    }).join('');
 }
 /**
  * Pagination ကို ပိုမိုကောင်းမွန်အောင် ပြင်ဆင်ခြင်း

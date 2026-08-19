@@ -22,15 +22,19 @@ async function filterByCategory(categoryName) {
             return;
         }
 
-        container.innerHTML = data.map(book => `
+        container.innerHTML = data.map(book => {
+            const id = window.safeBookID(book.id);
+            if (!id) return '';
+            const cover = window.safeAssetURL(book.cover, 'https://via.placeholder.com/140x190?text=No+Cover');
+            return `
             <div class="book-card">
-                <a href="detail.html?id=${book.id}">
-                    <img src="${book.cover}" alt="${book.title}">
-                    <h3>${book.title}</h3>
-                    <p style="font-size: 12px; color: #777;">${book.author || ''}</p>
+                <a href="detail.html?id=${encodeURIComponent(id)}">
+                    <img src="${cover}" alt="${window.escapeHTML(book.title)}">
+                    <h3>${window.escapeHTML(book.title)}</h3>
+                    <p style="font-size: 12px; color: #777;">${window.escapeHTML(book.author || '')}</p>
                 </a>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
 
     } catch (err) {
         console.error("Error:", err.message);

@@ -3,12 +3,12 @@
   "name": "MmBookshelf - Digital Library",
   "icons": [
     {
-      "src": "photo_2026-03-20_09-18-40.jpg",
+      "src": "photologo.jpg",
       "type": "image/jpeg",
       "sizes": "192x192"
     },
     {
-      "src": "photo_2026-03-20_09-18-40.jpg",
+      "src": "photologo.jpg",
       "type": "image/jpeg",
       "sizes": "512x512"
     }

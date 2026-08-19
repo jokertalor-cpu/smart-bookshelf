@@ -243,25 +243,43 @@
 }
 
     function renderBookUI(data) {
-        document.getElementById('main-content').innerHTML = `
+        const main = document.getElementById('main-content');
+        main.innerHTML = `
             <div class="book-hero">
-                <div class="cover-box"><img src="${data.cover}"></div>
+                <div class="cover-box"><img id="detail-cover" alt=""></div>
                 <div class="book-info">
-                    <h1>${data.title}</h1>
-                    <div class="meta"><i class="fas fa-user-tie"></i> <span><b>စာရေးသူ:</b> ${data.author}</span></div>
-                    <div class="meta"><i class="fas fa-list"></i> <span><b>အမျိုးအစား:</b> ${data.category}</span></div>
+                    <h1 id="detail-title"></h1>
+                    <div class="meta"><i class="fas fa-user-tie"></i> <span><b>စာရေးသူ:</b> <span id="detail-author"></span></span></div>
+                    <div class="meta"><i class="fas fa-list"></i> <span><b>အမျိုးအစား:</b> <span id="detail-category"></span></span></div>
                     <div class="actions">
-                        <a href="${data.read_link}" target="_blank" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
-                        <button onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
-                        <button onclick="toggleLike()" id="like-btn" class="btn">
+                        <a id="detail-read-link" target="_blank" rel="noopener noreferrer" class="btn btn-read"><i class="fas fa-eye"></i> ဖတ်မည်</a>
+                        <button type="button" onclick="startDownload()" id="dl-button" class="btn btn-dl"><i class="fas fa-save"></i> ဒေါင်းလုဒ်</button>
+                        <button type="button" onclick="toggleLike()" id="like-btn" class="btn">
                             <i class="fa-regular fa-heart"></i> <span id="like-label">အသဲပေးမည်</span>
                         </button>
                         <div id="progress-ui"><svg width="60" height="60"><circle class="circle-bg" cx="30" cy="30" r="20"></circle><circle id="progress-bar" class="circle-bar" cx="30" cy="30" r="20"></circle></svg><div id="pct-label" class="pct-val">0%</div></div>
                     </div>
                 </div>
             </div>
-            <div class="description-box"><h3>စာအုပ်အညွှန်း</h3><div class="description-text">${data.description || 'အညွှန်းမရှိပါ။'}</div></div>
+            <div class="description-box"><h3>စာအုပ်အညွှန်း</h3><div id="detail-description" class="description-text"></div></div>
         `;
+        const fallbackCover = 'https://via.placeholder.com/420x620?text=No+Cover';
+        const cover = window.safeAssetURL(data.cover, fallbackCover);
+        const readLink = window.safeAssetURL(data.read_link, '');
+        document.getElementById('detail-cover').src = cover;
+        document.getElementById('detail-cover').alt = String(data.title || 'Book cover');
+        document.getElementById('detail-title').textContent = String(data.title || '');
+        document.getElementById('detail-author').textContent = String(data.author || '');
+        document.getElementById('detail-category').textContent = String(data.category || '');
+        document.getElementById('detail-description').textContent = String(data.description || 'အညွှန်းမရှိပါ။');
+        const readButton = document.getElementById('detail-read-link');
+        if (readLink) {
+            readButton.href = readLink;
+        } else {
+            readButton.removeAttribute('href');
+            readButton.setAttribute('aria-disabled', 'true');
+            readButton.addEventListener('click', event => event.preventDefault());
+        }
     }
 
     async function startDownload() {
@@ -271,7 +289,10 @@
 
         try {
             await sb.rpc('increment_download', { row_id: activeBook.id });
-            const response = await fetch(activeBook.download_link);
+            const downloadURL = window.safeAssetURL(activeBook.download_link, '');
+            if (!downloadURL) throw new Error('Invalid download URL');
+            const response = await fetch(downloadURL, { credentials: 'omit' });
+            if (!response.ok || !response.body) throw new Error(`Download failed (${response.status})`);
             const reader = response.body.getReader();
             const total = +response.headers.get('Content-Length') || 0;
             let received = 0, chunks = [];
@@ -353,29 +374,31 @@
         if (!relatedViewElement) return;
 
         try {
-            const { data: related, error } = await sb
-                .from('books')
-                .select('id, title, cover, author')
-                .or(`author.eq."${currentAuthor}",category.eq."${currentCategory}"`)
-                .neq('id', currentBookId)
-                .limit(10);
+            const [authorResult, categoryResult] = await Promise.all([
+                sb.from('books').select('id, title, cover, author').eq('author', currentAuthor).neq('id', currentBookId).limit(10),
+                sb.from('books').select('id, title, cover, author').eq('category', currentCategory).neq('id', currentBookId).limit(10)
+            ]);
+            if (authorResult.error) throw authorResult.error;
+            if (categoryResult.error) throw categoryResult.error;
+            const related = [...new Map([...(authorResult.data || []), ...(categoryResult.data || [])].map(item => [item.id, item])).values()].slice(0, 10);
 
-            if (error) throw error;
-
-            if (!related || related.length === 0) {
+            if (related.length === 0) {
                 relatedViewElement.innerHTML = `<p style="padding:20px; color:#888; text-align:center;">ဆက်စပ်စာအုပ် မရှိသေးပါ။</p>`;
                 return;
             }
 
-            relatedViewElement.innerHTML = related.map(item => `
-                <div class="item-card" onclick="window.location.href='detail.html?id=${item.id}'">
-                    <div class="item-img">
-                        <img src="${item.cover}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x220?text=No+Cover'">
-                    </div>
-                    <p title="${item.title}">${item.title}</p>
-                    <div style="font-size: 11px; color: #1a73e8; margin-top: -8px;">${item.author}</div>
-                </div>
-            `).join('');
+            relatedViewElement.innerHTML = related.map(item => {
+                const id = window.safeBookID(item.id);
+                if (!id) return '';
+                const cover = window.safeAssetURL(item.cover, 'https://via.placeholder.com/150x220?text=No+Cover');
+                const title = window.escapeHTML(item.title);
+                return `
+                <a class="item-card" href="detail.html?id=${encodeURIComponent(id)}">
+                    <div class="item-img"><img src="${cover}" alt="${title}" loading="lazy"></div>
+                    <p title="${title}">${title}</p>
+                    <div style="font-size: 11px; color: #1a73e8; margin-top: -8px;">${window.escapeHTML(item.author || '')}</div>
+                </a>`;
+            }).join('');
 
         } catch (error) {
             console.error("Related books error:", error);

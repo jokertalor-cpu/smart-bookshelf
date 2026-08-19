@@ -4,6 +4,36 @@
 const supabaseUrl = SUPABASE_URL;
 const supabaseKey = SUPABASE_KEY;
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+// Shared safety helpers. Keep the existing public asset hosts and block unsafe schemes.
+const SAFE_ASSET_HOSTS = new Set([
+    'mituedqotwbmporkwbqf.supabase.co',
+    'admin-vercel.jokertalor.workers.dev',
+    'via.placeholder.com',
+    'cdnjs.cloudflare.com',
+    'cdn.jsdelivr.net',
+    'unpkg.com',
+    'www.svgrepo.com'
+]);
+window.escapeHTML = window.escapeHTML || function(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[ch]));
+};
+window.safeAssetURL = window.safeAssetURL || function(value, fallback = '') {
+    try {
+        const url = new URL(String(value || ''), window.location.href);
+        if (url.protocol !== 'https:' || !SAFE_ASSET_HOSTS.has(url.hostname)) return fallback;
+        return url.href;
+    } catch (_) {
+        return fallback;
+    }
+};
+window.safeBookID = window.safeBookID || function(value) {
+    const id = Number.parseInt(value, 10);
+    return Number.isSafeInteger(id) && id > 0 ? String(id) : '';
+};
+
 // --- Search Toggle Logic ---
 const searchTrigger = document.getElementById('search-trigger');
 const searchBox = document.getElementById('search-box');
@@ -59,12 +89,15 @@ if (globalElements.overlay) {
         }
 
         if (data && data.length > 0) {
-            suggestionBox.innerHTML = data.map(book => `
-                <div class="suggestion-item" onclick="window.location.href='detail.html?id=${book.id}'">
-                    <div style="font-weight: bold; font-size: 14px; color: #333;">${book.title}</div>
-                    <div style="font-size: 12px; color: #777;">${book.author || 'Unknown Author'}</div>
-                </div>
-            `).join('');
+            suggestionBox.innerHTML = data.map(book => {
+                const id = window.safeBookID(book.id);
+                if (!id) return '';
+                return `
+                <a class="suggestion-item" href="detail.html?id=${encodeURIComponent(id)}">
+                    <div style="font-weight: bold; font-size: 14px; color: #333;">${window.escapeHTML(book.title)}</div>
+                    <div style="font-size: 12px; color: #777;">${window.escapeHTML(book.author || 'Unknown Author')}</div>
+                </a>`;
+            }).join('');
             suggestionBox.style.display = 'block';
         } else {
             suggestionBox.style.display = 'none';
@@ -128,3 +161,13 @@ async function applySmartSearchIcon() {
 
 // Page load တိုင်း icon ခေါ်ရန်
 document.addEventListener('DOMContentLoaded', applySmartSearchIcon);
+
+
+// Register the versioned offline cache only on the deployed HTTPS origin.
+if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(error => {
+            console.warn('Service worker registration failed:', error);
+        });
+    });
+}
