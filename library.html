@@ -501,6 +501,32 @@
     let downloadQueue = new Map();
     let touchStartY = 0;
 
+    function removedDownloadsStorageKey() {
+        return `smartbookshelf_removed_downloads:${currentUser?.id || 'guest'}`;
+    }
+
+    function getRemovedDownloadIds() {
+        try {
+            const ids = JSON.parse(localStorage.getItem(removedDownloadsStorageKey()) || '[]');
+            return new Set(Array.isArray(ids) ? ids.map(id => String(id)) : []);
+        } catch (_) {
+            return new Set();
+        }
+    }
+
+    function rememberRemovedDownload(id) {
+        const ids = getRemovedDownloadIds();
+        ids.add(String(id));
+        localStorage.setItem(removedDownloadsStorageKey(), JSON.stringify([...ids]));
+    }
+
+    function forgetRemovedDownload(id) {
+        const ids = getRemovedDownloadIds();
+        ids.delete(String(id));
+        if (ids.size) localStorage.setItem(removedDownloadsStorageKey(), JSON.stringify([...ids]));
+        else localStorage.removeItem(removedDownloadsStorageKey());
+    }
+
     // Network Status Listeners
     window.addEventListener('online', () => { isOffline = false; syncAll(); });
     window.addEventListener('offline', () => { isOffline = true; renderLibrary(); });
@@ -592,6 +618,17 @@
                 localStorage.setItem('my_likes', JSON.stringify(likesData.map(i => i.book_id.toString())));
             }
 
+            // Complete removals requested while offline before reading cloud metadata.
+            const pendingRemovedIds = getRemovedDownloadIds();
+            for (const removedId of pendingRemovedIds) {
+                const { error: removeError } = await sb
+                    .from('user_downloads')
+                    .delete()
+                    .eq('user_id', currentUser.id)
+                    .eq('book_id', Number(removedId));
+                if (!removeError) forgetRemovedDownload(removedId);
+            }
+
             // Sync Downloads Metadata (Cloud-First)
             const { data: downloadsData, error: downloadsError } = await sb
                 .from('user_downloads')
@@ -599,7 +636,10 @@
                 .eq('user_id', currentUser.id);
 
             if (!downloadsError && Array.isArray(downloadsData)) {
-                const cloudBooks = downloadsData.filter(d => d.books).map(d => d.books);
+                const removedIds = getRemovedDownloadIds();
+                const cloudBooks = downloadsData
+                    .filter(d => d.books && !removedIds.has(String(d.book_id)))
+                    .map(d => d.books);
                 
                 // Update metadata in Dexie
                 for (const book of cloudBooks) {
@@ -844,9 +884,18 @@
 
     async function confirmDelete(id) {
         const book = await db.savedBooks.get(id);
+        if (!book) {
+            await renderLibrary();
+            return;
+        }
+
         const result = await Swal.fire({
-            title: 'ဖယ်ရှားမည်လား?',
-            text: isOffline ? "အော့ဖ်လိုင်းဖိုင်ကို ဖယ်ရှားလိုက်မည်။" : "စက်ထဲမှ ဖယ်ရှားလိုက်သော်လည်း Cloud တွင် စာရင်းရှိနေပါမည်။",
+            title: 'စာအုပ်ကို ဖယ်ရှားမည်လား?',
+            text: currentUser && !isOffline
+                ? 'ဤစာအုပ်ကို သင့်စက်နှင့် Cloud စာအုပ်စာရင်း နှစ်နေရာလုံးမှ ဖယ်ရှားပါမည်။'
+                : currentUser && isOffline
+                    ? 'ယခုစက်မှ ဖယ်ရှားပြီး အင်တာနက်ပြန်ရသောအခါ Cloud စာရင်းမှလည်း ဖယ်ရှားပါမည်။'
+                    : 'ဤစာအုပ်ကို ကျွန်ုပ်၏စာအုပ်များစာရင်းမှ ဖယ်ရှားပါမည်။',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ea4335',
@@ -854,11 +903,31 @@
             cancelButtonText: 'မလုပ်တော့ပါ'
         });
 
-        if (result.isConfirmed) {
-            await db.savedBooks.update(id, { fileData: null });
-            await renderLibrary();
-            Swal.fire('ဖယ်ရှားပြီးပါပြီ', '', 'success');
+        if (!result.isConfirmed) return;
+
+        // Delete the cloud download row first when online, so sync cannot restore it.
+        if (currentUser && !isOffline) {
+            const { error } = await sb
+                .from('user_downloads')
+                .delete()
+                .eq('user_id', currentUser.id)
+                .eq('book_id', Number(id));
+            if (error) {
+                console.error('Cloud remove error:', error);
+                await Swal.fire('ဖယ်ရှား၍မရပါ', 'Cloud စာရင်းမှ ဖျက်၍မရသေးပါ။ အင်တာနက်နှင့် Login အခြေအနေကို စစ်ပြီး ထပ်မံကြိုးစားပါ။', 'error');
+                return;
+            }
+            forgetRemovedDownload(id);
+        } else if (currentUser) {
+            // Keep a tombstone so the cloud row cannot re-add this book on reconnect.
+            rememberRemovedDownload(id);
         }
+
+        await db.downloadQueue.delete(id);
+        downloadQueue.delete(id);
+        await db.savedBooks.delete(id);
+        await renderLibrary();
+        Swal.fire('ဖယ်ရှားပြီးပါပြီ', 'စာအုပ်ကို ကျွန်ုပ်၏စာအုပ်များစာရင်းမှ ဖျက်ပြီးပါပြီ။', 'success');
     }
 
     function showSyncStatus(show, text = "") {
