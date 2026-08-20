@@ -913,7 +913,7 @@ body {
 @media screen and (min-width: 769px) and (max-width: 1599px) {
     .nav-container {
         display: grid;
-        grid-template-columns: minmax(120px, auto) minmax(220px, 380px) auto;
+        grid-template-columns: minmax(120px, auto) minmax(200px, 300px) auto;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
@@ -925,7 +925,7 @@ body {
         grid-column: 2;
         width: 100%;
         min-width: 220px;
-        max-width: 380px;
+        max-width: 300px;
         margin: 0;
         justify-self: center;
         flex: none;
