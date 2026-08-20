@@ -381,8 +381,12 @@
             await saveToCloudDownload(savedId);
             Swal.fire({ title: 'အောင်မြင်ပါသည်', text: 'Library ထဲသို့ ထည့်သွင်းပြီးပါပြီ။', icon: 'success' });
         } catch (err) {
-            console.error(err);
-            Swal.fire({ title: 'ဒေါင်းလုဒ် မအောင်မြင်ပါ', text: 'စာအုပ်ကို Library ထဲသို့ မသိမ်းနိုင်ပါ။ ထပ်မံကြိုးစားပါ။', icon: 'error' });
+            console.error('Download failure:', err);
+            Swal.fire({
+                title: 'ဒေါင်းလုဒ် မအောင်မြင်ပါ',
+                text: `${err?.name || 'Error'}: ${err?.message || 'စာအုပ်ကို Library ထဲသို့ မသိမ်းနိုင်ပါ။'}`,
+                icon: 'error'
+            });
         }
         finally { btn.style.display = 'flex'; ui.style.display = 'none'; }
     }
