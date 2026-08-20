@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBookshelf AI</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f8fafc}
+    *{box-sizing:border-box}body{width:360px;margin:0;background:linear-gradient(145deg,#f8fafc,#eef2ff);padding:18px}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 14px 36px #17203318;overflow:hidden}.head{display:flex;align-items:center;gap:12px;padding:18px 18px 14px;background:linear-gradient(135deg,#312e81,#2563eb);color:#fff}.robot{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#ffffff26;font-size:24px}.title{font-weight:800;font-size:16px}.sub{font-size:11px;opacity:.75;margin-top:2px}.body{padding:18px}.status{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:12px;background:#f1f5f9;font-size:12px;margin-bottom:14px}.dot{width:9px;height:9px;border-radius:50%;background:#94a3b8}.dot.on{background:#10b981;box-shadow:0 0 0 4px #10b98122}.dot.off{background:#ef4444;box-shadow:0 0 0 4px #ef444422}.status strong{display:block;font-size:13px}.muted{color:#64748b;font-size:11px}.label{display:block;font-size:12px;font-weight:700;color:#334155;margin:14px 0 7px}.select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#172033;font-size:13px}.btn{width:100%;border:0;border-radius:11px;padding:12px 14px;font-weight:800;font-size:13px;cursor:pointer;transition:transform .16s,box-shadow .16s}.btn:active{transform:scale(.98)}.primary{color:#fff;background:linear-gradient(135deg,#4f46e5,#2563eb);box-shadow:0 8px 18px #4f46e533}.secondary{color:#1e3a8a;background:#eef2ff;margin-top:10px}.quiet{color:#475569;background:#f8fafc;margin-top:10px}.btn:disabled{opacity:.55;cursor:wait}.note{font-size:11px;line-height:1.6;color:#64748b;margin:14px 0 0;padding:11px 12px;border-radius:11px;background:#f8fafc;border:1px solid #e2e8f0}.message{font-size:11px;min-height:17px;margin-top:10px;color:#b91c1c}.message.ok{color:#047857}.footer{padding:11px 18px;border-top:1px solid #eef2f7;color:#94a3b8;font-size:10px;text-align:center}
+  </style>
+</head>
+<body>
+  <section class="card">
+    <header class="head"><div class="robot">🤖</div><div><div class="title">SmartBookshelf AI</div><div class="sub">လုံခြုံသော browser assistant</div></div></header>
+    <main class="body">
+      <div class="status"><span id="statusDot" class="dot off"></span><div><strong id="statusTitle">Sign in မဝင်ရသေးပါ</strong><span id="statusText" class="muted">Extension ကို အသုံးပြုရန် SmartBookshelf ဖြင့် sign in ဝင်ပါ။</span></div></div>
+      <button id="signInBtn" class="btn primary">SmartBookshelf ဖြင့် Sign in ဝင်မည်</button>
+      <button id="activateBtn" class="btn secondary" disabled>ဤ tab တွင် AI bubble ဖွင့်မည်</button>
+      <label class="label" for="modelSelect">AI model</label>
+      <select id="modelSelect" class="select">
+        <option value="gemini-2.5-flash">Gemini 2.5 Flash — မြန်</option>
+        <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite — ချွေတာ</option>
+        <option value="gemini-2.5-pro">Gemini 2.5 Pro — ထက်မြက်</option>
+      </select>
+      <button id="signOutBtn" class="btn quiet" disabled>Sign out / Session ဖျက်မည်</button>
+      <div id="message" class="message" role="status"></div>
+      <p class="note">သင်၏ Gemini API key ကို Extension ထဲ မသိမ်းပါ။ AI request များကို SmartBookshelf secure proxy မှတစ်ဆင့်သာ ပို့ပါသည်။ Session ကို browser memory ထဲတွင်သာ ထိန်းသိမ်းပါသည်။</p>
+    </main>
+    <footer class="footer">v2.0.0 · SmartBookshelf</footer>
+  </section>
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

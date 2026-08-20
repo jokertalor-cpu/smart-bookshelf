@@ -828,6 +828,28 @@
     let selectedMethod = 'magic';
     let otpSent = false;
 
+    function getExtensionHandoff() {
+        const params = new URLSearchParams(window.location.search);
+        const extensionId = params.get('extension_id') || '';
+        const state = params.get('extension_state') || '';
+        const codeHash = params.get('extension_code_hash') || '';
+        const redirectUri = params.get('extension_redirect_uri') || '';
+        const code = params.get('extension_code') || new URLSearchParams(window.location.hash.slice(1)).get('extension_code') || '';
+        if (!/^[a-z]{32}$/.test(extensionId) || !/^[A-Za-z0-9_-]{32,160}$/.test(state) || !/^[a-f0-9]{64}$/.test(codeHash) || !/^https:\/\/[^/]+\.chromiumapp\.org(?:\/.*)?$/.test(redirectUri) || !/^[A-Za-z0-9_-]{32,160}$/.test(code)) return null;
+        return { extensionId, state, codeHash, redirectUri, code };
+    }
+
+    async function completeExtensionHandoff() {
+        const handoff = getExtensionHandoff();
+        if (!handoff) return false;
+        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(handoff.state));
+        const stateHash = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+        const { error } = await sb.rpc('issue_extension_code', { p_code_hash: handoff.codeHash, p_state_hash: stateHash, p_extension_id: handoff.extensionId, p_ttl_seconds: 300 });
+        if (error) throw error;
+        window.location.replace(`${handoff.redirectUri}?code=${encodeURIComponent(handoff.code)}&state=${encodeURIComponent(handoff.state)}`);
+        return true;
+    }
+
     // ══════════════════════════════════════
     // Check for recovery redirect
     // ══════════════════════════════════════
@@ -846,6 +868,7 @@
         }
 
         if (session) {
+            if (await completeExtensionHandoff()) return;
             window.location.href = 'account.html';
         }
 
@@ -933,9 +956,11 @@
     // Google Sign In
     // ══════════════════════════════════════
     async function signInGoogle() {
+        const handoff = getExtensionHandoff();
+        const redirectTo = handoff ? `${window.location.origin}/auth.html${window.location.search}` : `${window.location.origin}/account.html`;
         const { error } = await sb.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: window.location.origin + '/account.html' }
+            options: { redirectTo }
         });
         if (error) {
             Swal.fire({ icon: 'error', title: 'မှားယွင်းမှု', text: error.message, confirmButtonColor: '#1a1a2e' });
@@ -978,7 +1003,10 @@
                 text: 'ကြိုဆိုပါသည် ' + (data.user?.user_metadata?.name || ''),
                 timer: 1500,
                 showConfirmButton: false
-            }).then(() => window.location.href = 'index.html');
+            }).then(async () => {
+                if (await completeExtensionHandoff()) return;
+                window.location.href = 'index.html';
+            });
 
         } catch (err) {
             let msg = err.message;
@@ -1040,10 +1068,12 @@
             document.getElementById('agreement-warning').style.display = 'block';
             return;
         }
-        // Proceed with Google OAuth
+        // Proceed with Google OAuth. Preserve extension handoff only when the extension requested it.
+        const handoff = getExtensionHandoff();
+        const redirectTo = handoff ? `${window.location.origin}/auth.html${window.location.search}` : `${window.location.origin}/account.html`;
         const { error } = await sb.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: window.location.origin + '/account.html' }
+            options: { redirectTo }
         });
         if (error) {
             Swal.fire({ icon: 'error', title: 'မှားယွင်းမှု', text: error.message, confirmButtonColor: '#1a1a2e' });

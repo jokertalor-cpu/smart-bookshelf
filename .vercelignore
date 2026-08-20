@@ -3,3 +3,4 @@ supabase/
 .git/
 *.map
 .env*
+extension-v2/

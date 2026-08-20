@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBookshelf Extension Sign-in</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.80.0/dist/umd/supabase.js" integrity="sha384-i0m00Vn1ERlKXxNWSa87g6OUB7eLxpmsQoNF68IHuQVtfJTebIca7XhFsYt9h/gN" crossorigin="anonymous"></script>
+  <script src="config.js"></script>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f8fafc;color:#172033;font:16px/1.6 system-ui,sans-serif}
+    main{width:min(92vw,440px);padding:32px;border:1px solid #e2e8f0;border-radius:18px;background:#fff;box-shadow:0 18px 50px #17203318;text-align:center}
+    .icon{font-size:44px;margin-bottom:10px}.muted{color:#64748b}.status{margin-top:18px;padding:12px;border-radius:10px;background:#f1f5f9}.error{background:#fef2f2;color:#991b1b}
+  </style>
+</head>
+<body>
+<main>
+  <div class="icon">🤖</div>
+  <h1>SmartBookshelf AI Extension</h1>
+  <p class="muted">Extension sign-in ကို လုံခြုံစွာ ပြီးစီးအောင် ဆောင်ရွက်နေပါသည်။</p>
+  <div id="status" class="status">Session ကို စစ်ဆေးနေသည်...</div>
+</main>
+<script>
+(() => {
+  const EXTENSION_ID = 'egkmdicmnnogofdaepinpcmakmaopedd';
+  const params = new URLSearchParams(location.search);
+  const extensionId = params.get('extension_id') || '';
+  const state = params.get('state') || '';
+  const codeHash = params.get('code_hash') || '';
+  const redirectUri = params.get('redirect_uri') || '';
+  const code = new URLSearchParams(location.hash.slice(1)).get('code') || '';
+  const status = document.getElementById('status');
+  const setStatus = (message, error = false) => { status.textContent = message; status.className = 'status' + (error ? ' error' : ''); };
+
+  async function sha256Hex(value) {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+    return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  function isValidRedirect(value) {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' && url.hostname.endsWith('.chromiumapp.org');
+    } catch (_) { return false; }
+  }
+
+  function authUrl() {
+    const query = new URLSearchParams({ extension_state: state, extension_code_hash: codeHash, extension_id: extensionId, extension_redirect_uri: redirectUri });
+    return `${location.origin}/auth.html?${query.toString()}#extension_code=${encodeURIComponent(code)}`;
+  }
+
+  async function run() {
+    if (extensionId !== EXTENSION_ID || !state || !/^[a-f0-9]{64}$/.test(codeHash) || !code || !isValidRedirect(redirectUri)) {
+      setStatus('Extension sign-in request မမှန်ကန်ပါ။ Extension popup မှ ပြန်စပါ။', true);
+      return;
+    }
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data: { session }, error: sessionError } = await sb.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session) {
+      setStatus('SmartBookshelf login page သို့ သွားနေသည်...');
+      location.replace(authUrl());
+      return;
+    }
+    setStatus('Secure sign-in code ထုတ်နေသည်...');
+    const { error } = await sb.rpc('issue_extension_code', {
+      p_code_hash: codeHash,
+      p_state_hash: await sha256Hex(state),
+      p_extension_id: EXTENSION_ID,
+      p_ttl_seconds: 300
+    });
+    if (error) throw error;
+    location.replace(`${redirectUri}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`);
+  }
+
+  run().catch(error => setStatus(error?.message || 'Extension sign-in မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။', true));
+})();
+</script>
+</body>
+</html>
