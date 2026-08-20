@@ -13,7 +13,7 @@ const keyCooldowns = new Map();
 
 function cors(origin) {
   const headers = new Headers({
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Expose-Headers': 'Content-Type',
     'Vary': 'Origin'
@@ -96,28 +96,32 @@ async function callGemini(keys, body) {
   }
   throw new Error('AI service unavailable');
 }
+const MAX_PURGE_KEYS = 1000;
 async function handlePurge(env, origin) {
   if (origin !== ADMIN_ORIGIN) return json({ error: 'Origin not allowed' }, 403, origin);
   const kv = env.AI_CACHE_KV;
   let deleted = 0;
+  let truncated = false;
   if (kv) {
     try {
-      const listed = await kv.list();
-      for (const key of listed.keys) { await kv.delete(key.name); deleted++; }
+      const listed = await kv.list({ limit: MAX_PURGE_KEYS });
+      for (const key of listed.keys.slice(0, MAX_PURGE_KEYS)) { await kv.delete(key.name); deleted++; }
+      truncated = listed.list_complete === false || Boolean(listed.cursor);
     } catch (_) {}
   }
-  return json({ success: true, deleted_kv: deleted }, 200, origin);
+  return json({ success: true, deleted_kv: deleted, truncated }, 200, origin);
 }
 
 async function handle(request, env, ctx) {
     const origin = request.headers.get('Origin');
-    if (origin && origin !== PUBLIC_ORIGIN && origin !== ADMIN_ORIGIN) return json({ error: 'Origin not allowed' }, 403, origin);
+    if (origin !== PUBLIC_ORIGIN && origin !== ADMIN_ORIGIN) return json({ error: 'Origin not allowed' }, 403, origin);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
     const url = new URL(request.url);
-    if (request.method === 'GET' && url.pathname === '/purge-cache') {
+    if (url.pathname === '/purge-cache') {
+      if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, origin);
       const expected = envValue(env, 'PURGE_SECRET');
-      const supplied = url.searchParams.get('secret') || '';
-      if (!expected || supplied !== expected) return json({ error: 'Unauthorized' }, 401, origin);
+      const supplied = request.headers.get('X-Purge-Secret') || '';
+      if (origin !== ADMIN_ORIGIN || !expected || supplied !== expected) return json({ error: 'Unauthorized' }, 401, origin);
       return handlePurge(env, origin);
     }
     if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, origin);
@@ -145,8 +149,12 @@ async function handle(request, env, ctx) {
 
     const keys = [1, 2, 3, 4, 5, 6].map(index => env[`GEMINI_API_KEY_${index}`]).filter(key => typeof key === 'string' && key.trim());
     if (!keys.length) return json({ error: 'AI service configuration unavailable' }, 503, origin);
-    const cacheKey = `exact:${message.toLowerCase()}`;
-    if (env.AI_CACHE_KV) {
+    const books = await fetchBooks(message, env);
+    // Only cache context-free public catalog answers. Never place user reading history,
+    // preferences, or conversational responses in a shared KV cache.
+    const cacheable = !history.length && !body.aiContext && Boolean(books);
+    const cacheKey = cacheable ? `catalog:${message.toLowerCase()}` : '';
+    if (cacheable && env.AI_CACHE_KV) {
       try {
         const cached = await env.AI_CACHE_KV.get(cacheKey);
         if (cached) {
@@ -157,7 +165,6 @@ async function handle(request, env, ctx) {
         }
       } catch (_) {}
     }
-    const books = await fetchBooks(message, env);
     const prompt = buildPrompt(!history.length ? body.aiContext : null, books);
     const geminiBody = { contents: [...history, { role: 'user', parts: [{ text: `${prompt}User Question: ${message}` }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } } };
     try {
@@ -166,7 +173,7 @@ async function handle(request, env, ctx) {
       let rawSSE = '';
       const stream = new TransformStream({
         transform(chunk, controller) { rawSSE += decoder.decode(chunk, { stream: true }); controller.enqueue(chunk); },
-        flush() { const clean = extractTextFromSSE(rawSSE); if (clean && env.AI_CACHE_KV) ctx.waitUntil(cachePut(env.AI_CACHE_KV, cacheKey, clean)); }
+        flush() { const clean = extractTextFromSSE(rawSSE);         if (clean && cacheable && env.AI_CACHE_KV) ctx.waitUntil(cachePut(env.AI_CACHE_KV, cacheKey, clean)); }
       });
       upstream.body.pipeTo(stream.writable);
       const headers = cors(origin);

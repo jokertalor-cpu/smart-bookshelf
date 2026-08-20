@@ -35,7 +35,7 @@ async function handle(request) {
     SUPABASE_ANON_KEY: String(binding('SUPABASE_ANON_KEY')).trim()
   };
     const origin = request.headers.get('Origin');
-    if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ error: 'Origin not allowed' }, 403, origin);
+    if (!ALLOWED_ORIGINS.has(origin)) return json({ error: 'Origin not allowed' }, 403, origin);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
     if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, origin);
     if (!isJWT(request.headers.get('Authorization'))) return json({ error: 'Authentication required' }, 401, origin);

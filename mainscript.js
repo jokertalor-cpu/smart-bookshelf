@@ -151,7 +151,10 @@ async function applySmartSearchIcon() {
             const selected = pool[Math.floor(Math.random() * pool.length)];
             
             // Icon ကို တိုက်ရိုက် Assign လုပ်ခြင်း
-            searchInput.style.backgroundImage = `url('${selected.icon_url}')`;
+            const safeIconURL = window.safeAssetURL(selected.icon_url, '');
+            if (safeIconURL) {
+                searchInput.style.backgroundImage = `url("${safeIconURL}")`;
+            }
             console.log("Applied Icon:", selected.name);
         }
     } catch (err) {

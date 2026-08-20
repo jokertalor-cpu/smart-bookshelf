@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Bookshelf - Search Authors</title>
     <link rel="stylesheet" href="mainstyle.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha384-/o6I2CkkWC//PSjvWC/eYN7l3xM3tJm8ZzVkCOfp//W05QcE3mlGskpoHB6XqI+B" crossorigin="anonymous">
     <style>
         .authors-page-container { padding: 80px 15px 20px; max-width: 1000px; margin: 0 auto; }
         
@@ -215,7 +215,7 @@
         </div>
     </div>
 
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.0/dist/umd/supabase.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.80.0/dist/umd/supabase.js" integrity="sha384-i0m00Vn1ERlKXxNWSa87g6OUB7eLxpmsQoNF68IHuQVtfJTebIca7XhFsYt9h/gN" crossorigin="anonymous"></script>
    <script src="config.js"></script>
     <script src="mainscript.js"></script>
 <script> 
@@ -440,7 +440,8 @@ function performSearch(name) {
         if (pool.length > 0) {
             const selected = pool[Math.floor(Math.random() * pool.length)];
             // ညာဘက်အစွန်း ကပ်ရန် Style ထည့်ခြင်း
-            authorInput.style.backgroundImage = `url('${selected.icon_url}')`;
+            const safeIconURL = window.safeAssetURL(selected.icon_url, '');
+            if (safeIconURL) authorInput.style.backgroundImage = `url("${safeIconURL}")`;
         }
     } catch (e) {
         console.error("Author Icon Error:", e);

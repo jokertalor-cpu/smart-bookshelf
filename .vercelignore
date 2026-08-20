@@ -1,0 +1,5 @@
+workers/
+supabase/
+.git/
+*.map
+.env*
