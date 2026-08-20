@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SmartBookshelf AI Assistant",
   "short_name": "SmartBookshelf AI",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "SmartBookshelf AI ကို လက်ရှိ tab ပေါ်တွင် လုံခြုံစွာ အသုံးပြုနိုင်သော assistant",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0pXQm0fT28BSSOdeYQU9F/8uPch5bjfakQQBNxMXqe9Ze4IghNMJYjvtuRZkarQBTQmD861CisHwYvQjTfq7Ty9dvYq0ngYp1misu49RygX8DHLDiknmdmMNN2RtBLjBo4uVsElurm6Tdz/IXkXcduZO7hpfdKkVJSjWXoAU57nssOQLQ+S6eTQI8tUrZYY0tGoFuMisKJLsNuUjLfisK8ruZNMyNfPmNiOtGqNxBCjzoisLSussLeyxRYTDZ1U4+5AEjYXDMGUdE8cBS5dBGp8yxsYOBzVe4oPNA2NgwsgYR6RWDvdLHptrCbfngwAOt0v0ZUltFYj6FbtYGsAuIQIDAQAB",
   "permissions": [
@@ -12,6 +12,7 @@
     "identity"
   ],
   "host_permissions": [
+    "<all_urls>",
     "https://my-ai-proxy.jokertalor.workers.dev/*"
   ],
   "content_scripts": [
