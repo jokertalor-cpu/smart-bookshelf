@@ -41,27 +41,51 @@ const searchTrigger = document.getElementById('search-trigger');
 const searchBox = document.getElementById('search-box');
 const searchInput = document.getElementById('search-input');
 
-// Global Elements
+// Global navigation elements
 const globalElements = {
     menuToggle: document.querySelector('#mobile-menu'),
     navMenu: document.querySelector('#nav-menu'),
     overlay: document.querySelector('#menu-overlay'),
 };
 
-// --- Mobile Navigation Logic ---
-if (globalElements.menuToggle) {
+// --- Hybrid Navigation Logic ---
+function closeNavigation() {
+    globalElements.navMenu?.classList.remove('active');
+    globalElements.overlay?.classList.remove('active');
+    document.body.classList.remove('menu-open');
+    globalElements.menuToggle?.setAttribute('aria-expanded', 'false');
+}
+
+function openNavigation() {
+    globalElements.navMenu?.classList.add('active');
+    globalElements.overlay?.classList.add('active');
+    document.body.classList.add('menu-open');
+    globalElements.menuToggle?.setAttribute('aria-expanded', 'true');
+}
+
+if (globalElements.menuToggle && globalElements.navMenu) {
+    globalElements.menuToggle.setAttribute('aria-expanded', 'false');
+    globalElements.menuToggle.setAttribute('aria-controls', 'nav-menu');
+    globalElements.menuToggle.setAttribute('aria-label', 'မီနူးဖွင့်ရန်');
     globalElements.menuToggle.addEventListener('click', () => {
-        globalElements.navMenu.classList.toggle('active');
-        globalElements.overlay.classList.toggle('active');
+        globalElements.navMenu.classList.contains('active') ? closeNavigation() : openNavigation();
     });
 }
 
-if (globalElements.overlay) {
-    globalElements.overlay.addEventListener('click', () => {
-        globalElements.navMenu.classList.remove('active');
-        globalElements.overlay.classList.remove('active');
+if (globalElements.overlay) globalElements.overlay.addEventListener('click', closeNavigation);
+if (globalElements.navMenu) {
+    globalElements.navMenu.addEventListener('click', event => {
+        if (event.target.closest('a')) closeNavigation();
     });
-}window.handleInput = async function(e) {
+}
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeNavigation();
+});
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1200) closeNavigation();
+});
+
+window.handleInput = async function(e) {
     const keyword = e.target.value.trim();
     const suggestionBox = document.getElementById('search-suggestions');
 

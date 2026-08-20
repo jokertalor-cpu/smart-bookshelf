@@ -816,8 +816,8 @@ body {
     }
 }
 
-/* Narrow laptop/tablet navigation: preserve all links behind the existing drawer. */
-@media screen and (min-width: 769px) and (max-width: 980px) {
+/* Hybrid navigation: wide desktop keeps quick links; narrower windows use the drawer. */
+@media screen and (min-width: 769px) and (max-width: 1199px) {
     .navbar { padding: 0 12px; }
 
     .nav-container { gap: 10px; }
@@ -880,4 +880,6 @@ body {
         background-color: rgba(0,0,0,.5);
         z-index: 998;
     }
+
+    body.menu-open { overflow: hidden; }
 }
