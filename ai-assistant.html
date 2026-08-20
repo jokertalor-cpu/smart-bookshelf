@@ -1015,7 +1015,7 @@ async function sendMessage() {
             const { done, value } = await reader.read();
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split(/\\r?\\n/);
+            const lines = buffer.split(/\r?\n/);
             buffer = lines.pop() || '';
             lines.forEach(processSSELine);
         }
