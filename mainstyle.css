@@ -795,14 +795,14 @@ body {
         border-radius: 9px;
         gap: 5px;
         white-space: nowrap;
-        font-size: clamp(.67rem, .68vw, .8rem);
+        font-size: .9rem;
         line-height: 1.15;
     }
 
     .nav-menu li a i {
         flex: 0 0 auto;
         margin-right: 0;
-        font-size: .92em;
+        font-size: .9em;
     }
 
     .nav-menu li a:hover,
@@ -817,7 +817,7 @@ body {
 }
 
 /* Hybrid navigation: wide desktop keeps quick links; narrower windows use the drawer. */
-@media screen and (min-width: 769px) and (max-width: 1399px) {
+@media screen and (min-width: 769px) and (max-width: 1599px) {
     .navbar { padding: 0 12px; }
 
     .nav-container { gap: 10px; }

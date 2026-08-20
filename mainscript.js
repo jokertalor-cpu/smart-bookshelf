@@ -82,7 +82,7 @@ document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeNavigation();
 });
 window.addEventListener('resize', () => {
-    if (window.innerWidth >= 1200) closeNavigation();
+    if (window.innerWidth >= 1600) closeNavigation();
 });
 
 window.handleInput = async function(e) {
