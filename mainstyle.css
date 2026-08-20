@@ -883,3 +883,27 @@ body {
 
     body.menu-open { overflow: hidden; }
 }
+
+
+/* AI Assistant navigation parity for the shared public-page navbar */
+.nav-menu li a {
+    font-size: 0.9rem !important;
+    font-weight: 500;
+    line-height: 1.2;
+    gap: 8px;
+}
+
+.nav-menu li a i {
+    width: 0.9rem;
+    margin-right: 0;
+    font-size: 0.9rem !important;
+    line-height: 1;
+    text-align: center;
+}
+
+@media screen and (max-width: 1599px) {
+    .nav-menu li a {
+        font-size: 0.9rem !important;
+        gap: 8px;
+    }
+}
