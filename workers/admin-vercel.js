@@ -22,7 +22,9 @@ function corsFor(origin, isAdmin = false) {
 function isRealJWT(value) {
   return typeof value === 'string' && /^Bearer\s+eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value);
 }
-function binding(name) { return globalThis[name] || ''; }
+function binding(name) {
+  return String(globalThis[name] || '').trim();
+}
 
 async function handle(request) {
   const env = { SUPABASE_URL: binding('SUPABASE_URL'), SUPABASE_KEY: binding('SUPABASE_KEY') };
