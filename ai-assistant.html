@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha384-/o6I2CkkWC//PSjvWC/eYN7l3xM3tJm8ZzVkCOfp//W05QcE3mlGskpoHB6XqI+B" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25/dist/sweetalert2.all.min.js" integrity="sha384-nLoOnA/BDh8A/jxqtckg4DumuCGOBYUnNJLZdQz/zfYNp3wcjGSoWTAzgko06G/2" crossorigin="anonymous"></script>
     <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.80.0/dist/umd/supabase.js" integrity="sha384-i0m00Vn1ERlKXxNWSa87g6OUB7eLxpmsQoNF68IHuQVtfJTebIca7XhFsYt9h/gN" crossorigin="anonymous"></script>
     <!-- Export Libraries -->
     <script src="https://unpkg.com/docx@8.2.2/build/index.js" integrity="sha384-1na0nxFK+J+6hT/nDuxXPl1hJpRobVJbhAxO62ng9/281WvZcIJTTWvwDC0u5Lx2" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha384-PlRSzpewlarQuj5alIadXwjNUX+2eNMKwr0f07ShWYLy8B6TjEbm7ZlcN/ScSbwy" crossorigin="anonymous"></script>
@@ -716,30 +717,34 @@
         let glossary = {};
         let abortController = null;
         let accessToken = null;
+        const authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         window.onload = async () => {
-            const storedSession = localStorage.getItem('sb-' + 'mituedqotwbmporkwbqf-auth-token');
-            
-            if (storedSession) {
-                try {
-                    const sessionData = JSON.parse(storedSession);
-                    if (!sessionData.access_token || (sessionData.expires_at && Number(sessionData.expires_at) * 1000 <= Date.now())) {
-                        throw new Error('Session expired');
-                    }
-                    accessToken = sessionData.access_token;
-                    currentSession = sessionData;
-                    currentUser = sessionData.user;
-                    await loadGeminiApiKey();
-                } catch (e) {
-                    console.error("Session parse error", e);
+            try {
+                const { data: { session }, error } = await authClient.auth.getSession();
+                if (error) throw error;
+                if (!session) {
                     window.location.href = 'auth.html';
+                    return;
                 }
-            } else {
+                accessToken = session.access_token;
+                currentSession = session;
+                currentUser = session.user;
+                await loadGeminiApiKey();
+                loadGlossary();
+            } catch (error) {
+                console.error('Session initialization failed:', error);
                 window.location.href = 'auth.html';
             }
-
-            loadGlossary();
         };
+
+        authClient.auth.onAuthStateChange((_event, session) => {
+            if (session) {
+                accessToken = session.access_token;
+                currentSession = session;
+                currentUser = session.user;
+            }
+        });
 
         async function loadGeminiApiKey() {
             if (!currentUser?.id || typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_KEY === 'undefined') return;
@@ -960,6 +965,12 @@ async function sendMessage() {
         if (systemInstruction) {
             payload.systemInstruction = systemInstruction;
         }
+
+        const { data: { session: freshSession }, error: sessionError } = await authClient.auth.getSession();
+        if (sessionError || !freshSession) throw new Error('Login session expired. Please sign in again.');
+        accessToken = freshSession.access_token;
+        currentSession = freshSession;
+        currentUser = freshSession.user;
 
         const response = await fetch(workerUrl, { 
             method: 'POST',
