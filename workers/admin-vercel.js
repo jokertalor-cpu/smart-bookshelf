@@ -26,6 +26,42 @@ function binding(name) {
   return String(globalThis[name] || '').trim();
 }
 
+function safeStorageSegment(segment) {
+  let decoded = segment;
+  try {
+    decoded = decodeURIComponent(segment);
+  } catch (_) {
+    // Keep the original segment if it is not valid percent-encoding.
+  }
+  if (Array.from(decoded).every((char) => /^[A-Za-z0-9._-]$/.test(char))) return decoded;
+
+  const bytes = new TextEncoder().encode(decoded);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  const compact = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  return `u_${compact}`;
+}
+
+function normalizeStoragePath(pathname) {
+  const marker = '/storage/v1/object/';
+  const markerIndex = pathname.indexOf(marker);
+  if (markerIndex < 0) return pathname;
+
+  const prefix = pathname.slice(0, markerIndex + marker.length);
+  const rest = pathname.slice(markerIndex + marker.length);
+  const parts = rest.split('/');
+  const publicMode = parts[0] === 'public';
+  const bucketIndex = publicMode ? 1 : 0;
+  if (!parts[bucketIndex]) return pathname;
+
+  // Keep the operation prefix and bucket name unchanged; only object key segments are normalized.
+  const objectStart = bucketIndex + 1;
+  if (parts.length <= objectStart) return pathname;
+  const normalized = parts.slice(0, objectStart)
+    .concat(parts.slice(objectStart).map(safeStorageSegment));
+  return prefix + normalized.join('/');
+}
+
 async function handle(request) {
   const env = { SUPABASE_URL: binding('SUPABASE_URL'), SUPABASE_KEY: binding('SUPABASE_KEY') };
     const url = new URL(request.url);
@@ -58,9 +94,10 @@ async function handle(request) {
       headers.delete('Origin');
       headers.delete('Referer');
 
-      const target = `${String(env.SUPABASE_URL).replace(/\/$/, '')}${url.pathname}${url.search}`;
+      const targetPath = normalizeStoragePath(url.pathname);
+      const target = `${String(env.SUPABASE_URL).replace(/\/$/, '')}${targetPath}${url.search}`;
       const init = { method: request.method, headers, redirect: 'follow' };
-      if (!['GET', 'HEAD'].includes(request.method)) init.body = await request.arrayBuffer();
+      if (!['GET', 'HEAD'].includes(request.method)) init.body = request.body;
       const response = await fetch(target, init);
       const responseHeaders = new Headers(response.headers);
       const cors = corsFor(origin, isAdmin);
