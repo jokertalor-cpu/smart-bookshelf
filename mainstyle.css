@@ -731,3 +731,153 @@ body {
     0% { height: 30%; }
     100% { height: 100%; }
 }
+
+
+/* --- Desktop navigation refinement: balanced regions without changing routes --- */
+@media screen and (min-width: 769px) {
+    .nav-container {
+        width: min(100%, 1480px);
+        margin: 0 auto;
+        gap: clamp(10px, 1.35vw, 22px);
+        min-width: 0;
+    }
+
+    .logo {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+    }
+
+    .logo img {
+        height: 38px;
+        max-width: 170px;
+        object-fit: contain;
+    }
+
+    .search-wrapper {
+        flex: 1 1 clamp(240px, 27vw, 370px);
+        min-width: 220px;
+        max-width: 390px;
+        margin-left: 0;
+    }
+
+    .search-box {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+        margin: 0;
+    }
+
+    #search-input {
+        min-width: 0;
+        height: 40px;
+        padding: 9px 14px;
+        font-size: clamp(.78rem, .75vw, .88rem);
+    }
+
+    .nav-menu {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .nav-menu li {
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+    .nav-menu li a {
+        min-height: 40px;
+        padding: 8px clamp(7px, .72vw, 13px);
+        border: 1px solid transparent;
+        border-radius: 9px;
+        gap: 6px;
+        white-space: nowrap;
+        font-size: clamp(.72rem, .72vw, .88rem);
+        line-height: 1.25;
+    }
+
+    .nav-menu li a i {
+        flex: 0 0 auto;
+        margin-right: 0;
+        font-size: 1em;
+    }
+
+    .nav-menu li a:hover,
+    .nav-menu li a.active {
+        border-color: rgba(255,255,255,.24);
+        border-radius: 9px;
+    }
+
+    .nav-menu li a.active {
+        box-shadow: inset 0 -2px 0 rgba(255,255,255,.82);
+    }
+}
+
+/* Narrow laptop/tablet navigation: preserve all links behind the existing drawer. */
+@media screen and (min-width: 769px) and (max-width: 980px) {
+    .navbar { padding: 0 12px; }
+
+    .nav-container { gap: 10px; }
+
+    .logo img {
+        height: 34px;
+        max-width: 145px;
+    }
+
+    .search-wrapper {
+        flex: 1 1 auto;
+        min-width: 180px;
+        max-width: none;
+    }
+
+    .menu-toggle {
+        display: block;
+        flex: 0 0 auto;
+        order: 3;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 60px;
+        left: -100%;
+        width: 280px;
+        height: calc(100vh - 60px);
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 5px;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: var(--dark-blue);
+        box-shadow: 2px 0 10px rgba(0,0,0,.18);
+        transition: left .3s ease-in-out;
+        z-index: 999;
+    }
+
+    .nav-menu.active { left: 0; }
+
+    .nav-menu li,
+    .nav-menu li a {
+        width: 100%;
+    }
+
+    .nav-menu li a {
+        min-height: 46px;
+        padding: 12px 16px;
+        background-color: var(--hover-blue);
+        border-color: rgba(255,255,255,.08);
+        font-size: .9rem;
+    }
+
+    .menu-overlay.active {
+        display: block;
+        position: fixed;
+        inset: 0;
+        top: 60px;
+        background-color: rgba(0,0,0,.5);
+        z-index: 998;
+    }
+}
