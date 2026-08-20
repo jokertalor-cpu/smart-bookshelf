@@ -369,9 +369,16 @@
     }
 
     async function saveToCloudDownload(bookId) {
-        if (currentUser) {
-            await sb.from('user_downloads').upsert({ user_id: currentUser.id, book_id: parseInt(bookId) });
+        if (!currentUser) return { ok: false, skipped: true };
+        const { error } = await sb.from('user_downloads').upsert(
+            { user_id: currentUser.id, book_id: parseInt(bookId) },
+            { onConflict: 'user_id,book_id' }
+        );
+        if (error) {
+            console.warn('Cloud download sync failed; local library is preserved:', error);
+            return { ok: false, error };
         }
+        return { ok: true };
     }
 
     async function toggleLike() {
