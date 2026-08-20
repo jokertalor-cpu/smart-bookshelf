@@ -13,7 +13,9 @@ const SAFE_ASSET_HOSTS = new Set([
     'cdnjs.cloudflare.com',
     'cdn.jsdelivr.net',
     'unpkg.com',
-    'www.svgrepo.com'
+    'www.svgrepo.com',
+    'www.panoramyanmar.com',
+    'dzge6hlvluam4.cloudfront.net'
 ]);
 window.escapeHTML = window.escapeHTML || function(value) {
     return String(value ?? '').replace(/[&<>"']/g, ch => ({
