@@ -19,7 +19,7 @@ function showMessage(text, ok = false) {
 function setStatus(signedIn) {
   statusDot.className = `dot ${signedIn ? 'on' : 'off'}`;
   statusTitle.textContent = signedIn ? 'Signed in ဖြစ်နေပါသည်' : 'Sign in မဝင်ရသေးပါ';
-  statusText.textContent = signedIn ? 'လက်ရှိ tab တွင် AI bubble ကို ဖွင့်နိုင်ပါသည်။' : 'Extension ကို အသုံးပြုရန် SmartBookshelf ဖြင့် sign in ဝင်ပါ။';
+  statusText.textContent = signedIn ? 'HTTP/HTTPS website များတွင် AI bubble အလိုအလျောက်ပေါ်ပါမည်။' : 'Extension ကို အသုံးပြုရန် SmartBookshelf ဖြင့် sign in ဝင်ပါ။';
   activateBtn.disabled = !signedIn;
   signOutBtn.disabled = !signedIn;
   signInBtn.disabled = signedIn;
@@ -48,7 +48,7 @@ activateBtn.addEventListener('click', async () => {
   activateBtn.disabled = true;
   const result = await send({ type: 'ACTIVATE_TAB' });
   if (result?.error) showMessage(result.error);
-  else showMessage('ဤ tab တွင် AI bubble ဖွင့်ပြီးပါပြီ။', true);
+  else showMessage('လက်ရှိ tab တွင် AI bubble ပြန်ဖွင့်ပြီးပါပြီ။', true);
   await refreshStatus();
 });
 

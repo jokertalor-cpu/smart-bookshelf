@@ -164,7 +164,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       if (message.type === 'CAPTURE_SCREENSHOT') {
         if (!sender?.id || sender.id !== chrome.runtime.id) throw new Error('Invalid extension sender');
-        const dataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 70 });
+        const dataUrl = await chrome.tabs.captureVisibleTab(sender.tab?.windowId ?? null, { format: 'jpeg', quality: 70 });
         return { dataUrl };
       }
       if (message.type === 'SEND_TO_AI') {

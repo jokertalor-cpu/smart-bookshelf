@@ -1,1 +1,243 @@
-#sb-ai-root,#sb-ai-root *{box-sizing:border-box}#sb-ai-root{all:initial;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;z-index:2147483646}#sb-ai-root button,#sb-ai-root textarea{font:inherit}#sb-bubble{position:fixed;right:22px;bottom:22px;width:54px;height:54px;border:0;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#2563eb);color:#fff;font-size:25px;cursor:pointer;box-shadow:0 10px 26px #1e3a8a55;transition:transform .16s,box-shadow .16s}#sb-bubble:hover{transform:translateY(-2px);box-shadow:0 14px 30px #1e3a8a66}#sb-panel{position:fixed;right:22px;bottom:88px;width:min(390px,calc(100vw - 28px));height:min(600px,calc(100vh - 112px));display:none;flex-direction:column;overflow:hidden;background:#fff;border:1px solid #dbe4f0;border-radius:18px;box-shadow:0 22px 60px #0f172a33;color:#172033}#sb-panel.open{display:flex}#sb-header{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;background:linear-gradient(135deg,#312e81,#2563eb);color:#fff}#sb-header strong{display:block;font-size:14px}#sb-header small{display:block;margin-top:2px;font-size:10px;opacity:.78}#sb-close{width:30px;height:30px;border:0;border-radius:8px;background:#ffffff20;color:#fff;font-size:22px;line-height:1;cursor:pointer}#sb-privacy{padding:9px 13px;background:#eff6ff;color:#1e40af;border-bottom:1px solid #dbeafe;font-size:10px;line-height:1.5}#sb-messages{flex:1;overflow:auto;padding:14px;background:#f8fafc}#sb-messages::-webkit-scrollbar{width:6px}#sb-messages::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}.sb-msg{max-width:88%;margin:0 0 10px;padding:10px 12px;border-radius:13px;font-size:13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}.sb-msg.ai{margin-right:auto;background:#fff;border:1px solid #e2e8f0}.sb-msg.user{margin-left:auto;background:#4f46e5;color:#fff}.sb-msg.loading{opacity:.65}.sb-msg.error{background:#fef2f2;border-color:#fecaca;color:#991b1b}#sb-preview{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:#ecfdf5;color:#047857;font-size:11px;border-top:1px solid #d1fae5}#sb-preview button{border:0;background:transparent;color:#047857;font-size:11px;cursor:pointer}#sb-input-row{display:flex;align-items:flex-end;gap:7px;padding:10px;border-top:1px solid #e2e8f0;background:#fff}#sb-input{flex:1;min-height:38px;max-height:110px;resize:none;padding:10px 11px;border:1px solid #cbd5e1;border-radius:10px;outline:0;color:#172033;background:#fff;font-size:13px}#sb-input:focus{border-color:#6366f1;box-shadow:0 0 0 3px #6366f122}#sb-camera,#sb-send{width:38px;height:38px;border:0;border-radius:10px;cursor:pointer;font-size:17px}#sb-camera{background:#eef2ff;color:#4338ca}#sb-camera.active{background:#dcfce7;color:#047857}#sb-send{background:#4f46e5;color:#fff}#sb-camera:disabled,#sb-send:disabled{opacity:.5;cursor:wait}#sb-hint{padding:0 12px 10px;color:#94a3b8;background:#fff;font-size:10px;text-align:right}@media(prefers-reduced-motion:reduce){#sb-bubble{transition:none}}
+#sb-ai-root {
+  all: initial;
+  position: fixed;
+  left: calc(100vw - 82px);
+  top: calc(100vh - 82px);
+  width: 58px;
+  height: 58px;
+  z-index: 2147483647;
+  direction: ltr;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#sb-ai-root *,
+#sb-ai-root *::before,
+#sb-ai-root *::after {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+#sb-ai-root.sb-capture-hidden {
+  display: none !important;
+}
+
+#sb-bubble {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5, #2563eb);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, .38), 0 0 0 5px rgba(99, 102, 241, .13);
+  color: #fff;
+  cursor: grab;
+  font-size: 28px;
+  line-height: 1;
+  user-select: none;
+  touch-action: none;
+  transition: transform .16s cubic-bezier(.23,1,.32,1), box-shadow .16s ease;
+}
+
+#sb-bubble:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 16px 34px rgba(37, 99, 235, .46), 0 0 0 6px rgba(99, 102, 241, .16);
+}
+
+#sb-bubble:active,
+#sb-bubble.dragging {
+  cursor: grabbing;
+  transform: scale(.96);
+}
+
+#sb-bubble:focus-visible,
+#sb-panel button:focus-visible,
+#sb-panel textarea:focus-visible {
+  outline: 3px solid rgba(96, 165, 250, .8);
+  outline-offset: 2px;
+}
+
+#sb-panel {
+  position: fixed;
+  display: none;
+  flex-direction: column;
+  width: min(390px, calc(100vw - 24px));
+  height: min(560px, calc(100vh - 32px));
+  overflow: hidden;
+  border: 1px solid #dbe4f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .24), 0 8px 24px rgba(37, 99, 235, .14);
+  color: #172033;
+  text-align: left;
+  z-index: 2147483647;
+}
+
+#sb-panel.open {
+  display: flex;
+  animation: sb-panel-in .18s cubic-bezier(.23,1,.32,1);
+}
+
+@keyframes sb-panel-in {
+  from { opacity: 0; transform: translateY(6px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+#sb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  color: #fff;
+  background: linear-gradient(135deg, #312e81, #2563eb);
+}
+
+#sb-header strong,
+#sb-header small {
+  display: block;
+}
+
+#sb-header strong { font-size: 14px; font-weight: 800; }
+#sb-header small { margin-top: 2px; color: rgba(255,255,255,.76); font-size: 10px; }
+
+#sb-close {
+  all: unset;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
+#sb-close:hover { background: rgba(255,255,255,.16); }
+
+#sb-privacy {
+  margin: 12px 14px 0;
+  padding: 9px 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+#sb-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.sb-msg {
+  max-width: 88%;
+  margin: 0 0 10px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.sb-msg.ai { margin-right: auto; border: 1px solid #e2e8f0; background: #fff; color: #24324a; }
+.sb-msg.user { margin-left: auto; background: #2563eb; color: #fff; }
+.sb-msg.error { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+.sb-msg.loading { opacity: .72; }
+
+#sb-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 14px 0;
+  padding: 8px 10px;
+  border: 1px solid #bbf7d0;
+  border-radius: 9px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 11px;
+}
+
+#sb-preview[hidden] { display: none; }
+
+#sb-preview button {
+  all: unset;
+  color: #166534;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+#sb-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  padding: 12px 14px 5px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+#sb-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  max-height: 110px;
+  resize: vertical;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 9px 10px;
+  color: #172033;
+  background: #fff;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+#sb-input::placeholder { color: #94a3b8; }
+
+#sb-camera,
+#sb-send {
+  all: unset;
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #3730a3;
+  cursor: pointer;
+  font-size: 17px;
+  text-align: center;
+}
+
+#sb-send { background: #2563eb; color: #fff; }
+#sb-camera:hover, #sb-camera.active { background: #dcfce7; color: #166534; }
+#sb-send:hover { background: #1d4ed8; }
+#sb-camera:disabled, #sb-send:disabled { cursor: wait; opacity: .55; }
+
+#sb-hint {
+  padding: 0 14px 11px;
+  color: #94a3b8;
+  background: #fff;
+  font-size: 10px;
+}
+
+@media (max-width: 520px) {
+  #sb-panel { width: calc(100vw - 16px); height: min(600px, calc(100vh - 16px)); }
+  #sb-ai-root { width: 52px; height: 52px; }
+  #sb-bubble { width: 52px; height: 52px; font-size: 25px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #sb-bubble, #sb-panel.open { animation: none; transition: none; }
+}

@@ -16,7 +16,7 @@
     <main class="body">
       <div class="status"><span id="statusDot" class="dot off"></span><div><strong id="statusTitle">Sign in မဝင်ရသေးပါ</strong><span id="statusText" class="muted">Extension ကို အသုံးပြုရန် SmartBookshelf ဖြင့် sign in ဝင်ပါ။</span></div></div>
       <button id="signInBtn" class="btn primary">SmartBookshelf ဖြင့် Sign in ဝင်မည်</button>
-      <button id="activateBtn" class="btn secondary" disabled>ဤ tab တွင် AI bubble ဖွင့်မည်</button>
+      <button id="activateBtn" class="btn secondary" disabled>လက်ရှိ tab ကို ပြန်ဖွင့်မည်</button>
       <label class="label" for="modelSelect">AI model</label>
       <select id="modelSelect" class="select">
         <option value="gemini-2.5-flash">Gemini 2.5 Flash — မြန်</option>
@@ -25,9 +25,9 @@
       </select>
       <button id="signOutBtn" class="btn quiet" disabled>Sign out / Session ဖျက်မည်</button>
       <div id="message" class="message" role="status"></div>
-      <p class="note">သင်၏ Gemini API key ကို Extension ထဲ မသိမ်းပါ။ AI request များကို SmartBookshelf secure proxy မှတစ်ဆင့်သာ ပို့ပါသည်။ Session ကို browser memory ထဲတွင်သာ ထိန်းသိမ်းပါသည်။</p>
+      <p class="note">Sign in ပြီးပါက HTTP/HTTPS website များတွင် AI bubble အလိုအလျောက်ပေါ်ပါမည်။ Bubble ကို ဖိဆွဲ၍ နေရာရွှေ့နိုင်ပြီး screenshot ရိုက်ချိန်တွင် chatbox ကို ယာယီဖျောက်ပေးပါမည်။ သင်၏ Gemini API key ကို Extension ထဲ မသိမ်းပါ။</p>
     </main>
-    <footer class="footer">v2.0.0 · SmartBookshelf</footer>
+    <footer class="footer">v2.1.0 · SmartBookshelf</footer>
   </section>
   <script src="config.js"></script>
   <script src="popup.js"></script>
