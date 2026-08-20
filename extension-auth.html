@@ -58,6 +58,7 @@
     if (sessionError) throw sessionError;
     if (!session) {
       setStatus('SmartBookshelf login page သို့ သွားနေသည်...');
+      sessionStorage.setItem('sb_extension_code', code);
       location.replace(authUrl());
       return;
     }

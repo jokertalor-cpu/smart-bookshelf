@@ -158,8 +158,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (!sender?.id || sender.id !== chrome.runtime.id) throw new Error('Invalid extension sender');
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (!tab?.id || !/^https?:/.test(tab.url || '')) throw new Error('This page does not allow extension activation.');
-        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
         await chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: ['content.css'] });
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
         return { ok: true };
       }
       if (message.type === 'CAPTURE_SCREENSHOT') {

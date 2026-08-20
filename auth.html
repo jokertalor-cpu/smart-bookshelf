@@ -834,7 +834,7 @@
         const state = params.get('extension_state') || '';
         const codeHash = params.get('extension_code_hash') || '';
         const redirectUri = params.get('extension_redirect_uri') || '';
-        const code = params.get('extension_code') || new URLSearchParams(window.location.hash.slice(1)).get('extension_code') || '';
+        const code = params.get('extension_code') || sessionStorage.getItem('sb_extension_code') || new URLSearchParams(window.location.hash.slice(1)).get('extension_code') || '';
         if (!/^[a-z]{32}$/.test(extensionId) || !/^[A-Za-z0-9_-]{32,160}$/.test(state) || !/^[a-f0-9]{64}$/.test(codeHash) || !/^https:\/\/[^/]+\.chromiumapp\.org(?:\/.*)?$/.test(redirectUri) || !/^[A-Za-z0-9_-]{32,160}$/.test(code)) return null;
         return { extensionId, state, codeHash, redirectUri, code };
     }
@@ -846,6 +846,7 @@
         const stateHash = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
         const { error } = await sb.rpc('issue_extension_code', { p_code_hash: handoff.codeHash, p_state_hash: stateHash, p_extension_id: handoff.extensionId, p_ttl_seconds: 300 });
         if (error) throw error;
+        sessionStorage.removeItem('sb_extension_code');
         window.location.replace(`${handoff.redirectUri}?code=${encodeURIComponent(handoff.code)}&state=${encodeURIComponent(handoff.state)}`);
         return true;
     }
