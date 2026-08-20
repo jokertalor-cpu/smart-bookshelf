@@ -315,34 +315,53 @@
         }
     }
 
+    function downloadPDFBlob(downloadURL) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', downloadURL, true);
+            xhr.responseType = 'arraybuffer';
+            xhr.withCredentials = false;
+            xhr.timeout = 120000;
+
+            xhr.addEventListener('progress', event => {
+                if (!event.lengthComputable || !event.total) return;
+                const pct = Math.max(0, Math.min(100, Math.round((event.loaded / event.total) * 100)));
+                document.getElementById('pct-label').innerText = pct + '%';
+                document.getElementById('progress-bar').style.strokeDashoffset = 126 - (126 * pct) / 100;
+            });
+            xhr.addEventListener('load', () => {
+                if (xhr.status !== 200 && xhr.status !== 206) {
+                    reject(new Error(`Download failed (HTTP ${xhr.status})`));
+                    return;
+                }
+                const bytes = new Uint8Array(xhr.response || new ArrayBuffer(0));
+                const signature = String.fromCharCode(...bytes.slice(0, 4));
+                if (bytes.byteLength < 5 || signature !== '%PDF') {
+                    reject(new Error('Downloaded file is not a valid PDF'));
+                    return;
+                }
+                document.getElementById('pct-label').innerText = '100%';
+                document.getElementById('progress-bar').style.strokeDashoffset = 0;
+                resolve(new Blob([xhr.response], { type: 'application/pdf' }));
+            });
+            xhr.addEventListener('error', () => reject(new Error('Network error while downloading PDF')));
+            xhr.addEventListener('timeout', () => reject(new Error('PDF download timed out')));
+            xhr.addEventListener('abort', () => reject(new Error('PDF download was cancelled')));
+            xhr.send();
+        });
+    }
+
     async function startDownload() {
         const btn = document.getElementById('dl-button');
         const ui = document.getElementById('progress-ui');
         btn.style.display = 'none'; ui.style.display = 'block';
 
         try {
-            await sb.rpc('increment_download', { row_id: activeBook.id });
+            const { error: counterError } = await sb.rpc('increment_download', { row_id: activeBook.id });
+            if (counterError) console.warn('Download counter sync failed:', counterError);
             const downloadURL = window.safeAssetURL(activeBook.download_link, '');
             if (!downloadURL) throw new Error('Invalid download URL');
-            const response = await fetch(downloadURL, { credentials: 'omit' });
-            if (!response.ok || !response.body) throw new Error(`Download failed (${response.status})`);
-            const reader = response.body.getReader();
-            const total = +response.headers.get('Content-Length') || 0;
-            let received = 0, chunks = [];
-
-            while(true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-                chunks.push(value);
-                received += value.length;
-                if (total > 0) {
-                    const pct = Math.round((received / total) * 100);
-                    document.getElementById('pct-label').innerText = pct + "%";
-                    document.getElementById('progress-bar').style.strokeDashoffset = 126 - (126 * pct) / 100;
-                }
-            }
-
-            const blob = new Blob(chunks, { type: 'application/pdf' });
+            const blob = await downloadPDFBlob(downloadURL);
             const savedId = String(activeBook.id);
             await db.savedBooks.put({
                 id: savedId,
