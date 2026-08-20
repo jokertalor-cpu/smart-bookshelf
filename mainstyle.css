@@ -790,19 +790,19 @@ body {
 
     .nav-menu li a {
         min-height: 40px;
-        padding: 8px clamp(7px, .72vw, 13px);
+        padding: 7px clamp(5px, .55vw, 10px);
         border: 1px solid transparent;
         border-radius: 9px;
-        gap: 6px;
+        gap: 5px;
         white-space: nowrap;
-        font-size: clamp(.72rem, .72vw, .88rem);
-        line-height: 1.25;
+        font-size: clamp(.67rem, .68vw, .8rem);
+        line-height: 1.15;
     }
 
     .nav-menu li a i {
         flex: 0 0 auto;
         margin-right: 0;
-        font-size: 1em;
+        font-size: .92em;
     }
 
     .nav-menu li a:hover,
@@ -817,7 +817,7 @@ body {
 }
 
 /* Hybrid navigation: wide desktop keeps quick links; narrower windows use the drawer. */
-@media screen and (min-width: 769px) and (max-width: 1199px) {
+@media screen and (min-width: 769px) and (max-width: 1399px) {
     .navbar { padding: 0 12px; }
 
     .nav-container { gap: 10px; }
