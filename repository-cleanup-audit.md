@@ -27,3 +27,8 @@ The static reference scan found `Gemini_Generated_Image_bwdh8wbwdh8wbwdh.png` an
 ## Verification status
 
 The post-cleanup scan reports no duplicate script or stylesheet includes in the audited HTML pages and no remaining legacy header selectors in `mainstyle.css`. The shared-header structural validator, JavaScript syntax checks, and whitespace/diff checks are used before release. No extension files, Supabase migrations, worker code, or page-specific book/AI logic were removed.
+
+
+## Post-cleanup live validation
+
+After deployment, all 14 migrated public pages returned HTTP 200 and served the shared header assets. The service worker served cache version `smart-bookshelf-v6`, and the live `mainstyle.css` no longer contained the removed legacy header selectors. Representative 390px homepage and 1366px AI Assistant screenshots retained the unified header, far-left mobile menu behavior, visible search field, and existing page content layout. The repository remained clean after the cleanup commit.
