@@ -57,7 +57,8 @@ nav.sb-page-header {
     margin: 0;
 }
 
-.sb-header-search input {
+/* Namespace the shared input strongly enough to win over legacy #search-input rules on mainstyle pages. */
+nav.sb-page-header #search-input {
     display: block;
     width: 100%;
     height: 38px;
@@ -74,17 +75,17 @@ nav.sb-page-header {
     transition: all .3s ease;
 }
 
-.sb-header-search input::placeholder {
+nav.sb-page-header #search-input::placeholder {
     color: rgba(255, 255, 255, .7);
 }
 
-.sb-header-search input:focus {
+nav.sb-page-header #search-input:focus {
     background-color: #fff;
     color: #333;
     border-color: rgba(255, 255, 255, .85);
 }
 
-.sb-header-search input:not(:placeholder-shown) {
+nav.sb-page-header #search-input:not(:placeholder-shown) {
     background-image: none !important;
 }
 
@@ -237,10 +238,10 @@ nav.sb-page-header {
         justify-content: flex-start;
         gap: 4px;
         overflow-y: auto;
-        background: var(--sb-white);
-        box-shadow: 8px 0 24px rgba(15, 23, 42, .18);
-        transform: translateX(-105%);
-        transition: transform .22s ease-out;
+        background: var(--sb-dark-blue);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, .18);
+        transform: translateX(-100%);
+        transition: transform .25s ease-out;
         z-index: 1001;
     }
 
@@ -253,13 +254,15 @@ nav.sb-page-header {
         min-height: 44px;
         padding: 10px 12px;
         border-radius: 4px;
-        color: #5f6368;
+        color: var(--sb-white);
+        background-color: var(--sb-hover-blue);
+        border-bottom: 1px solid rgba(255, 255, 255, .08);
     }
 
     .sb-header-links a:hover,
     .sb-header-links a.active {
-        background: #e3f2fd;
-        color: var(--sb-dark-blue);
+        background: rgba(255, 255, 255, .2);
+        color: var(--sb-white);
     }
 
     .sb-menu-overlay.active {
@@ -299,7 +302,7 @@ nav.sb-page-header {
         max-width: none;
     }
 
-    .sb-header-search input {
+    nav.sb-page-header #search-input {
         height: 36px;
         padding: 0 40px 0 10px;
         font-size: .84rem;
@@ -314,7 +317,7 @@ nav.sb-page-header {
 
 @media (prefers-reduced-motion: reduce) {
     .sb-header-links,
-    .sb-header-search input {
+    nav.sb-page-header #search-input {
         transition: none;
     }
 }
