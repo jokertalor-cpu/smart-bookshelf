@@ -512,7 +512,7 @@
     }
 }
     </style>
-    <link rel="stylesheet" href="shared-page-header.css?v=1">
+    <link rel="stylesheet" href="shared-page-header.css?v=2">
 </head>
 <body>
 
@@ -536,8 +536,9 @@
                     <img src="image.svg" alt="SmartBookshelf">
                 </picture>
             </a>
-            <form class="sb-header-search" data-sb-search-form action="search.html" method="get" role="search">
-                <input type="search" name="query" data-sb-search-input placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." aria-label="စာအုပ်အမည်ဖြင့်ရှာရန်">
+            <form class="sb-header-search" id="sb-search-form" data-sb-search-form action="search.html" method="get" role="search">
+                <input type="search" id="search-input" name="query" data-sb-search-input placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." aria-label="စာအုပ်အမည်ဖြင့်ရှာရန်" autocomplete="off">
+                <div id="search-suggestions" class="sb-search-suggestions" data-sb-search-suggestions aria-live="polite"></div>
             </form>
             <div class="sb-header-links" id="sb-header-links" data-sb-header-links>
                 <a href="index.html"><i class="fa-solid fa-house" aria-hidden="true"></i> ပင်မစာမျက်နှာ</a>
@@ -1192,6 +1193,6 @@ async function saveProfile() {
             }
         }
     </script>
-    <script src="shared-page-header.js?v=1"></script>
+    <script src="shared-page-header.js?v=2"></script>
 </body>
 </html>

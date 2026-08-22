@@ -1,4 +1,4 @@
-/* SmartBookshelf shared page header: visual reference is ai-assistant.html */
+/* SmartBookshelf shared page header: AI Assistant visual reference + homepage assets */
 :root {
     --sb-header-height: 64px;
     --sb-header-text: #5f6368;
@@ -25,12 +25,13 @@ nav.sb-page-header {
     width: 100%;
     min-width: 0;
     display: grid;
-    grid-template-columns: auto minmax(180px, 340px) minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(220px, 340px) minmax(0, 1fr) auto;
     align-items: center;
     gap: 1.25rem;
 }
 
 .sb-header-logo {
+    grid-column: 1;
     display: inline-flex;
     align-items: center;
     min-width: 0;
@@ -45,6 +46,8 @@ nav.sb-page-header {
 }
 
 .sb-header-search {
+    grid-column: 2;
+    position: relative;
     width: 100%;
     min-width: 0;
     margin: 0;
@@ -54,10 +57,13 @@ nav.sb-page-header {
     display: block;
     width: 100%;
     height: 38px;
-    padding: 0 14px;
+    padding: 0 42px 0 14px;
     border: 1px solid var(--sb-header-border);
     border-radius: 10px;
-    background: #fff;
+    background-color: #fff;
+    background-position: right 10px center;
+    background-repeat: no-repeat;
+    background-size: 28px 28px;
     color: #1f2937;
     outline: none;
     font: 400 0.9rem/1.2 'Inter', 'Pyidaungsu', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -71,6 +77,51 @@ nav.sb-page-header {
 .sb-header-search input:focus {
     border-color: var(--sb-header-primary);
     box-shadow: 0 0 0 3px rgba(124, 58, 237, .12);
+}
+
+.sb-search-suggestions {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--sb-header-border);
+    border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .14);
+    z-index: 1100;
+}
+
+.sb-search-suggestion {
+    display: block;
+    padding: 10px 12px;
+    color: #374151;
+    text-decoration: none;
+    font: 400 .84rem/1.35 'Inter', 'Pyidaungsu', sans-serif;
+}
+
+.sb-search-suggestion + .sb-search-suggestion {
+    border-top: 1px solid #f1f3f4;
+}
+
+.sb-search-suggestion:hover,
+.sb-search-suggestion:focus-visible {
+    background: #f5f3ff;
+    outline: none;
+}
+
+.sb-search-suggestion strong {
+    display: block;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.sb-search-suggestion small {
+    display: block;
+    margin-top: 2px;
+    color: #6b7280;
 }
 
 .sb-header-links {
@@ -143,9 +194,25 @@ nav.sb-page-header {
     }
 
     .sb-header-inner {
-        grid-template-columns: auto minmax(180px, 320px) auto;
+        grid-template-columns: auto auto minmax(180px, 1fr);
         gap: 1rem;
-        justify-content: space-between;
+    }
+
+    .sb-menu-toggle {
+        grid-column: 1;
+        display: inline-flex;
+        order: 0;
+    }
+
+    .sb-header-logo {
+        grid-column: 2;
+    }
+
+    .sb-header-search {
+        grid-column: 3;
+        min-width: 180px;
+        max-width: 340px;
+        justify-self: end;
     }
 
     .sb-header-links {
@@ -184,10 +251,6 @@ nav.sb-page-header {
         background: #f5f3ff;
     }
 
-    .sb-menu-toggle {
-        display: inline-flex;
-    }
-
     .sb-menu-overlay.active {
         position: fixed;
         inset: 0;
@@ -212,7 +275,7 @@ nav.sb-page-header {
     }
 
     .sb-header-inner {
-        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-columns: auto auto minmax(0, 1fr);
         gap: .6rem;
     }
 
@@ -221,9 +284,14 @@ nav.sb-page-header {
         max-width: 96px;
     }
 
+    .sb-header-search {
+        min-width: 0;
+        max-width: none;
+    }
+
     .sb-header-search input {
         height: 36px;
-        padding: 0 10px;
+        padding: 0 34px 0 10px;
         font-size: .82rem;
     }
 
