@@ -48,20 +48,33 @@ const globalElements = {
     overlay: document.querySelector('#menu-overlay'),
 };
 
-// --- Mobile Navigation Logic ---
-if (globalElements.menuToggle) {
+// --- Responsive Navigation Logic ---
+const closeNavigation = () => {
+    if (!globalElements.navMenu || !globalElements.overlay) return;
+    globalElements.navMenu.classList.remove('active');
+    globalElements.overlay.classList.remove('active');
+    document.body.classList.remove('menu-open');
+};
+
+if (globalElements.menuToggle && globalElements.navMenu && globalElements.overlay) {
     globalElements.menuToggle.addEventListener('click', () => {
-        globalElements.navMenu.classList.toggle('active');
-        globalElements.overlay.classList.toggle('active');
+        const isOpen = globalElements.navMenu.classList.toggle('active');
+        globalElements.overlay.classList.toggle('active', isOpen);
+        document.body.classList.toggle('menu-open', isOpen);
+        globalElements.menuToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    globalElements.overlay.addEventListener('click', closeNavigation);
+    globalElements.navMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', closeNavigation);
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeNavigation();
     });
 }
 
-if (globalElements.overlay) {
-    globalElements.overlay.addEventListener('click', () => {
-        globalElements.navMenu.classList.remove('active');
-        globalElements.overlay.classList.remove('active');
-    });
-}window.handleInput = async function(e) {
+window.handleInput = async function(e) {
     const keyword = e.target.value.trim();
     const suggestionBox = document.getElementById('search-suggestions');
 

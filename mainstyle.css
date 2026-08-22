@@ -731,3 +731,119 @@ body {
     0% { height: 30%; }
     100% { height: 100%; }
 }
+
+
+/* Experimental navigation: compact AI-style labels, persistent search, left drawer */
+.nav-menu li a {
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.2;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.nav-menu li a i {
+    width: 0.9rem;
+    margin-right: 0;
+    font-size: 0.9rem;
+    line-height: 1;
+    text-align: center;
+}
+
+/* Switch only when the full inline header cannot keep a usable search field. */
+@media screen and (min-width: 769px) and (max-width: 1180px) {
+    .nav-container {
+        gap: 12px;
+    }
+
+    .logo {
+        flex: 0 0 auto;
+    }
+
+    .search-wrapper {
+        flex: 1 1 auto;
+        min-width: 220px;
+        max-width: 320px;
+        margin: 0;
+    }
+
+    .menu-toggle {
+        display: block;
+        order: 3;
+        flex: 0 0 auto;
+        margin-left: auto;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 60px;
+        left: -100%;
+        width: min(300px, calc(100vw - 24px));
+        height: calc(100vh - 60px);
+        flex-direction: column;
+        align-items: stretch;
+        gap: 5px;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: var(--dark-blue);
+        box-shadow: 2px 0 10px rgba(0,0,0,.18);
+        transition: left .25s ease-out;
+        z-index: 999;
+    }
+
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .nav-menu li,
+    .nav-menu li a {
+        width: 100%;
+    }
+
+    .nav-menu li a {
+        min-height: 44px;
+        padding: 10px 12px;
+        background-color: var(--hover-blue);
+        border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .menu-overlay.active {
+        display: block;
+        position: fixed;
+        inset: 0;
+        top: 60px;
+        background-color: rgba(0,0,0,.5);
+        z-index: 998;
+    }
+
+    body.menu-open {
+        overflow: hidden;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .nav-container {
+        gap: 8px;
+    }
+
+    .logo {
+        flex: 0 0 auto;
+    }
+
+    .search-wrapper {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin: 0;
+    }
+
+    .search-box {
+        max-width: none;
+        margin: 0;
+    }
+
+    .menu-toggle {
+        order: 3;
+        flex: 0 0 auto;
+        margin-left: auto;
+    }
+}
