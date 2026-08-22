@@ -7,6 +7,11 @@
     --sb-white: #ffffff;
 }
 
+/* Keep normal-flow page content below the fixed header on all three pages. */
+body {
+    padding-top: var(--sb-header-height);
+}
+
 nav.sb-page-header {
     position: fixed;
     top: 0;
