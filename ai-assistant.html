@@ -11,7 +11,7 @@
     <!-- Export Libraries -->
     <script src="https://unpkg.com/docx@8.2.2/build/index.js" integrity="sha384-1na0nxFK+J+6hT/nDuxXPl1hJpRobVJbhAxO62ng9/281WvZcIJTTWvwDC0u5Lx2" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha384-PlRSzpewlarQuj5alIadXwjNUX+2eNMKwr0f07ShWYLy8B6TjEbm7ZlcN/ScSbwy" crossorigin="anonymous"></script>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -61,7 +61,7 @@
             z-index: 1000;
             backdrop-filter: blur(12px);
         }
-        
+
         .logo { 
             font-size: 1.1rem; 
             font-weight: 700; 
@@ -72,12 +72,12 @@
             gap: 10px;
             letter-spacing: -0.02em;
         }
-        
+
         .nav-links { 
             display: flex; 
             gap: 1.5rem; 
         }
-        
+
         .nav-links a { 
             text-decoration: none; 
             color: var(--text-muted); 
@@ -88,7 +88,7 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .nav-links a:hover, .nav-links a.active { 
             color: var(--primary); 
         }
@@ -590,19 +590,33 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+    <link rel="stylesheet" href="shared-page-header.css?v=1">
 </head>
 <body>
-    <nav>
-        <a href="index.html" class="logo">
-            <i class="fas fa-sparkles"></i> SMART BOOKSHELF
-        </a>
-                <div class="nav-links">
-            <a href="index.html"><i class="fa-solid fa-house"></i> ပင်မစာမျက်နှာ</a>
-            <a href="categories.html"><i class="fa-solid fa-book"></i> စာအုပ်အမျိုးအစားများ</a>
-            <a href="authors.html"><i class="fa-solid fa-pen-nib"></i> စာရေးဆရာများ</a>
-            <a href="library.html"><i class="fa-solid fa-bookmark"></i> ကိုယ်ပိုင်စာအုပ်စင်</a>
-            <a href="ai-assistant.html" class="active"><i class="fas fa-robot"></i> AI Assistant</a>
-            <a href="account.html"><i class="fas fa-user"></i> အကောင့်</a>
+
+    <div class="sb-menu-overlay" data-sb-menu-overlay></div>
+    <nav class="sb-page-header" aria-label="SmartBookshelf primary navigation">
+        <div class="sb-header-inner">
+            <a href="index.html" class="sb-header-logo" aria-label="SmartBookshelf home">
+                <picture>
+                    <source media="(max-width: 768px)" srcset="imagemobile.svg">
+                    <img src="image.svg" alt="SmartBookshelf">
+                </picture>
+            </a>
+            <form class="sb-header-search" data-sb-search-form action="search.html" method="get" role="search">
+                <input type="search" name="query" data-sb-search-input placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." aria-label="စာအုပ်အမည်ဖြင့်ရှာရန်">
+            </form>
+            <div class="sb-header-links" id="sb-header-links" data-sb-header-links>
+                <a href="index.html"><i class="fa-solid fa-house" aria-hidden="true"></i> ပင်မစာမျက်နှာ</a>
+                <a href="categories.html"><i class="fa-solid fa-book" aria-hidden="true"></i> စာအုပ်အမျိုးအစားများ</a>
+                <a href="authors.html"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> စာရေးဆရာများ</a>
+                <a href="library.html"><i class="fa-solid fa-bookmark" aria-hidden="true"></i> ကိုယ်ပိုင်စာအုပ်စင်</a>
+                <a href="ai-assistant.html" class="active"><i class="fas fa-robot" aria-hidden="true"></i> AI Assistant</a>
+                <a href="account.html"><i class="fas fa-user" aria-hidden="true"></i> အကောင့်</a>
+            </div>
+            <button type="button" class="sb-menu-toggle" data-sb-menu-toggle aria-label="Menu ဖွင့်ရန်" aria-expanded="false" aria-controls="sb-header-links">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
         </div>
     </nav>
 
@@ -802,7 +816,7 @@
         function addGlossaryTerm() {
             const key = document.getElementById('glossaryKey').value.trim();
             const value = document.getElementById('glossaryValue').value.trim();
-            
+
             if (key && value) {
                 glossary[key] = value;
                 saveGlossary();
@@ -821,7 +835,7 @@
         function renderGlossaryTags() {
             const container = document.getElementById('glossaryTagsContainer');
             container.innerHTML = '';
-            
+
             for (const [key, value] of Object.entries(glossary)) {
                 const tag = document.createElement('div');
                 tag.className = 'glossary-tag';
@@ -904,7 +918,7 @@ async function sendMessage() {
 
     isLoading = true;
     abortController = new AbortController();
-    
+
     document.getElementById('sendBtn').style.display = 'none';
     document.getElementById('stopBtn').style.display = 'flex';
 
@@ -945,7 +959,7 @@ async function sendMessage() {
             const terms = Object.entries(glossary)
                 .map(([k, v]) => `${k} → ${v}`)
                 .join("\n");
-            
+
             systemInstruction = {
                 parts: [{
                     text: `You are a helpful AI assistant for a Burmese digital library app.\n\n` +
@@ -1075,7 +1089,7 @@ function copyToClipboard(messageId) {
     const contentDiv = document.getElementById(`content-${messageId}`);
     if (!contentDiv) return;
     const text = contentDiv.innerText || contentDiv.textContent;
-    
+
     navigator.clipboard.writeText(text).then(() => {
         Swal.fire({
             icon: 'success',
@@ -1103,5 +1117,6 @@ function copyToClipboard(messageId) {
 
     </script>
 
+    <script src="shared-page-header.js?v=1"></script>
 </body>
 </html>

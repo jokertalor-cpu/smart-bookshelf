@@ -19,9 +19,9 @@
             --warning: #fbbc04;
             --ai-primary: #8e44ad;
         }
-        
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body { 
             font-family: 'Pyidaungsu', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
             background: var(--bg); 
@@ -29,7 +29,7 @@
             padding-bottom: 50px;
             overflow-x: hidden;
         }
-        
+
         /* Navigation (Match aiassistant.html) */
         nav { 
             background: white; 
@@ -43,7 +43,7 @@
             z-index: 1000;
             backdrop-filter: blur(10px);
         }
-        
+
         .logo { 
             font-size: 20px; 
             font-weight: 700; 
@@ -53,12 +53,12 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .nav-links { 
             display: flex; 
             gap: 20px; 
         }
-        
+
         .nav-links a { 
             text-decoration: none; 
             color: #5f6368; 
@@ -69,7 +69,7 @@
             gap: 6px;
             font-size: 14px;
         }
-        
+
         .nav-links a:hover { 
             color: var(--ai-primary); 
         }
@@ -79,7 +79,7 @@
             margin: 0 auto; 
             padding: 20px 15px; 
         }
-        
+
         .section-title { 
             font-size: 1.2rem; 
             color: #202124; 
@@ -91,7 +91,7 @@
             padding-left: 12px;
             font-weight: 600;
         }
-        
+
         .section-title.fav { 
             border-left-color: var(--heart); 
         }
@@ -141,7 +141,7 @@
             gap: 15px; 
             min-height: 100px; 
         }
-        
+
         .book-card { 
             background: white; 
             border-radius: 12px; 
@@ -154,12 +154,12 @@
             overflow: hidden;
             cursor: pointer;
         }
-        
+
         .book-card:hover {
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
             transform: translateY(-4px);
         }
-        
+
         .book-card-image-wrapper {
             position: relative;
             width: 100%;
@@ -168,7 +168,7 @@
             overflow: hidden;
             margin-bottom: 8px;
         }
-        
+
         .book-card img { 
             width: 100%; 
             height: 100%; 
@@ -253,7 +253,7 @@
             gap: 6px; 
             margin-top: auto; 
         }
-        
+
         .btn { 
             border: none; 
             padding: 8px; 
@@ -274,7 +274,7 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
-        
+
         .btn-read { 
             background: var(--primary); 
             color: white;
@@ -284,7 +284,7 @@
             background: #1f2023;
             box-shadow: 0 4px 12px rgba(49, 51, 54, 0.2);
         }
-        
+
         .btn-download { 
             background: #e8f0fe; 
             color: #1a73e8;
@@ -410,6 +410,7 @@
             .section-title { font-size: 1.1rem; }
         }
     </style>
+    <link rel="stylesheet" href="shared-page-header.css?v=1">
 </head>
 <body>
 
@@ -417,17 +418,30 @@
         <div class="spinner"></div>
     </div>
 
-    <nav>
-        <a href="index.html" class="logo">
-            <i class="fas fa-book"></i> SMART BOOKSHELF
-        </a>
-                <div class="nav-links">
-            <a href="index.html"><i class="fa-solid fa-house"></i> ပင်မစာမျက်နှာ</a>
-            <a href="categories.html"><i class="fa-solid fa-book"></i> စာအုပ်အမျိုးအစားများ</a>
-            <a href="authors.html"><i class="fa-solid fa-pen-nib"></i> စာရေးဆရာများ</a>
-            <a href="library.html" class="active"><i class="fa-solid fa-bookmark"></i> ကိုယ်ပိုင်စာအုပ်စင်</a>
-            <a href="ai-assistant.html"><i class="fas fa-robot"></i> AI Assistant</a>
-            <a href="account.html"><i class="fas fa-user"></i> အကောင့်</a>
+
+    <div class="sb-menu-overlay" data-sb-menu-overlay></div>
+    <nav class="sb-page-header" aria-label="SmartBookshelf primary navigation">
+        <div class="sb-header-inner">
+            <a href="index.html" class="sb-header-logo" aria-label="SmartBookshelf home">
+                <picture>
+                    <source media="(max-width: 768px)" srcset="imagemobile.svg">
+                    <img src="image.svg" alt="SmartBookshelf">
+                </picture>
+            </a>
+            <form class="sb-header-search" data-sb-search-form action="search.html" method="get" role="search">
+                <input type="search" name="query" data-sb-search-input placeholder="စာအုပ်အမည်ဖြင့်ရှာရန်..." aria-label="စာအုပ်အမည်ဖြင့်ရှာရန်">
+            </form>
+            <div class="sb-header-links" id="sb-header-links" data-sb-header-links>
+                <a href="index.html"><i class="fa-solid fa-house" aria-hidden="true"></i> ပင်မစာမျက်နှာ</a>
+                <a href="categories.html"><i class="fa-solid fa-book" aria-hidden="true"></i> စာအုပ်အမျိုးအစားများ</a>
+                <a href="authors.html"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> စာရေးဆရာများ</a>
+                <a href="library.html" class="active"><i class="fa-solid fa-bookmark" aria-hidden="true"></i> ကိုယ်ပိုင်စာအုပ်စင်</a>
+                <a href="ai-assistant.html"><i class="fas fa-robot" aria-hidden="true"></i> AI Assistant</a>
+                <a href="account.html"><i class="fas fa-user" aria-hidden="true"></i> အကောင့်</a>
+            </div>
+            <button type="button" class="sb-menu-toggle" data-sb-menu-toggle aria-label="Menu ဖွင့်ရန်" aria-expanded="false" aria-controls="sb-header-links">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
         </div>
     </nav>
 
@@ -643,7 +657,7 @@
                 const cloudBooks = downloadsData
                     .filter(d => d.books && !removedIds.has(String(d.book_id)))
                     .map(d => d.books);
-                
+
                 // Update metadata in Dexie
                 for (const book of cloudBooks) {
                     const existing = await db.savedBooks.get(book.id.toString());
@@ -823,16 +837,16 @@
                 <div class="book-card" data-book-id="${safeId}">
                     ${isDownloaded ? '<div class="status-badge offline"><i class="fas fa-check-circle"></i> Offline</div>' : ''}
                     ${isDownloading ? '<div class="status-badge downloading"><i class="fas fa-spinner fa-spin"></i> Downloading</div>' : ''}
-                    
+
                     <div class="book-card-image-wrapper">
                         <img src="${safeCover}" loading="lazy" onclick="${isDownloaded ? `openReader('${safeId}')` : `downloadAndSave('${safeId}')`}" alt="${safeTitle}">
                         <div class="progress-container">
                             <div class="progress-bar"></div>
                         </div>
                     </div>
-                    
+
                     <h3>${safeTitle}</h3>
-                    
+
                     <div class="actions">
                         ${isDownloaded 
                             ? `<button class="btn btn-read" onclick="openReader('${safeId}')"><i class="fas fa-book-open"></i> Read</button>`
@@ -861,7 +875,7 @@
 
         try {
             const { data: favBooks } = await sb.from('books').select('*').in('id', likedIds);
-            
+
             favContainer.innerHTML = favBooks.map(book => {
                 const safeId = window.safeBookID(book.id);
                 if (!safeId) return '';
@@ -888,7 +902,7 @@
             await db.savedBooks.update(id, { 
                 lastReadDate: new Date().toISOString()
             });
-            
+
             if (currentUser) {
                 const progress = Number(book.readingProgress || 0);
                 await sb.from('user_progress').upsert({
@@ -899,7 +913,7 @@
                 }, { onConflict: 'user_id,book_id' });
             }
         }
-        
+
         window.location.href = `reader.html?id=${id}`;
     }
 
@@ -962,5 +976,6 @@
     }
 
 </script>
+    <script src="shared-page-header.js?v=1"></script>
 </body>
 </html>
